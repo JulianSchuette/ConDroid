@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+
+<project name="A3T-SDK" default="mkyaffs">
+  <description>
+    Instrument the framework classes, dex them, pack them
+    into a system.img and install the img file in the device
+  </description>
+
+  <property environment="env"/>
+  <dirname property="a3t.dir" file="${ant.file.A3T-SDK}"/>
+
+  <property name="workdir" location="a3t_sdk"/>
+  <property name="original.framework.jar" location="libs/framework.jar"/>
+  <property name="core.jar" location="libs/core.jar"/>
+  <property name="ext.jar" location="libs/ext.jar"/>
+  <property name="junit.jar" location="libs/junit.jar"/>
+  <property name="bouncycastle.jar" location="libs/bouncycastle.jar"/>
+  <property name="instrumented.framework.jar" location="${workdir}/instrumentedframework.jar"/>
+
+  <property name="frameworkextras.tmp.jar" value="frameworkextras-tmp.jar"/>
+  <property name="frameworkextras.jar" value="framework-extras.jar"/>
+  <property name="framework.jar" value="framework.jar"/>
+  <property name="symbolic.dx.jar" value="symbolic.jar"/>
+
+  <available property="instrumented.framework.jar.exists" file="${instrumented.framework.jar}"/>
+  <available property="framework.jar.exists" file="${workdir}/${framework.jar}"/>
+  <available property="classes.dex.exists" file="${workdir}/classes.dex"/>
+  <available property="symbolic.dx.jar.exists" file="${workdir}/${symbolic.dx.jar}"/>  
+
+  <target name="init">
+	<mkdir dir="${workdir}"/>
+  </target>
+
+  <target name="instrument" unless="${instrumented.framework.jar.exists}" depends="init">
+	<property file="a3t.sdk.properties"/>
+    <ant antfile="build.xml" target="instrument"/>
+  </target>
+
+  <target name="splitjar" depends="instrument" unless="${framework.jar.exists}">
+     <unzip src="${instrumented.framework.jar}" 
+            dest="${workdir}"
+            failOnEmptyArchive="true"/>
+	 <jar destfile="${workdir}/${framework.jar}"
+          basedir="${workdir}"
+		  includes="android/**/*.class"
+		  excludes="android/os/**/*.class"/>
+	 <jar destfile="${workdir}/${frameworkextras.tmp.jar}"
+		  basedir="${workdir}"
+		  includes="android/os/**/*.class,com/**/*.class,javax/**/*.class,models/**/*.class"/>
+  </target>
+  
+  <target name="dex-framework" depends="splitjar" unless="${classes.dex.exists}">  
+    <delete file="${workdir}/classes.dex" quiet="true"/>
+    <exec executable="dx"
+          dir="${workdir}">
+      <arg value="-JXmx${env.JavaHeap}"/>
+      <arg value="--dex"/>
+      <arg value="--output=${workdir}/classes.dex"/>
+      <arg value="${workdir}/${framework.jar}"/>
+    </exec>
+    <exec executable="dx"
+          dir="${workdir}">
+      <arg value="-JXmx${env.JavaHeap}"/>
+      <arg value="--dex"/>
+      <arg value="--output=${workdir}/${frameworkextras.jar}"/>
+      <arg value="${workdir}/${frameworkextras.tmp.jar}"/>
+    </exec>
+  </target>
+
+  <target name="dex" depends="dex-framework" unless="${symbolic.dx.jar.exists}">  
+    <exec executable="dx"
+          dir="${workdir}">
+      <arg value="-JXmx${env.JavaHeap}"/>
+      <arg value="--dex"/>
+      <arg value="--output=${workdir}/${symbolic.dx.jar}"/>
+      <arg value="edu/gatech/symbolic/SymbolicOperations.class"/>
+      <arg value="${a3t.dir}/jars/a3t_models.jar"/>
+      <arg value="${a3t.dir}/jars/a3t_symbolic.jar"/>
+    </exec>
+  </target>
+
+  <target name="unyaffs">
+	<fail unless="env.SDK_DIR" message="Set environment variable SDK_DIR to absolute location of Android SDK directory."/>
+    <delete dir="${workdir}/system" quiet="true"/>
+    <mkdir dir="${workdir}/system"/>
+    <exec executable="${a3t.dir}/libs/unyaffs"
+	  dir="${workdir}/system"
+	  failonerror="true">
+      <arg value="${env.SDK_DIR}/images/system.img"/>
+    </exec>  
+  </target>
+
+  <target name="update-img" depends="dex,unyaffs">
+    <jar update="true"
+         basedir="${workdir}"
+		 destfile="${workdir}/system/framework/framework.jar"
+		 includes="classes.dex"/>
+	<copy file="${workdir}/${frameworkextras.jar}" todir="${workdir}/system/framework"/>
+	<copy file="${workdir}/${symbolic.dx.jar}" todir="${workdir}/system/framework"/>
+    <concat destfile="${workdir}/system/build.prop" append="true">dalvik.vm.heapsize=48m</concat>    
+  </target>
+  
+  <target name="mkyaffs" depends="update-img">
+    <delete file="${workdir}/system.img"/>
+    <exec executable="${a3t.dir}/libs/mkyaffs2image"
+	  dir="${workdir}"
+	  failonerror="true">
+      <arg value="system"/>
+      <arg value="${workdir}/system.img"/>
+    </exec>
+  </target>
+
+  <target name="clean">
+	<delete dir="${workdir}"/>
+  </target>
+
+</project>

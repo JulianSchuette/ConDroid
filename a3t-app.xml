@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<project name="A3T-APP">
+
+	<dirname property="a3t.dir" file="${ant.file.A3T-APP}"/>
+	<!-- Property out.absolute.dir is set by Android SDK ant files. -->
+
+	<target name="-pre-compile">
+	  <property name="a3t.out.dir" location="${out.absolute.dir}/a3t"/> 
+	  <property name="prea3t.jar.file" location="${a3t.out.dir}/original.jar"/>
+	  <property name="instrumented.jar.file" location="${a3t.out.dir}/instrumented.jar"/>
+	  <!--
+		 This property is read by Android SDK ant files.
+		 It specifies the input for dex which is the output of a3t.
+		-->
+	  <property name="out.dex.input.absolute.dir" value="${instrumented.jar.file}"/>
+	  <path id="out.dex.jar.input.ref"/>
+	</target>
+	
+	<target name="-post-compile">
+
+	  <property name="instrumented.framework.jar" location="${a3t.dir}/a3t_sdk/instrumentedframework.jar"/>
+		<!--
+			This property is read by Android SDK ant files.
+			It includes all files that comprise Android's classpath.
+		-->
+		<path id="a3t.libraryjars.ref">
+			<pathelement location="${a3t.dir}/jars/a3t_symbolic.jar"/>
+			<pathelement location="${a3t.dir}/jars/a3t_models.jar"/>
+			<path refid="android.target.classpath"/>
+			<pathelement location="${instrumented.framework.jar}"/>
+            <pathelement location="${a3t.dir}/jars/a3t_stubs.jar"/>
+		</path>
+
+		<pathconvert property="a3t.libraryjars" refid="a3t.libraryjars.ref">
+			<firstmatchmapper>
+				<regexpmapper from='^([^ ]*)( .*)$$' to='"\1\2"'/>
+				<identitymapper/>
+			</firstmatchmapper>
+		</pathconvert>
+      
+		<!-- 
+			This property is read by Android SDK ant files.
+			It includes all jar files to be obfuscated: the app's code and any 3rd party jar files.
+		-->
+		<path id="project.jars.ref">
+			<pathelement location="${prea3t.jar.file}"/>
+			<path refid="jar.libs.ref"/>
+		</path>
+
+		<pathconvert property="project.jars" refid="project.jars.ref">
+			<firstmatchmapper>
+				<regexpmapper from='^([^ ]*)( .*)$$' to='"\1\2"'/>
+				<identitymapper/>
+			</firstmatchmapper>
+		</pathconvert>
+		
+		<mkdir dir="${a3t.out.dir}"/>
+		<delete file="${prea3t.jar.file}"/>
+		<delete file="${instrumented.jar.file}"/>
+		<jar basedir="${out.classes.absolute.dir}" destfile="${prea3t.jar.file}"/>
+
+		<property name="a3t.in.jars" value="${project.jars}"/>
+		<property name="a3t.out.jar" value="${instrumented.jar.file}"/>
+		<property name="a3t.lib.jars" value="${a3t.libraryjars}"/>
+		<property name="a3t.sdk.dir" location="${a3t.dir}/a3t_sdk"/>
+		<ant antfile="${a3t.dir}/build.xml" target="instrument"/>
+	</target>
+
+</project>

@@ -1,0 +1,131 @@
+<project name="A3T" default="build">
+	<dirname property="a3t.dir" file="${ant.file.A3T}"/>
+	<property name="explorer.jar.file" location="${a3t.dir}/jars/a3t_explorer.jar"/>
+	<property name="instrumentor.jar.file" location="${a3t.dir}/jars/a3t_instrumentor.jar"/>
+	<property name="models.jar.file" location="${a3t.dir}/jars/a3t_models.jar"/>
+	<property name="stubs.jar.file" location="${a3t.dir}/jars/a3t_stubs.jar"/>
+	<property name="symbolic.jar.file" location="${a3t.dir}/jars/a3t_symbolic.jar"/>
+
+    <target name="build">
+		<mkdir dir="jars"/>
+		<antcall target="build-explorer"/>
+		<antcall target="build-instrumentor"/>
+		<antcall target="build-models"/>
+		<antcall target="build-stubs"/>
+		<antcall target="build-symbolic"/>
+	</target>
+
+	<target name="build-explorer">
+		<path id="explorer.class.path">
+			<pathelement location="libs/jigsaw-sexpr.jar"/>
+			<pathelement location="${ant.home}/lib/ant.jar"/>
+		</path>
+		<property name="explorer.class.path" refid="explorer.class.path"/>
+		<build-helper
+			dir="explorer"
+			classpath="${explorer.class.path}"
+			jarfile="${explorer.jar.file}"/>
+	</target>
+
+	<target name="build-instrumentor" depends="build-symbolic">
+		<path id="instrumentor.class.path">
+			<pathelement location="libs/soot.jar"/>
+			<pathelement location="${symbolic.jar.file}"/>
+			<pathelement location="${ant.home}/lib/ant.jar"/>
+		</path>
+		<property name="instrumentor.class.path" refid="instrumentor.class.path"/>
+		<build-helper
+			dir="instrumentor"
+			classpath="${instrumentor.class.path}"
+			jarfile="${instrumentor.jar.file}"/>
+    </target>
+
+	<target name="build-models" depends="build-symbolic,build-stubs">
+		<path id="models.class.path">
+			<pathelement location="${symbolic.jar.file}"/>
+			<pathelement location="${stubs.jar.file}"/>
+		</path>
+		<property name="models.class.path" refid="models.class.path"/>
+		<build-helper
+			dir="models"
+			classpath="${models.class.path}"
+			jarfile="${models.jar.file}"/>
+	</target>
+
+	<target name="build-stubs">
+		<build-helper
+			dir="stubs"
+			jarfile="${stubs.jar.file}"/>
+	</target>
+
+	<target name="build-symbolic" depends="build-stubs">
+		<path id="symbolic.class.path">
+			<pathelement location="${stubs.jar.file}"/>
+		</path>
+		<property name="symbolic.class.path" refid="symbolic.class.path"/>
+		<build-helper
+			dir="symbolic"
+			classpath="${symbolic.class.path}"
+			jarfile="${symbolic.jar.file}"/>
+	</target>
+
+	<macrodef name="build-helper">
+		<attribute name="dir"/>
+		<attribute name="classpath" default=""/>
+		<attribute name="jarfile"/>
+		<sequential>
+			<mkdir dir="@{dir}/classes"/>
+			<javac srcdir="@{dir}/src" destdir="@{dir}/classes"
+			    debug="true" debuglevel="source,lines,vars"
+				classpath="@{classpath}" includeantruntime="false"/>
+			<jar jarfile="@{jarfile}" basedir="@{dir}/classes"/>
+		</sequential>
+	</macrodef>
+
+	<target name="instrument">
+		<property environment="env"/>
+		<fail unless="env.JavaHeap" message="Set environment variable JavaHeap."/>
+		<java classname="a3t.instrumentor.Main" fork="true" failonerror="true"
+				dir="${user.dir}" maxmemory="${env.JavaHeap}">
+			<syspropertyset>
+				<propertyref builtin="all"/>
+			</syspropertyset>
+			<jvmarg value="-ea"/>
+			<classpath>
+				<pathelement location="${instrumentor.jar.file}"/>
+				<pathelement location="${symbolic.jar.file}"/>
+				<pathelement location="${a3t.dir}/libs/ant.jar"/>
+				<pathelement location="${a3t.dir}/libs/ant-launcher.jar"/>
+				<pathelement location="${a3t.dir}/libs/soot.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="run">
+		<property environment="env"/>
+   		<fail unless="env.Z3_BIN" message="Set environment variable Z3_BIN to absolute location of Z3 binary."/>
+		<fail unless="env.JavaHeap" message="Set environment variable JavaHeap."/>
+		<java classname="a3t.explorer.Main" fork="true" failonerror="true"
+    	     	 dir="${user.dir}" maxmemory="${env.JavaHeap}">
+			<jvmarg value="-ea"/>
+			<syspropertyset>
+				<propertyref builtin="all"/>
+			</syspropertyset>
+			<classpath>
+				<pathelement location="${explorer.jar.file}"/>
+				<pathelement location="${a3t.dir}/libs/ant.jar"/>
+				<pathelement location="${a3t.dir}/libs/ant-launcher.jar"/>
+				<pathelement location="${a3t.dir}/libs/jigsaw-sexpr.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="clean">
+		<delete dir="explorer/classes"/>
+		<delete dir="instrumentor/classes"/>
+		<delete dir="models/classes"/>
+		<delete dir="stubs/classes"/>
+		<delete dir="symbolic/classes"/>
+		<delete dir="jars"/>
+	</target>
+</project>
