@@ -1,0 +1,47 @@
+#!/bin/sh
+
+#ideally you need to set only the following two paths ANDROID_BUILD_DIR and SDK_DIR
+
+#where you downloaded the android sources and built it
+ANDROID_BUILD_DIR=/opt/Android-2.3.5
+
+CUR_DIR=`pwd`
+ACTEVE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# copy various jars
+cd $ANDROID_BUILD_DIR
+cp out/target/common/obj/JAVA_LIBRARIES/bouncycastle_intermediates/classes.jar $ACTEVE_DIR/libs/bouncycastle.jar
+cp out/target/common/obj/JAVA_LIBRARIES/ext_intermediates/classes.jar $ACTEVE_DIR/libs/ext.jar
+cp out/target/common/obj/JAVA_LIBRARIES/core_intermediates/classes.jar $ACTEVE_DIR/libs/core.jar
+cp out/target/common/obj/JAVA_LIBRARIES/core-junit_intermediates/classes.jar $ACTEVE_DIR/libs/junit.jar
+cp out/target/common/obj/JAVA_LIBRARIES/framework_intermediates/classes.jar $ACTEVE_DIR/libs/framework.jar
+cp out/host/linux-x86/bin/mkyaffs2image $ACTEVE_DIR/libs/mkyaffs2image
+
+#build the instrumented system.img
+cd $ACTEVE_DIR 
+ant
+cd libs/unyaffs_src/
+gcc -O2 unyaffs.c -o ../unyaffs
+cd ../..
+ant -f a3t-sdk.xml 
+
+# modify ramdisk.img
+rm -rf ramdisk
+mkdir ramdisk
+cd ramdisk
+cp $SDK_DIR/images/ramdisk.img .
+mv ramdisk.img ramdisk.cpio.gz
+gzip -d ramdisk.cpio.gz
+mkdir tmp
+cp ramdisk.cpio tmp
+cd tmp
+cpio -i -F ramdisk.cpio
+rm ramdisk.cpio
+cp $ACTEVE_DIR/libs/init.rc .
+cpio -i -t -F ../ramdisk.cpio | cpio -o -H newc -O ../ramdisk_new.cpio
+cd ..
+gzip ramdisk_new.cpio
+mv ramdisk_new.cpio.gz ramdisk_new.img
+cp ramdisk_new.img $SDK_DIR/images/ramdisk.img
+
+cd $CUR_DIR

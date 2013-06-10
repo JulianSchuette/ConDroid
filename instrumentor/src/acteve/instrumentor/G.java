@@ -85,8 +85,8 @@ import soot.jimple.Stmt;
 import soot.jimple.SubExpr;
 import soot.jimple.VirtualInvokeExpr;
 
-import edu.gatech.symbolic.Util;
-import gov.nasa.jpf.symbolic.integer.Types;
+import acteve.symbolic.Util;
+import acteve.symbolic.integer.Types;
 
 /**
    G as in Global
@@ -111,9 +111,9 @@ public class G
 
     static final String OBJECT_CLASS_NAME = "java.lang.Object";
     static final String STRING_CLASS_NAME = "java.lang.String";
-    static final String EXPRESSION_CLASS_NAME = "gov.nasa.jpf.symbolic.integer.Expression";
-    static final String SYMOPS_CLASS_NAME = "edu.gatech.symbolic.SymbolicOperations";
-    static final String SYMUTIL_CLASS_NAME = "edu.gatech.symbolic.Util";
+    static final String EXPRESSION_CLASS_NAME = "acteve.symbolic.integer.Expression";
+    static final String SYMOPS_CLASS_NAME = "acteve.symbolic.SymbolicOperations";
+    static final String SYMUTIL_CLASS_NAME = "acteve.symbolic.Util";
     static final String MODELS_PKG_PREFIX = "models.";
 
     static final Type OBJECT_TYPE;
