@@ -1,0 +1,101 @@
+public class acteve.symbolic.Mylog extends java.lang.Object
+{
+    private static final java.lang.String KILLED_FILE;
+    private static final java.lang.String LOG_DIR_PREFIX;
+    private static final java.lang.String MYLOG;
+    private static final java.lang.String PKG_FILE;
+    private static java.io.PrintWriter writer;
+
+    static void <clinit>()
+    {
+        acteve.symbolic.Mylog$ShutDownHook $r0;
+
+        $r0 = new acteve.symbolic.Mylog$ShutDownHook;
+        specialinvoke $r0.<acteve.symbolic.Mylog$ShutDownHook: void <init>()>();
+        virtualinvoke $r0.<acteve.symbolic.Mylog$ShutDownHook: void start()>();
+        return;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.Mylog $r0;
+
+        $r0 := @this: acteve.symbolic.Mylog;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+
+    static java.io.PrintWriter access$0()
+    {
+        java.io.PrintWriter $r0;
+
+        $r0 = <acteve.symbolic.Mylog: java.io.PrintWriter writer>;
+        return $r0;
+    }
+
+    public static void e(java.lang.String, java.lang.String)
+    {
+        java.lang.String $r0, $r1, $r4;
+        java.io.PrintWriter $r2;
+        java.lang.StringBuilder $r3;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 := @parameter1: java.lang.String;
+        $r2 = staticinvoke <acteve.symbolic.Mylog: java.io.PrintWriter writer()>();
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("E/");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r0);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" : ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        virtualinvoke $r2.<java.io.PrintWriter: void println(java.lang.String)>($r4);
+        return;
+    }
+
+    public static void println(java.lang.String)
+    {
+        java.lang.String $r0;
+        java.io.PrintWriter $r1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 = staticinvoke <acteve.symbolic.Mylog: java.io.PrintWriter writer()>();
+        virtualinvoke $r1.<java.io.PrintWriter: void println(java.lang.String)>($r0);
+        return;
+    }
+
+    private static java.io.PrintWriter writer()
+    {
+        java.io.IOException $r0;
+        java.io.PrintWriter $r1;
+        java.io.BufferedWriter $r2;
+        java.io.FileWriter $r3;
+        java.lang.Error $r5;
+
+        $r1 = <acteve.symbolic.Mylog: java.io.PrintWriter writer>;
+        if $r1 != null goto label2;
+
+        $r1 = new java.io.PrintWriter;
+        $r2 = new java.io.BufferedWriter;
+        $r3 = new java.io.FileWriter;
+
+     label0:
+        specialinvoke $r3.<java.io.FileWriter: void <init>(java.lang.String)>("/sdcard/mylog.txt");
+        specialinvoke $r2.<java.io.BufferedWriter: void <init>(java.io.Writer)>($r3);
+        specialinvoke $r1.<java.io.PrintWriter: void <init>(java.io.Writer)>($r2);
+
+     label1:
+        <acteve.symbolic.Mylog: java.io.PrintWriter writer> = $r1;
+
+     label2:
+        $r1 = <acteve.symbolic.Mylog: java.io.PrintWriter writer>;
+        return $r1;
+
+     label3:
+        $r0 := @caughtexception;
+        $r5 = new java.lang.Error;
+        specialinvoke $r5.<java.lang.Error: void <init>(java.lang.Throwable)>($r0);
+        throw $r5;
+
+        catch java.io.IOException from label0 to label1 with label3;
+    }
+}

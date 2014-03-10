@@ -1,0 +1,35 @@
+public class acteve.symbolic.array.ArrayLength extends acteve.symbolic.integer.IntegerExpression
+{
+    private acteve.symbolic.array.Array array;
+
+    public void <init>(acteve.symbolic.array.Array)
+    {
+        acteve.symbolic.array.ArrayLength $r0;
+        acteve.symbolic.array.Array $r1;
+
+        $r0 := @this: acteve.symbolic.array.ArrayLength;
+        $r1 := @parameter0: acteve.symbolic.array.Array;
+        specialinvoke $r0.<acteve.symbolic.integer.IntegerExpression: void <init>()>();
+        $r0.<acteve.symbolic.array.ArrayLength: acteve.symbolic.array.Array array> = $r1;
+        return;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.array.ArrayLength $r0;
+        java.lang.StringBuilder $r1;
+        java.lang.String $r2;
+        acteve.symbolic.array.Array $r3;
+
+        $r0 := @this: acteve.symbolic.array.ArrayLength;
+        $r1 = new java.lang.StringBuilder;
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>("array_len(");
+        $r3 = $r0.<acteve.symbolic.array.ArrayLength: acteve.symbolic.array.Array array>;
+        $r2 = virtualinvoke $r3.<acteve.symbolic.array.Array: java.lang.String exprString()>();
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        $r2 = specialinvoke $r0.<acteve.symbolic.integer.IntegerExpression: java.lang.String toYicesString(java.lang.String)>($r2);
+        return $r2;
+    }
+}

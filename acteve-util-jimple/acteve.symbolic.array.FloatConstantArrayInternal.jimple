@@ -1,0 +1,75 @@
+public class acteve.symbolic.array.FloatConstantArrayInternal extends acteve.symbolic.array.FloatArrayInternal
+{
+    private java.lang.String arrayStr;
+
+    void <init>(float[])
+    {
+        acteve.symbolic.array.FloatConstantArrayInternal $r0;
+        float[] $r1;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.array.FloatConstantArrayInternal;
+        $r1 := @parameter0: float[];
+        specialinvoke $r0.<acteve.symbolic.array.FloatArrayInternal: void <init>()>();
+        $r2 = staticinvoke <java.util.Arrays: java.lang.String toString(float[])>($r1);
+        $r0.<acteve.symbolic.array.FloatConstantArrayInternal: java.lang.String arrayStr> = $r2;
+        return;
+    }
+
+    public volatile acteve.symbolic.integer.Expression _alen()
+    {
+        acteve.symbolic.array.FloatConstantArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.array.FloatConstantArrayInternal;
+        $r1 = specialinvoke $r0.<acteve.symbolic.array.FloatArrayInternal: acteve.symbolic.integer.Expression _alen()>();
+        return $r1;
+    }
+
+    public volatile acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.FloatConstantArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.array.FloatConstantArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r1 = specialinvoke $r0.<acteve.symbolic.array.FloatArrayInternal: acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)>($r1);
+        return $r1;
+    }
+
+    public volatile acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.FloatConstantArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1, $r2;
+        acteve.symbolic.array.ArrayInternal $r3;
+
+        $r0 := @this: acteve.symbolic.array.FloatConstantArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 = specialinvoke $r0.<acteve.symbolic.array.FloatArrayInternal: acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r1, $r2);
+        return $r3;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.array.FloatConstantArrayInternal $r0;
+        acteve.symbolic.integer.PathCondition $r2;
+        java.lang.StringBuilder $r3;
+        java.lang.String $r4, $r5;
+
+        $r0 := @this: acteve.symbolic.array.FloatConstantArrayInternal;
+        $r5 = staticinvoke <acteve.symbolic.array.SymbolicFloatArray: java.lang.String makeName()>();
+        $r2 = <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc>;
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("(= ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r5);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r4 = $r0.<acteve.symbolic.array.FloatConstantArrayInternal: java.lang.String arrayStr>;
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r4);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        virtualinvoke $r2.<acteve.symbolic.integer.PathCondition: void printConstraint(java.lang.String)>($r4);
+        $r0.<acteve.symbolic.array.FloatConstantArrayInternal: java.lang.String arrayStr> = null;
+        return $r5;
+    }
+}

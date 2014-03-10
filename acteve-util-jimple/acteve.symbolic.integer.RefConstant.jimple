@@ -1,0 +1,89 @@
+public class acteve.symbolic.integer.RefConstant extends acteve.symbolic.integer.RefExpression implements acteve.symbolic.integer.Constant
+{
+    private static final acteve.symbolic.integer.RefConstant NULL;
+
+    static void <clinit>()
+    {
+        acteve.symbolic.integer.RefConstant $r0;
+
+        $r0 = new acteve.symbolic.integer.RefConstant;
+        specialinvoke $r0.<acteve.symbolic.integer.RefConstant: void <init>(java.lang.Object)>(null);
+        <acteve.symbolic.integer.RefConstant: acteve.symbolic.integer.RefConstant NULL> = $r0;
+        return;
+    }
+
+    public void <init>(java.lang.Object)
+    {
+        acteve.symbolic.integer.RefConstant $r0;
+        java.lang.Object $r1;
+
+        $r0 := @this: acteve.symbolic.integer.RefConstant;
+        $r1 := @parameter0: java.lang.Object;
+        specialinvoke $r0.<acteve.symbolic.integer.RefExpression: void <init>(java.lang.Object)>($r1);
+        return;
+    }
+
+    public static acteve.symbolic.integer.RefConstant get(java.lang.Object)
+    {
+        java.lang.Object $r0;
+        acteve.symbolic.integer.RefConstant $r1;
+
+        $r0 := @parameter0: java.lang.Object;
+        if $r0 != null goto label0;
+
+        $r1 = <acteve.symbolic.integer.RefConstant: acteve.symbolic.integer.RefConstant NULL>;
+        return $r1;
+
+     label0:
+        $r1 = new acteve.symbolic.integer.RefConstant;
+        specialinvoke $r1.<acteve.symbolic.integer.RefConstant: void <init>(java.lang.Object)>($r0);
+        return $r1;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.RefConstant $r0;
+        int $i0;
+        java.lang.Object $r1;
+        java.lang.StringBuilder $r2;
+        java.lang.String $r3;
+        java.lang.Class $r4;
+
+        $r0 := @this: acteve.symbolic.integer.RefConstant;
+        $r1 = $r0.<acteve.symbolic.integer.RefConstant: java.lang.Object seed>;
+        $i0 = staticinvoke <java.lang.System: int identityHashCode(java.lang.Object)>($r1);
+        $r2 = new java.lang.StringBuilder;
+        $r1 = $r0.<acteve.symbolic.integer.RefConstant: java.lang.Object seed>;
+        if $r1 != null goto label1;
+
+        $r3 = "null";
+
+     label0:
+        $r3 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r3);
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>($r3);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("@");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r3;
+
+     label1:
+        $r1 = $r0.<acteve.symbolic.integer.RefConstant: java.lang.Object seed>;
+        $r4 = virtualinvoke $r1.<java.lang.Object: java.lang.Class getClass()>();
+        $r3 = virtualinvoke $r4.<java.lang.Class: java.lang.String getName()>();
+        goto label0;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.RefConstant $r0;
+        acteve.symbolic.integer.operation.Operations $r1;
+        java.lang.Object $r2;
+        java.lang.String $r3;
+
+        $r0 := @this: acteve.symbolic.integer.RefConstant;
+        $r1 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = $r0.<acteve.symbolic.integer.RefConstant: java.lang.Object seed>;
+        $r3 = virtualinvoke $r1.<acteve.symbolic.integer.operation.Operations: java.lang.String refConstant(java.lang.Object)>($r2);
+        return $r3;
+    }
+}

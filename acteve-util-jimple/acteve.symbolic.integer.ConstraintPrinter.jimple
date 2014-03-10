@@ -1,0 +1,555 @@
+public class acteve.symbolic.integer.ConstraintPrinter extends java.lang.Object
+{
+    public static final acteve.symbolic.integer.ConstraintPrinter v;
+
+    static void <clinit>()
+    {
+        java.lang.ClassNotFoundException $r0;
+        java.lang.String $r1;
+        java.lang.Class $r3;
+        java.lang.Object $r4;
+        acteve.symbolic.integer.ConstraintPrinter $r5;
+        java.lang.Error $r6;
+        java.lang.InstantiationException $r7;
+        java.lang.IllegalAccessException $r8;
+
+        $r1 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String,java.lang.String)>("pc.printer", "acteve.symbolic.integer.ConstraintPrinterBV");
+
+     label0:
+        $r3 = staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r3.<java.lang.Class: java.lang.Object newInstance()>();
+
+     label1:
+        $r5 = (acteve.symbolic.integer.ConstraintPrinter) $r4;
+        <acteve.symbolic.integer.ConstraintPrinter: acteve.symbolic.integer.ConstraintPrinter v> = $r5;
+        return;
+
+     label2:
+        $r0 := @caughtexception;
+        $r6 = new java.lang.Error;
+        specialinvoke $r6.<java.lang.Error: void <init>(java.lang.Throwable)>($r0);
+        throw $r6;
+
+     label3:
+        $r7 := @caughtexception;
+        $r6 = new java.lang.Error;
+        specialinvoke $r6.<java.lang.Error: void <init>(java.lang.Throwable)>($r7);
+        throw $r6;
+
+     label4:
+        $r8 := @caughtexception;
+        $r6 = new java.lang.Error;
+        specialinvoke $r6.<java.lang.Error: void <init>(java.lang.Throwable)>($r8);
+        throw $r6;
+
+        catch java.lang.ClassNotFoundException from label0 to label1 with label2;
+        catch java.lang.InstantiationException from label0 to label1 with label3;
+        catch java.lang.IllegalAccessException from label0 to label1 with label4;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+
+    public java.lang.String d2f()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "d2f";
+    }
+
+    public java.lang.String d2i()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "d2i";
+    }
+
+    public java.lang.String d2l()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "d2l";
+    }
+
+    public java.lang.String dadd()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "dadd";
+    }
+
+    public java.lang.String ddiv()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "ddiv";
+    }
+
+    public java.lang.String dmul()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "dmul";
+    }
+
+    public java.lang.String dneg()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "dneg";
+    }
+
+    public java.lang.String doubleConstant(double)
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+        double $d0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        $d0 := @parameter0: double;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(double)>($d0);
+        return $r1;
+    }
+
+    public java.lang.String drem()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "drem";
+    }
+
+    public java.lang.String dsub()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "dsub";
+    }
+
+    public java.lang.String eq()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "=";
+    }
+
+    public java.lang.String f2d()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "f2d";
+    }
+
+    public java.lang.String f2i()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "f2i";
+    }
+
+    public java.lang.String f2l()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "f2l";
+    }
+
+    public java.lang.String fadd()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "fadd";
+    }
+
+    public java.lang.String fdiv()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "fdiv";
+    }
+
+    public java.lang.String floatConstant(float)
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+        float $f0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        $f0 := @parameter0: float;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(float)>($f0);
+        return $r1;
+    }
+
+    public java.lang.String fmul()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "fmul";
+    }
+
+    public java.lang.String fneg()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "fneg";
+    }
+
+    public java.lang.String frem()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "frem";
+    }
+
+    public java.lang.String fsub()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "fsub";
+    }
+
+    public java.lang.String ge()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return ">=";
+    }
+
+    public java.lang.String gt()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return ">";
+    }
+
+    public java.lang.String i2b()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "i2b";
+    }
+
+    public java.lang.String i2c()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "i2c";
+    }
+
+    public java.lang.String i2d()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "i2d";
+    }
+
+    public java.lang.String i2f()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "i2f";
+    }
+
+    public java.lang.String i2l()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "i2l";
+    }
+
+    public java.lang.String i2s()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "i2s";
+    }
+
+    public java.lang.String iadd()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "+";
+    }
+
+    public java.lang.String iand()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "iand";
+    }
+
+    public java.lang.String idiv()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "div";
+    }
+
+    public java.lang.String imul()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "*";
+    }
+
+    public java.lang.String ineg()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "~";
+    }
+
+    public java.lang.String intConstant(int)
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+        int $i0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        $i0 := @parameter0: int;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        return $r1;
+    }
+
+    public java.lang.String ior()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "ior";
+    }
+
+    public java.lang.String irem()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "rem";
+    }
+
+    public java.lang.String ishl()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "ishl";
+    }
+
+    public java.lang.String ishr()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "ishr";
+    }
+
+    public java.lang.String isub()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "-";
+    }
+
+    public java.lang.String iushr()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "iushr";
+    }
+
+    public java.lang.String ixor()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "ixor";
+    }
+
+    public java.lang.String l2d()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "l2d";
+    }
+
+    public java.lang.String l2f()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "l2f";
+    }
+
+    public java.lang.String l2i()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "l2i";
+    }
+
+    public java.lang.String ladd()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "+";
+    }
+
+    public java.lang.String land()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "land";
+    }
+
+    public java.lang.String ldiv()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "/";
+    }
+
+    public java.lang.String le()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "<=";
+    }
+
+    public java.lang.String lmul()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "*";
+    }
+
+    public java.lang.String lneg()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "~";
+    }
+
+    public java.lang.String longConstant(long)
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+        long $l0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        $l0 := @parameter0: long;
+        $r0 = <acteve.symbolic.integer.ConstraintPrinter: acteve.symbolic.integer.ConstraintPrinter v>;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r0);
+        return $r1;
+    }
+
+    public java.lang.String lor()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "lor";
+    }
+
+    public java.lang.String lrem()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "rem";
+    }
+
+    public java.lang.String lshl()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "lshl";
+    }
+
+    public java.lang.String lshr()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "lshr";
+    }
+
+    public java.lang.String lsub()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "-";
+    }
+
+    public java.lang.String lt()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "<";
+    }
+
+    public java.lang.String lushr()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "lushr";
+    }
+
+    public java.lang.String lxor()
+    {
+        acteve.symbolic.integer.ConstraintPrinter $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinter;
+        return "lxor";
+    }
+}

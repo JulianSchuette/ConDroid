@@ -1,0 +1,32 @@
+public class acteve.symbolic.array.FloatArrayConstant extends acteve.symbolic.array.Array
+{
+
+    private void <init>(acteve.symbolic.array.ArrayInternal)
+    {
+        acteve.symbolic.array.FloatArrayConstant $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayConstant;
+        $r1 := @parameter0: acteve.symbolic.array.ArrayInternal;
+        specialinvoke $r0.<acteve.symbolic.array.Array: void <init>(acteve.symbolic.array.ArrayInternal)>($r1);
+        return;
+    }
+
+    public static acteve.symbolic.array.FloatArrayConstant get(float[])
+    {
+        float[] $r0, $r1;
+        int $i0;
+        acteve.symbolic.array.FloatConstantArrayInternal $r2;
+        acteve.symbolic.array.FloatArrayConstant $r3;
+
+        $r0 := @parameter0: float[];
+        $i0 = lengthof $r0;
+        $r1 = newarray (float)[$i0];
+        staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>($r0, 0, $r1, 0, $i0);
+        $r3 = new acteve.symbolic.array.FloatArrayConstant;
+        $r2 = new acteve.symbolic.array.FloatConstantArrayInternal;
+        specialinvoke $r2.<acteve.symbolic.array.FloatConstantArrayInternal: void <init>(float[])>($r1);
+        specialinvoke $r3.<acteve.symbolic.array.FloatArrayConstant: void <init>(acteve.symbolic.array.ArrayInternal)>($r2);
+        return $r3;
+    }
+}

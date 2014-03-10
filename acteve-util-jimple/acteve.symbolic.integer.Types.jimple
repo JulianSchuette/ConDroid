@@ -1,0 +1,52 @@
+public class acteve.symbolic.integer.Types extends java.lang.Object
+{
+    public static final int BOOLEAN;
+    public static final int BYTE;
+    public static final int CHAR;
+    public static final int DOUBLE;
+    public static final int FLOAT;
+    public static final int INT;
+    public static final int LONG;
+    public static final int REF;
+    public static final int SHORT;
+    public static final java.lang.String[] types;
+
+    static void <clinit>()
+    {
+        java.lang.String[] $r1;
+
+        $r1 = newarray (java.lang.String)[9];
+        $r1[0] = "boolean";
+        $r1[1] = "char";
+        $r1[2] = "short";
+        $r1[3] = "byte";
+        $r1[4] = "int";
+        $r1[5] = "long";
+        $r1[6] = "float";
+        $r1[7] = "double";
+        $r1[8] = "ref";
+        <acteve.symbolic.integer.Types: java.lang.String[] types> = $r1;
+        return;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.Types $r0;
+
+        $r0 := @this: acteve.symbolic.integer.Types;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+
+    public static java.lang.String toString(int)
+    {
+        int $i0;
+        java.lang.String[] $r0;
+        java.lang.String $r1;
+
+        $i0 := @parameter0: int;
+        $r0 = <acteve.symbolic.integer.Types: java.lang.String[] types>;
+        $r1 = $r0[$i0];
+        return $r1;
+    }
+}

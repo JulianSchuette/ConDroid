@@ -1,0 +1,159 @@
+public class acteve.symbolic.integer.PathCondition extends java.lang.Object
+{
+    static final boolean $assertionsDisabled;
+    private boolean inited;
+    private int printST;
+
+    static void <clinit>()
+    {
+        java.lang.Class $r0;
+        boolean $z0;
+
+        $r0 = class "acteve/symbolic/integer/PathCondition";
+        $z0 = virtualinvoke $r0.<java.lang.Class: boolean desiredAssertionStatus()>();
+        if $z0 != 0 goto label1;
+
+        $z0 = 1;
+
+     label0:
+        <acteve.symbolic.integer.PathCondition: boolean $assertionsDisabled> = $z0;
+        return;
+
+     label1:
+        $z0 = 0;
+        goto label0;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+
+        $r0 := @this: acteve.symbolic.integer.PathCondition;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        $r0.<acteve.symbolic.integer.PathCondition: boolean inited> = 0;
+        $r0.<acteve.symbolic.integer.PathCondition: int printST> = 8;
+        return;
+    }
+
+    private void printConstraint(acteve.symbolic.integer.Expression, boolean, boolean)
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+        acteve.symbolic.integer.Expression $r1;
+        boolean $z0, $z1;
+        java.lang.String $r2;
+        acteve.symbolic.integer.UnaryOperator $r4;
+        java.lang.StringBuilder $r5;
+        java.lang.AssertionError $r6;
+
+        $r0 := @this: acteve.symbolic.integer.PathCondition;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $z0 := @parameter1: boolean;
+        $z1 := @parameter2: boolean;
+        if $z0 != 0 goto label0;
+
+        $z0 = $r1 instanceof acteve.symbolic.integer.BooleanExpression;
+        if $z0 == 0 goto label2;
+
+        $r4 = <acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.UnaryOperator NEGATION>;
+        $r1 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r1);
+
+     label0:
+        $r2 = virtualinvoke $r1.<acteve.symbolic.integer.Expression: java.lang.String toYicesString()>();
+        if $z1 == 0 goto label1;
+
+        $r5 = new java.lang.StringBuilder;
+        specialinvoke $r5.<java.lang.StringBuilder: void <init>(java.lang.String)>("*");
+        $r5 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r2 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.String toString()>();
+
+     label1:
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_PC", $r2);
+        return;
+
+     label2:
+        $z0 = <acteve.symbolic.integer.PathCondition: boolean $assertionsDisabled>;
+        if $z0 != 0 goto label0;
+
+        $r6 = new java.lang.AssertionError;
+        specialinvoke $r6.<java.lang.AssertionError: void <init>()>();
+        throw $r6;
+    }
+
+    private void printST()
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+        java.lang.StackTraceElement $r1;
+        java.lang.StackTraceElement[] $r2;
+        int $i0, $i1;
+        java.lang.Throwable $r3;
+        java.lang.String $r4;
+
+        $r0 := @this: acteve.symbolic.integer.PathCondition;
+        $r3 = new java.lang.Throwable;
+        specialinvoke $r3.<java.lang.Throwable: void <init>()>();
+        $r2 = virtualinvoke $r3.<java.lang.Throwable: java.lang.StackTraceElement[] getStackTrace()>();
+        $i0 = 0;
+
+     label0:
+        $i1 = $r0.<acteve.symbolic.integer.PathCondition: int printST>;
+        if $i0 < $i1 goto label1;
+
+        return;
+
+     label1:
+        $r1 = $r2[$i0];
+        $r4 = virtualinvoke $r1.<java.lang.StackTraceElement: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_ST", $r4);
+        $i0 = $i0 + 1;
+        goto label0;
+    }
+
+    public void assumeDet(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.integer.PathCondition;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        specialinvoke $r0.<acteve.symbolic.integer.PathCondition: void printConstraint(acteve.symbolic.integer.Expression,boolean,boolean)>($r1, 1, 1);
+        return;
+    }
+
+    public void assumeFls(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.integer.PathCondition;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        specialinvoke $r0.<acteve.symbolic.integer.PathCondition: void printConstraint(acteve.symbolic.integer.Expression,boolean,boolean)>($r1, 0, 0);
+        return;
+    }
+
+    public void assumeTru(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.integer.PathCondition;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        specialinvoke $r0.<acteve.symbolic.integer.PathCondition: void printConstraint(acteve.symbolic.integer.Expression,boolean,boolean)>($r1, 1, 0);
+        return;
+    }
+
+    public void printConstraint(java.lang.String)
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+        java.lang.String $r1, $r4;
+        java.lang.StringBuilder $r3;
+
+        $r0 := @this: acteve.symbolic.integer.PathCondition;
+        $r1 := @parameter0: java.lang.String;
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("*");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_PC", $r4);
+        return;
+    }
+}

@@ -1,0 +1,81 @@
+public class acteve.symbolic.array.UpdatedIntegerArrayInternal extends acteve.symbolic.array.UpdatedArrayInternal
+{
+
+    public void <init>(acteve.symbolic.array.ArrayInternal, acteve.symbolic.integer.IntegerExpression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.UpdatedIntegerArrayInternal $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+        acteve.symbolic.integer.IntegerExpression $r2;
+        acteve.symbolic.integer.Expression $r3;
+
+        $r0 := @this: acteve.symbolic.array.UpdatedIntegerArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.array.ArrayInternal;
+        $r2 := @parameter1: acteve.symbolic.integer.IntegerExpression;
+        $r3 := @parameter2: acteve.symbolic.integer.Expression;
+        specialinvoke $r0.<acteve.symbolic.array.UpdatedArrayInternal: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression,acteve.symbolic.integer.Expression)>($r1, $r2, $r3);
+        return;
+    }
+
+    public volatile acteve.symbolic.integer.Expression _alen()
+    {
+        acteve.symbolic.array.UpdatedIntegerArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.array.UpdatedIntegerArrayInternal;
+        $r1 = specialinvoke $r0.<acteve.symbolic.array.UpdatedArrayInternal: acteve.symbolic.integer.Expression _alen()>();
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.UpdatedIntegerArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.array.IntegerArrayElem $r2;
+        acteve.symbolic.integer.IntegerExpression $r3;
+
+        $r0 := @this: acteve.symbolic.array.UpdatedIntegerArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = new acteve.symbolic.array.IntegerArrayElem;
+        $r3 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        specialinvoke $r2.<acteve.symbolic.array.IntegerArrayElem: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression)>($r0, $r3);
+        return $r2;
+    }
+
+    public acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.UpdatedIntegerArrayInternal $r0, $r3;
+        acteve.symbolic.integer.Expression $r1, $r2;
+        acteve.symbolic.integer.IntegerExpression $r4, $r5;
+
+        $r0 := @this: acteve.symbolic.array.UpdatedIntegerArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 = new acteve.symbolic.array.UpdatedIntegerArrayInternal;
+        $r4 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        $r5 = (acteve.symbolic.integer.IntegerExpression) $r2;
+        specialinvoke $r3.<acteve.symbolic.array.UpdatedIntegerArrayInternal: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression,acteve.symbolic.integer.Expression)>($r0, $r4, $r5);
+        return $r3;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.array.UpdatedIntegerArrayInternal $r0;
+        java.lang.String $r2, $r5, $r6;
+        acteve.symbolic.integer.PathCondition $r3;
+        java.lang.StringBuilder $r4;
+
+        $r0 := @this: acteve.symbolic.array.UpdatedIntegerArrayInternal;
+        $r2 = specialinvoke $r0.<acteve.symbolic.array.UpdatedArrayInternal: java.lang.String toYicesString()>();
+        $r6 = staticinvoke <acteve.symbolic.array.SymbolicIntegerArray: java.lang.String makeName()>();
+        $r3 = <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc>;
+        $r4 = new java.lang.StringBuilder;
+        specialinvoke $r4.<java.lang.StringBuilder: void <init>(java.lang.String)>("(= ");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r6);
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.String toString()>();
+        virtualinvoke $r3.<acteve.symbolic.integer.PathCondition: void printConstraint(java.lang.String)>($r5);
+        return $r6;
+    }
+}

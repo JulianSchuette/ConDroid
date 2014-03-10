@@ -1,0 +1,3 @@
+public interface  acteve.symbolic.Constant extends java.lang.Object
+{
+}

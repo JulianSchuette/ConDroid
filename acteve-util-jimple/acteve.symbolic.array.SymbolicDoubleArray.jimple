@@ -1,0 +1,45 @@
+public class acteve.symbolic.array.SymbolicDoubleArray extends acteve.symbolic.array.Array
+{
+    private static int count;
+
+    static void <clinit>()
+    {
+        <acteve.symbolic.array.SymbolicDoubleArray: int count> = 0;
+        return;
+    }
+
+    public void <init>(java.lang.String)
+    {
+        acteve.symbolic.array.SymbolicDoubleArray $r0;
+        java.lang.String $r1, $r4;
+        acteve.symbolic.array.DoubleArrayInternal $r2;
+        java.lang.StringBuilder $r3;
+
+        $r0 := @this: acteve.symbolic.array.SymbolicDoubleArray;
+        $r1 := @parameter0: java.lang.String;
+        $r2 = new acteve.symbolic.array.DoubleArrayInternal;
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!D$");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        specialinvoke $r2.<acteve.symbolic.array.DoubleArrayInternal: void <init>(java.lang.String)>($r4);
+        specialinvoke $r0.<acteve.symbolic.array.Array: void <init>(acteve.symbolic.array.ArrayInternal)>($r2);
+        return;
+    }
+
+    static java.lang.String makeName()
+    {
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        int $i0, $i1;
+
+        $r0 = new java.lang.StringBuilder;
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!D$");
+        $i1 = <acteve.symbolic.array.SymbolicDoubleArray: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.array.SymbolicDoubleArray: int count> = $i0;
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+}

@@ -1,0 +1,103 @@
+public class acteve.symbolic.integer.SymbolicFloat extends acteve.symbolic.integer.FloatExpression
+{
+    private static int count;
+    private java.lang.String name;
+
+    static void <clinit>()
+    {
+        <acteve.symbolic.integer.SymbolicFloat: int count> = 0;
+        return;
+    }
+
+    public void <init>(float)
+    {
+        acteve.symbolic.integer.SymbolicFloat $r0;
+        float $f0;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicFloat;
+        $f0 := @parameter0: float;
+        specialinvoke $r0.<acteve.symbolic.integer.SymbolicFloat: void <init>(java.lang.String,float)>(null, $f0);
+        return;
+    }
+
+    public void <init>(java.lang.String, float)
+    {
+        acteve.symbolic.integer.SymbolicFloat $r0;
+        java.lang.String $r1;
+        float $f0;
+        java.lang.StringBuilder $r2;
+        int $i0, $i1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicFloat;
+        $r1 := @parameter0: java.lang.String;
+        $f0 := @parameter1: float;
+        specialinvoke $r0.<acteve.symbolic.integer.FloatExpression: void <init>()>();
+        $r0.<acteve.symbolic.integer.SymbolicFloat: float seed> = $f0;
+        if $r1 != null goto label1;
+
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$F$");
+        $i1 = <acteve.symbolic.integer.SymbolicFloat: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.integer.SymbolicFloat: int count> = $i0;
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+
+     label0:
+        $r0.<acteve.symbolic.integer.SymbolicFloat: java.lang.String name> = $r1;
+        return;
+
+     label1:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$F$");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        goto label0;
+    }
+
+    static java.lang.String makeName()
+    {
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        int $i0, $i1;
+
+        $r0 = new java.lang.StringBuilder;
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>("$F$");
+        $i1 = <acteve.symbolic.integer.SymbolicFloat: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.integer.SymbolicFloat: int count> = $i0;
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.SymbolicFloat $r0;
+        java.lang.StringBuilder $r1;
+        java.lang.String $r2;
+        float $f0;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicFloat;
+        $r1 = new java.lang.StringBuilder;
+        $r2 = $r0.<acteve.symbolic.integer.SymbolicFloat: java.lang.String name>;
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r2);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("[");
+        $f0 = $r0.<acteve.symbolic.integer.SymbolicFloat: float seed>;
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(float)>($f0);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("]");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.SymbolicFloat $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicFloat;
+        $r1 = $r0.<acteve.symbolic.integer.SymbolicFloat: java.lang.String name>;
+        return $r1;
+    }
+}

@@ -1,0 +1,24 @@
+class acteve.symbolic.Util$SymRet extends java.lang.Object
+{
+    int subSignatureId;
+    acteve.symbolic.integer.Expression symRet;
+    long threadId;
+
+    void <init>(int, long, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.Util$SymRet $r0;
+        int $i0;
+        long $l1;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.Util$SymRet;
+        $i0 := @parameter0: int;
+        $l1 := @parameter1: long;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        $r0.<acteve.symbolic.Util$SymRet: acteve.symbolic.integer.Expression symRet> = $r1;
+        $r0.<acteve.symbolic.Util$SymRet: int subSignatureId> = $i0;
+        $r0.<acteve.symbolic.Util$SymRet: long threadId> = $l1;
+        return;
+    }
+}

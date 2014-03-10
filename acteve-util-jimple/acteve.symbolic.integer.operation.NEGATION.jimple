@@ -1,0 +1,36 @@
+public class acteve.symbolic.integer.operation.NEGATION extends acteve.symbolic.integer.UnaryOperator
+{
+
+    public void <init>(java.lang.String)
+    {
+        acteve.symbolic.integer.operation.NEGATION $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.NEGATION;
+        $r1 := @parameter0: java.lang.String;
+        specialinvoke $r0.<acteve.symbolic.integer.UnaryOperator: void <init>(java.lang.String)>($r1);
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.operation.NEGATION $r0;
+        acteve.symbolic.integer.Expression $r1, $r3;
+        boolean $z0;
+        acteve.symbolic.integer.NegatedBooleanExpression $r2;
+
+        $r0 := @this: acteve.symbolic.integer.operation.NEGATION;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $z0 = $r1 instanceof acteve.symbolic.integer.NegatedBooleanExpression;
+        if $z0 == 0 goto label0;
+
+        $r2 = (acteve.symbolic.integer.NegatedBooleanExpression) $r1;
+        $r3 = $r2.<acteve.symbolic.integer.NegatedBooleanExpression: acteve.symbolic.integer.Expression e>;
+        return $r3;
+
+     label0:
+        $r2 = new acteve.symbolic.integer.NegatedBooleanExpression;
+        specialinvoke $r2.<acteve.symbolic.integer.NegatedBooleanExpression: void <init>(acteve.symbolic.integer.Expression)>($r1);
+        return $r2;
+    }
+}

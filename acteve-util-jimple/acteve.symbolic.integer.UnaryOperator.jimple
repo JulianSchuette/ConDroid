@@ -1,0 +1,35 @@
+public abstract class acteve.symbolic.integer.UnaryOperator extends acteve.symbolic.integer.Operator
+{
+
+    public void <init>(java.lang.String)
+    {
+        acteve.symbolic.integer.UnaryOperator $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.UnaryOperator;
+        $r1 := @parameter0: java.lang.String;
+        specialinvoke $r0.<acteve.symbolic.integer.Operator: void <init>(java.lang.String)>($r1);
+        return;
+    }
+
+    public abstract acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression);
+
+    public java.lang.String toYicesString(java.lang.String)
+    {
+        acteve.symbolic.integer.UnaryOperator $r0;
+        java.lang.String $r1, $r3;
+        java.lang.StringBuilder $r2;
+
+        $r0 := @this: acteve.symbolic.integer.UnaryOperator;
+        $r1 := @parameter0: java.lang.String;
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("(");
+        $r3 = $r0.<acteve.symbolic.integer.UnaryOperator: java.lang.String op>;
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r3);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r3;
+    }
+}

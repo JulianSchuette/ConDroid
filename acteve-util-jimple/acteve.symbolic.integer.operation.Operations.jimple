@@ -1,0 +1,984 @@
+public class acteve.symbolic.integer.operation.Operations extends java.lang.Object
+{
+    public static final acteve.symbolic.integer.operation.Operations v;
+
+    static void <clinit>()
+    {
+        java.lang.ClassNotFoundException $r0;
+        java.lang.String $r1;
+        java.lang.Class $r3;
+        java.lang.Object $r4;
+        acteve.symbolic.integer.operation.Operations $r5;
+        java.lang.Error $r6;
+        java.lang.InstantiationException $r7;
+        java.lang.IllegalAccessException $r8;
+
+        $r1 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String,java.lang.String)>("pc.printer", "acteve.symbolic.integer.operation.Operations");
+
+     label0:
+        $r3 = staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r3.<java.lang.Class: java.lang.Object newInstance()>();
+
+     label1:
+        $r5 = (acteve.symbolic.integer.operation.Operations) $r4;
+        <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v> = $r5;
+        return;
+
+     label2:
+        $r0 := @caughtexception;
+        $r6 = new java.lang.Error;
+        specialinvoke $r6.<java.lang.Error: void <init>(java.lang.Throwable)>($r0);
+        throw $r6;
+
+     label3:
+        $r7 := @caughtexception;
+        $r6 = new java.lang.Error;
+        specialinvoke $r6.<java.lang.Error: void <init>(java.lang.Throwable)>($r7);
+        throw $r6;
+
+     label4:
+        $r8 := @caughtexception;
+        $r6 = new java.lang.Error;
+        specialinvoke $r6.<java.lang.Error: void <init>(java.lang.Throwable)>($r8);
+        throw $r6;
+
+        catch java.lang.ClassNotFoundException from label0 to label1 with label2;
+        catch java.lang.InstantiationException from label0 to label1 with label3;
+        catch java.lang.IllegalAccessException from label0 to label1 with label4;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator acmpeq()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>("=");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator acmpne()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.NegatedBooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.NegatedBooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.NegatedBooleanBinaryOperator: void <init>(java.lang.String)>("=");
+        return $r1;
+    }
+
+    public java.lang.String array_get(java.lang.String, java.lang.String)
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        java.lang.String $r1, $r2, $r4;
+        java.lang.StringBuilder $r3;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 := @parameter0: java.lang.String;
+        $r2 := @parameter1: java.lang.String;
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("(select ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r4;
+    }
+
+    public java.lang.String array_set(java.lang.String, java.lang.String, java.lang.String)
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        java.lang.String $r1, $r2, $r3, $r5;
+        java.lang.StringBuilder $r4;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 := @parameter0: java.lang.String;
+        $r2 := @parameter1: java.lang.String;
+        $r3 := @parameter2: java.lang.String;
+        $r4 = new java.lang.StringBuilder;
+        specialinvoke $r4.<java.lang.StringBuilder: void <init>(java.lang.String)>("(store ");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r3);
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r5;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator conjunct()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>("and");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator d2f()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatUnaryOperator: void <init>(java.lang.String)>("d2f");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator d2i()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("my_to_int");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator d2l()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("my_to_int");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator dadd()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleBinaryOperator: void <init>(java.lang.String)>("dadd");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator dcmpg()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("dcmpg");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator dcmpl()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("dcmpl");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator ddiv()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleBinaryOperator: void <init>(java.lang.String)>("ddiv");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator dmul()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleBinaryOperator: void <init>(java.lang.String)>("dmul");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator dneg()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleUnaryOperator: void <init>(java.lang.String)>("dneg");
+        return $r1;
+    }
+
+    public java.lang.String doubleConstant(double)
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        double $d0, $d1;
+        java.lang.String $r1;
+        byte $b0;
+        java.lang.StringBuilder $r2;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $d0 := @parameter0: double;
+        $b0 = $d0 cmpl 0.0;
+        if $b0 < 0 goto label0;
+
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(double)>($d0);
+        return $r1;
+
+     label0:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("(- ");
+        $d1 = neg $d0;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(double)>($d1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator drem()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleBinaryOperator: void <init>(java.lang.String)>("drem");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator dsub()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleBinaryOperator: void <init>(java.lang.String)>("dsub");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator f2d()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleUnaryOperator: void <init>(java.lang.String)>("f2d");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator f2i()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("my_to_int");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator f2l()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongUnaryOperator: void <init>(java.lang.String)>("my_to_int");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator fadd()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatBinaryOperator: void <init>(java.lang.String)>("+");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator fcmpg()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("fcmpg");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator fcmpl()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("fcmpl");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator fdiv()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatBinaryOperator: void <init>(java.lang.String)>("div");
+        return $r1;
+    }
+
+    public java.lang.String floatConstant(float)
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        float $f0, $f1;
+        java.lang.String $r1;
+        byte $b0;
+        java.lang.StringBuilder $r2;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $f0 := @parameter0: float;
+        $b0 = $f0 cmpl 0.0F;
+        if $b0 < 0 goto label0;
+
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(float)>($f0);
+        return $r1;
+
+     label0:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("(- ");
+        $f1 = neg $f0;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(float)>($f1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator fmul()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatBinaryOperator: void <init>(java.lang.String)>("*");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator fneg()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatUnaryOperator: void <init>(java.lang.String)>("fneg");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator frem()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatBinaryOperator: void <init>(java.lang.String)>("rem");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator fsub()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatBinaryOperator: void <init>(java.lang.String)>("-");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator i2b()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("i2b");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator i2c()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("i2c");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator i2d()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleUnaryOperator: void <init>(java.lang.String)>("to_real");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator i2f()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatUnaryOperator: void <init>(java.lang.String)>("to_real");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator i2l()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongUnaryOperator: void <init>(java.lang.String)>("i2l");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator i2s()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("i2s");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator iadd()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("+");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator iand()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("iand");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator icmpeq()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>("=");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator icmpge()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>(">=");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator icmpgt()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>(">");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator icmple()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>("<=");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator icmplt()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>("<");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator icmpne()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.NegatedBooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.NegatedBooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.NegatedBooleanBinaryOperator: void <init>(java.lang.String)>("=");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator idiv()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("div");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator imul()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("*");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator ineg()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("~");
+        return $r1;
+    }
+
+    public java.lang.String intConstant(int)
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        int $i0;
+        java.lang.String $r1;
+        java.lang.StringBuilder $r2;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $i0 := @parameter0: int;
+        if $i0 < 0 goto label0;
+
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        return $r1;
+
+     label0:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("(- ");
+        $i0 = neg $i0;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator ior()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("ior");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator irem()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("rem");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator ishl()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("ishl");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator ishr()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("ishr");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator isub()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("-");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator iushr()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("iushr");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator ixor()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("ixor");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator l2d()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.DoubleUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.DoubleUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.DoubleUnaryOperator: void <init>(java.lang.String)>("l2d");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator l2f()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.FloatUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.FloatUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.FloatUnaryOperator: void <init>(java.lang.String)>("l2f");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator l2i()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerUnaryOperator: void <init>(java.lang.String)>("l2i");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator ladd()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("+");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator land()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("iand");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lcmp()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.IntegerBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.IntegerBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.IntegerBinaryOperator: void <init>(java.lang.String)>("lcmp");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator ldiv()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("div");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lmul()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("*");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator lneg()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongUnaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongUnaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongUnaryOperator: void <init>(java.lang.String)>("~");
+        return $r1;
+    }
+
+    public java.lang.String longConstant(long)
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        long $l0, $l1;
+        java.lang.String $r1;
+        byte $b2;
+        java.lang.StringBuilder $r2;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $l0 := @parameter0: long;
+        $b2 = $l0 cmp 0L;
+        if $b2 < 0 goto label0;
+
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(long)>($l0);
+        return $r1;
+
+     label0:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("(- ");
+        $l1 = neg $l0;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(long)>($l1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lor()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("ior");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lrem()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("rem");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lshl()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("ishl");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lshr()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("ishr");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lsub()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("-");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lushr()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("iushr");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator lxor()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.LongBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.LongBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.LongBinaryOperator: void <init>(java.lang.String)>("ixor");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.UnaryOperator negation()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.operation.NEGATION $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.operation.NEGATION;
+        specialinvoke $r1.<acteve.symbolic.integer.operation.NEGATION: void <init>(java.lang.String)>("not");
+        return $r1;
+    }
+
+    public java.lang.String refConstant(java.lang.Object)
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        java.lang.Object $r1;
+        java.lang.String $r2;
+        java.lang.StringBuilder $r3;
+        int $i0;
+        java.lang.Class $r4;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 := @parameter0: java.lang.Object;
+        $r3 = new java.lang.StringBuilder;
+        if $r1 != null goto label1;
+
+        $r2 = "null";
+
+     label0:
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r2);
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("@");
+        $i0 = staticinvoke <java.lang.System: int identityHashCode(java.lang.Object)>($r1);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r2 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+
+     label1:
+        $r4 = virtualinvoke $r1.<java.lang.Object: java.lang.Class getClass()>();
+        $r2 = virtualinvoke $r4.<java.lang.Class: java.lang.String getName()>();
+        goto label0;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator req()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.BooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.BooleanBinaryOperator: void <init>(java.lang.String)>("=");
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.BinaryOperator rne()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.NegatedBooleanBinaryOperator $r1;
+
+        $r0 := @this: acteve.symbolic.integer.operation.Operations;
+        $r1 = new acteve.symbolic.integer.NegatedBooleanBinaryOperator;
+        specialinvoke $r1.<acteve.symbolic.integer.NegatedBooleanBinaryOperator: void <init>(java.lang.String)>("=");
+        return $r1;
+    }
+}

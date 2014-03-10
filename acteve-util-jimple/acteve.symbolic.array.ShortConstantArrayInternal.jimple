@@ -1,0 +1,82 @@
+public class acteve.symbolic.array.ShortConstantArrayInternal extends acteve.symbolic.array.IntegerArrayInternal
+{
+
+    void <init>(short[])
+    {
+        acteve.symbolic.array.ShortConstantArrayInternal $r0;
+        short[] $r1;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.array.ShortConstantArrayInternal;
+        $r1 := @parameter0: short[];
+        $r2 = staticinvoke <acteve.symbolic.array.ShortConstantArrayInternal: java.lang.String constString(short[])>($r1);
+        specialinvoke $r0.<acteve.symbolic.array.IntegerArrayInternal: void <init>(java.lang.String)>($r2);
+        return;
+    }
+
+    private static java.lang.String constString(short[])
+    {
+        short[] $r0;
+        java.lang.String $r2, $r4, $r5;
+        java.lang.StringBuilder $r3;
+        acteve.symbolic.integer.PathCondition $r6;
+
+        $r0 := @parameter0: short[];
+        $r2 = staticinvoke <java.util.Arrays: java.lang.String toString(short[])>($r0);
+        $r5 = staticinvoke <acteve.symbolic.array.SymbolicIntegerArray: java.lang.String makeName(java.lang.String)>("$!S$");
+        $r6 = <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc>;
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("(= ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r5);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        virtualinvoke $r6.<acteve.symbolic.integer.PathCondition: void printConstraint(java.lang.String)>($r4);
+        return $r5;
+    }
+
+    public volatile acteve.symbolic.integer.Expression _alen()
+    {
+        acteve.symbolic.array.ShortConstantArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.array.ShortConstantArrayInternal;
+        $r1 = specialinvoke $r0.<acteve.symbolic.array.IntegerArrayInternal: acteve.symbolic.integer.Expression _alen()>();
+        return $r1;
+    }
+
+    public volatile acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.ShortConstantArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.array.ShortConstantArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r1 = specialinvoke $r0.<acteve.symbolic.array.IntegerArrayInternal: acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)>($r1);
+        return $r1;
+    }
+
+    public volatile acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.ShortConstantArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1, $r2;
+        acteve.symbolic.array.ArrayInternal $r3;
+
+        $r0 := @this: acteve.symbolic.array.ShortConstantArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 = specialinvoke $r0.<acteve.symbolic.array.IntegerArrayInternal: acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r1, $r2);
+        return $r3;
+    }
+
+    public volatile java.lang.String toYicesString()
+    {
+        acteve.symbolic.array.ShortConstantArrayInternal $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.array.ShortConstantArrayInternal;
+        $r1 = specialinvoke $r0.<acteve.symbolic.array.IntegerArrayInternal: java.lang.String toYicesString()>();
+        return $r1;
+    }
+}

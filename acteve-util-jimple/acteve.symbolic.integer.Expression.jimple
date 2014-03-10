@@ -1,0 +1,43 @@
+public abstract class acteve.symbolic.integer.Expression extends java.lang.Object
+{
+    public static final acteve.symbolic.integer.PathCondition pc;
+    protected java.lang.String exprString;
+
+    static void <clinit>()
+    {
+        acteve.symbolic.integer.PathCondition $r0;
+
+        $r0 = new acteve.symbolic.integer.PathCondition;
+        specialinvoke $r0.<acteve.symbolic.integer.PathCondition: void <init>()>();
+        <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc> = $r0;
+        return;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.Expression $r0;
+
+        $r0 := @this: acteve.symbolic.integer.Expression;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+
+    public java.lang.String exprString()
+    {
+        acteve.symbolic.integer.Expression $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.Expression;
+        $r1 = $r0.<acteve.symbolic.integer.Expression: java.lang.String exprString>;
+        if $r1 != null goto label0;
+
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.Expression: java.lang.String toYicesString()>();
+        $r0.<acteve.symbolic.integer.Expression: java.lang.String exprString> = $r1;
+
+     label0:
+        $r1 = $r0.<acteve.symbolic.integer.Expression: java.lang.String exprString>;
+        return $r1;
+    }
+
+    public abstract java.lang.String toYicesString();
+}

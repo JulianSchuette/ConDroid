@@ -1,0 +1,7 @@
+public interface  acteve.symbolic.integer.CMP extends java.lang.Object
+{
+
+    public abstract acteve.symbolic.integer.Expression _cmpg(acteve.symbolic.integer.Expression);
+
+    public abstract acteve.symbolic.integer.Expression _cmpl(acteve.symbolic.integer.Expression);
+}

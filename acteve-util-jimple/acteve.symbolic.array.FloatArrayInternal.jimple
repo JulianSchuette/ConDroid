@@ -1,0 +1,105 @@
+class acteve.symbolic.array.FloatArrayInternal extends acteve.symbolic.array.ArrayInternal
+{
+    private int[] symIndices;
+
+    void <init>()
+    {
+        acteve.symbolic.array.FloatArrayInternal $r0;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayInternal;
+        specialinvoke $r0.<acteve.symbolic.array.ArrayInternal: void <init>()>();
+        return;
+    }
+
+    void <init>(java.lang.String)
+    {
+        acteve.symbolic.array.FloatArrayInternal $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayInternal;
+        $r1 := @parameter0: java.lang.String;
+        specialinvoke $r0.<acteve.symbolic.array.ArrayInternal: void <init>(java.lang.String)>($r1);
+        return;
+    }
+
+    void <init>(java.lang.String, int[])
+    {
+        acteve.symbolic.array.FloatArrayInternal $r0;
+        java.lang.String $r1;
+        int[] $r2;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayInternal;
+        $r1 := @parameter0: java.lang.String;
+        $r2 := @parameter1: int[];
+        specialinvoke $r0.<acteve.symbolic.array.ArrayInternal: void <init>(java.lang.String)>($r1);
+        $r0.<acteve.symbolic.array.FloatArrayInternal: int[] symIndices> = $r2;
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.FloatArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+        int $i0, $i1, $i2;
+        int[] $r2;
+        boolean $z0;
+        acteve.symbolic.integer.IntegerConstant $r4;
+        acteve.symbolic.array.FloatArrayElem $r5;
+        acteve.symbolic.integer.IntegerExpression $r6;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = $r0.<acteve.symbolic.array.FloatArrayInternal: int[] symIndices>;
+        if $r2 == null goto label1;
+
+        $z0 = $r1 instanceof acteve.symbolic.integer.IntegerConstant;
+        if $z0 == 0 goto label1;
+
+        $r4 = (acteve.symbolic.integer.IntegerConstant) $r1;
+        $i1 = virtualinvoke $r4.<acteve.symbolic.integer.IntegerConstant: int seed()>();
+        $i0 = 0;
+
+     label0:
+        $r2 = $r0.<acteve.symbolic.array.FloatArrayInternal: int[] symIndices>;
+        $i2 = lengthof $r2;
+        if $i0 < $i2 goto label2;
+
+     label1:
+        $r5 = new acteve.symbolic.array.FloatArrayElem;
+        $r6 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        specialinvoke $r5.<acteve.symbolic.array.FloatArrayElem: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression)>($r0, $r6);
+        return $r5;
+
+     label2:
+        $r2 = $r0.<acteve.symbolic.array.FloatArrayInternal: int[] symIndices>;
+        $i2 = $r2[$i0];
+        if $i2 != $i1 goto label3;
+
+        $r5 = new acteve.symbolic.array.FloatArrayElem;
+        $r6 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        specialinvoke $r5.<acteve.symbolic.array.FloatArrayElem: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression)>($r0, $r6);
+        return $r5;
+
+     label3:
+        $i0 = $i0 + 1;
+        goto label0;
+    }
+
+    public acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.FloatArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1, $r2;
+        acteve.symbolic.array.UpdatedFloatArrayInternal $r3;
+        acteve.symbolic.integer.IntegerExpression $r4;
+        acteve.symbolic.integer.FloatExpression $r5;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 = new acteve.symbolic.array.UpdatedFloatArrayInternal;
+        $r4 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        $r5 = (acteve.symbolic.integer.FloatExpression) $r2;
+        specialinvoke $r3.<acteve.symbolic.array.UpdatedFloatArrayInternal: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression,acteve.symbolic.integer.Expression)>($r0, $r4, $r5);
+        return $r3;
+    }
+}

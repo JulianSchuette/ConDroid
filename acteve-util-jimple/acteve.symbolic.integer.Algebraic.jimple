@@ -1,0 +1,17 @@
+public interface  acteve.symbolic.integer.Algebraic extends java.lang.Object
+{
+
+    public abstract acteve.symbolic.integer.Expression _cast(int);
+
+    public abstract acteve.symbolic.integer.Expression _div(acteve.symbolic.integer.Expression);
+
+    public abstract acteve.symbolic.integer.Expression _minus(acteve.symbolic.integer.Expression);
+
+    public abstract acteve.symbolic.integer.Expression _mul(acteve.symbolic.integer.Expression);
+
+    public abstract acteve.symbolic.integer.Expression _neg();
+
+    public abstract acteve.symbolic.integer.Expression _plus(acteve.symbolic.integer.Expression);
+
+    public abstract acteve.symbolic.integer.Expression _rem(acteve.symbolic.integer.Expression);
+}

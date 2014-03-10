@@ -1,0 +1,100 @@
+public abstract class acteve.symbolic.array.Array extends acteve.symbolic.integer.Expression
+{
+    protected acteve.symbolic.array.ArrayInternal array;
+
+    public void <init>()
+    {
+        acteve.symbolic.array.Array $r0;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        specialinvoke $r0.<acteve.symbolic.integer.Expression: void <init>()>();
+        return;
+    }
+
+    protected void <init>(acteve.symbolic.array.ArrayInternal)
+    {
+        acteve.symbolic.array.Array $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        $r1 := @parameter0: acteve.symbolic.array.ArrayInternal;
+        specialinvoke $r0.<acteve.symbolic.integer.Expression: void <init>()>();
+        $r0.<acteve.symbolic.array.Array: acteve.symbolic.array.ArrayInternal array> = $r1;
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression _aget(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.Array $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.array.ArrayInternal $r2;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = $r0.<acteve.symbolic.array.Array: acteve.symbolic.array.ArrayInternal array>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.array.ArrayInternal: acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)>($r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _alen()
+    {
+        acteve.symbolic.array.Array $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+        acteve.symbolic.integer.Expression $r2;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        $r1 = $r0.<acteve.symbolic.array.Array: acteve.symbolic.array.ArrayInternal array>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.array.ArrayInternal: acteve.symbolic.integer.Expression _alen()>();
+        return $r2;
+    }
+
+    public acteve.symbolic.integer.Expression _aset(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.Array $r0;
+        acteve.symbolic.integer.Expression $r1, $r2;
+        acteve.symbolic.array.ArrayInternal $r3;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 = $r0.<acteve.symbolic.array.Array: acteve.symbolic.array.ArrayInternal array>;
+        $r3 = virtualinvoke $r3.<acteve.symbolic.array.ArrayInternal: acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r1, $r2);
+        $r0.<acteve.symbolic.array.Array: acteve.symbolic.array.ArrayInternal array> = $r3;
+        return $r0;
+    }
+
+    public java.lang.String exprString()
+    {
+        acteve.symbolic.array.Array $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        $r1 = $r0.<acteve.symbolic.array.Array: acteve.symbolic.array.ArrayInternal array>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.array.ArrayInternal: java.lang.String exprString()>();
+        return $r2;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.array.Array $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        $r1 = $r0.<acteve.symbolic.array.Array: acteve.symbolic.array.ArrayInternal array>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.array.ArrayInternal: java.lang.String toYicesString()>();
+        return $r2;
+    }
+
+    public final java.lang.String toYicesString()
+    {
+        acteve.symbolic.array.Array $r0;
+        java.lang.RuntimeException $r1;
+
+        $r0 := @this: acteve.symbolic.array.Array;
+        $r1 = new java.lang.RuntimeException;
+        specialinvoke $r1.<java.lang.RuntimeException: void <init>()>();
+        throw $r1;
+    }
+}

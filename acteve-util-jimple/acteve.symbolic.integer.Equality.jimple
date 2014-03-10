@@ -1,0 +1,7 @@
+public interface  acteve.symbolic.integer.Equality extends java.lang.Object
+{
+
+    public abstract acteve.symbolic.integer.Expression _eq(acteve.symbolic.integer.Expression);
+
+    public abstract acteve.symbolic.integer.Expression _ne(acteve.symbolic.integer.Expression);
+}

@@ -1,0 +1,66 @@
+public class acteve.symbolic.array.SymbolicFloatArray extends acteve.symbolic.array.Array
+{
+    private static int count;
+
+    static void <clinit>()
+    {
+        <acteve.symbolic.array.SymbolicFloatArray: int count> = 0;
+        return;
+    }
+
+    public void <init>(java.lang.String)
+    {
+        acteve.symbolic.array.SymbolicFloatArray $r0;
+        java.lang.String $r1, $r4;
+        acteve.symbolic.array.FloatArrayInternal $r2;
+        java.lang.StringBuilder $r3;
+
+        $r0 := @this: acteve.symbolic.array.SymbolicFloatArray;
+        $r1 := @parameter0: java.lang.String;
+        $r2 = new acteve.symbolic.array.FloatArrayInternal;
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!F$");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        specialinvoke $r2.<acteve.symbolic.array.FloatArrayInternal: void <init>(java.lang.String)>($r4);
+        specialinvoke $r0.<acteve.symbolic.array.Array: void <init>(acteve.symbolic.array.ArrayInternal)>($r2);
+        return;
+    }
+
+    public void <init>(java.lang.String, int[])
+    {
+        acteve.symbolic.array.SymbolicFloatArray $r0;
+        java.lang.String $r1, $r5;
+        int[] $r2;
+        acteve.symbolic.array.FloatArrayInternal $r3;
+        java.lang.StringBuilder $r4;
+
+        $r0 := @this: acteve.symbolic.array.SymbolicFloatArray;
+        $r1 := @parameter0: java.lang.String;
+        $r2 := @parameter1: int[];
+        $r3 = new acteve.symbolic.array.FloatArrayInternal;
+        $r4 = new java.lang.StringBuilder;
+        specialinvoke $r4.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!F$");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.String toString()>();
+        specialinvoke $r3.<acteve.symbolic.array.FloatArrayInternal: void <init>(java.lang.String,int[])>($r5, $r2);
+        specialinvoke $r0.<acteve.symbolic.array.Array: void <init>(acteve.symbolic.array.ArrayInternal)>($r3);
+        return;
+    }
+
+    static java.lang.String makeName()
+    {
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        int $i0, $i1;
+
+        $r0 = new java.lang.StringBuilder;
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!F$");
+        $i1 = <acteve.symbolic.array.SymbolicFloatArray: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.array.SymbolicFloatArray: int count> = $i0;
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+}

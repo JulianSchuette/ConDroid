@@ -1,0 +1,119 @@
+public class acteve.symbolic.array.SymbolicIntegerArray extends acteve.symbolic.array.Array
+{
+    private static int count;
+
+    static void <clinit>()
+    {
+        <acteve.symbolic.array.SymbolicIntegerArray: int count> = 0;
+        return;
+    }
+
+    public void <init>(int, java.lang.String)
+    {
+        acteve.symbolic.array.SymbolicIntegerArray $r0;
+        int $i0;
+        java.lang.String $r1;
+        acteve.symbolic.array.IntegerArrayInternal $r2;
+
+        $r0 := @this: acteve.symbolic.array.SymbolicIntegerArray;
+        $i0 := @parameter0: int;
+        $r1 := @parameter1: java.lang.String;
+        $r2 = new acteve.symbolic.array.IntegerArrayInternal;
+        $r1 = staticinvoke <acteve.symbolic.array.SymbolicIntegerArray: java.lang.String name(int,java.lang.String)>($i0, $r1);
+        specialinvoke $r2.<acteve.symbolic.array.IntegerArrayInternal: void <init>(java.lang.String)>($r1);
+        specialinvoke $r0.<acteve.symbolic.array.Array: void <init>(acteve.symbolic.array.ArrayInternal)>($r2);
+        return;
+    }
+
+    static java.lang.String makeName()
+    {
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        int $i0, $i1;
+
+        $r0 = new java.lang.StringBuilder;
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!I$");
+        $i1 = <acteve.symbolic.array.SymbolicIntegerArray: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.array.SymbolicIntegerArray: int count> = $i0;
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    static java.lang.String makeName(java.lang.String)
+    {
+        java.lang.String $r0;
+        java.lang.StringBuilder $r1;
+        int $i0, $i1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 = new java.lang.StringBuilder;
+        $r0 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r0);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r0);
+        $i1 = <acteve.symbolic.array.SymbolicIntegerArray: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.array.SymbolicIntegerArray: int count> = $i0;
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r0 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r0;
+    }
+
+    private static java.lang.String name(int, java.lang.String)
+    {
+        int $i0;
+        java.lang.String $r0, $r3;
+        java.lang.RuntimeException $r1;
+        java.lang.StringBuilder $r2;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: java.lang.String;
+        lookupswitch($i0)
+        {
+            case 1: goto label1;
+            case 2: goto label3;
+            case 3: goto label2;
+            case 4: goto label4;
+            default: goto label0;
+        };
+
+     label0:
+        $r1 = new java.lang.RuntimeException;
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("unexpected type ");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r0);
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        specialinvoke $r1.<java.lang.RuntimeException: void <init>(java.lang.String)>($r3);
+        throw $r1;
+
+     label1:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!C$");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r0);
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r3;
+
+     label2:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!B$");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r0);
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r3;
+
+     label3:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!S$");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r0);
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r3;
+
+     label4:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$!I$");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r0);
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r3;
+    }
+}

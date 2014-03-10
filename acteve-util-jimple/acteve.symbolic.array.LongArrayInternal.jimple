@@ -1,0 +1,56 @@
+class acteve.symbolic.array.LongArrayInternal extends acteve.symbolic.array.ArrayInternal
+{
+
+    void <init>()
+    {
+        acteve.symbolic.array.LongArrayInternal $r0;
+
+        $r0 := @this: acteve.symbolic.array.LongArrayInternal;
+        specialinvoke $r0.<acteve.symbolic.array.ArrayInternal: void <init>()>();
+        return;
+    }
+
+    void <init>(java.lang.String)
+    {
+        acteve.symbolic.array.LongArrayInternal $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.array.LongArrayInternal;
+        $r1 := @parameter0: java.lang.String;
+        specialinvoke $r0.<acteve.symbolic.array.ArrayInternal: void <init>(java.lang.String)>($r1);
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.LongArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.array.LongArrayElem $r2;
+        acteve.symbolic.integer.IntegerExpression $r3;
+
+        $r0 := @this: acteve.symbolic.array.LongArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = new acteve.symbolic.array.LongArrayElem;
+        $r3 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        specialinvoke $r2.<acteve.symbolic.array.LongArrayElem: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression)>($r0, $r3);
+        return $r2;
+    }
+
+    public acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.LongArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1, $r2;
+        acteve.symbolic.array.UpdatedLongArrayInternal $r3;
+        acteve.symbolic.integer.IntegerExpression $r4;
+        acteve.symbolic.integer.LongExpression $r5;
+
+        $r0 := @this: acteve.symbolic.array.LongArrayInternal;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 = new acteve.symbolic.array.UpdatedLongArrayInternal;
+        $r4 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        $r5 = (acteve.symbolic.integer.LongExpression) $r2;
+        specialinvoke $r3.<acteve.symbolic.array.UpdatedLongArrayInternal: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression,acteve.symbolic.integer.Expression)>($r0, $r4, $r5);
+        return $r3;
+    }
+}

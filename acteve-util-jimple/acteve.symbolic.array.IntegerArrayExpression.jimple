@@ -1,0 +1,14 @@
+public abstract class acteve.symbolic.array.IntegerArrayExpression extends acteve.symbolic.array.Array
+{
+
+    public void <init>(acteve.symbolic.array.ArrayInternal)
+    {
+        acteve.symbolic.array.IntegerArrayExpression $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+
+        $r0 := @this: acteve.symbolic.array.IntegerArrayExpression;
+        $r1 := @parameter0: acteve.symbolic.array.ArrayInternal;
+        specialinvoke $r0.<acteve.symbolic.array.Array: void <init>(acteve.symbolic.array.ArrayInternal)>($r1);
+        return;
+    }
+}

@@ -130,6 +130,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 	private final boolean instrAllFields;
 	private final Map<SootField, SootField> fieldsMap;
 	private final Map<SootField, SootField> idFieldsMap;
+	private final HashSet<SootClass> symbolicFieldsHaveBeenAdded = new HashSet<SootClass>(); //by Julian
     private final List<String> condIdStrList;
 	//private final Map<Integer, Set<Integer>> writeMap;
 	// map from a original local to its corresponding shadow local
@@ -191,30 +192,36 @@ public class Instrumentor extends AbstractStmtSwitch {
 		instrAllFields = _instrAllFields;
 	}
 
-	public void instrument(List<SootClass> classes) {
-		for (SootClass klass : classes) {
-			klass.setApplicationClass();
-			addSymbolicFields(klass);
-			System.out.println(klass.getName());
+	public void instrument(SootMethod m) {
+		if (!symbolicFieldsHaveBeenAdded.contains(m.getDeclaringClass())) {
+			addSymbolicFields(m.getDeclaringClass());
+			symbolicFieldsHaveBeenAdded.add(m.getDeclaringClass());
 		}
+//		for (SootClass klass : classes) {
+//			addSymbolicFields(klass);
+//			klass.setApplicationClass();
+//			System.out.println(klass.getName());
+//		}
 
+		//TODO Unclear if this should remain?
 		loadFiles();
 
-		for (SootClass klass : classes) {
-			List<SootMethod> origMethods = klass.getMethods();
-			for (SootMethod m : origMethods) {
+//		for (SootClass klass : classes) {
+//			List<SootMethod> origMethods = klass.getMethods();
+//			for (SootMethod m : origMethods) {
 				if (!m.isConcrete())
-					continue;
+					return;
 
 				if (ModelMethodsHandler.modelExistsFor(m)) {
 					// do not instrument method if a model for it exists
 					System.out.println("skipping instrumentation of " + m);
-					continue;
+					return;
 				}
-				instrument(m);
-			}
-		}
+				instrumentMeth(m);
+//			}
+//		}
 
+				//TODO Unclear if this should remain?
 		saveFiles();
 	}
 
@@ -246,7 +253,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		return false;
 	}
 
-	private void instrument(SootMethod method) {
+	private void instrumentMeth(SootMethod method) {
 		SwitchTransformer.transform(method);
  		localsMap.clear();
 		//currentWriteSet = new HashSet<Integer>();

@@ -1,0 +1,49 @@
+abstract class acteve.symbolic.array.ArrayInternal extends acteve.symbolic.integer.Expression
+{
+    protected acteve.symbolic.integer.Expression length;
+
+    void <init>()
+    {
+        acteve.symbolic.array.ArrayInternal $r0;
+
+        $r0 := @this: acteve.symbolic.array.ArrayInternal;
+        specialinvoke $r0.<acteve.symbolic.integer.Expression: void <init>()>();
+        return;
+    }
+
+    void <init>(java.lang.String)
+    {
+        acteve.symbolic.array.ArrayInternal $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.array.ArrayInternal;
+        $r1 := @parameter0: java.lang.String;
+        specialinvoke $r0.<acteve.symbolic.integer.Expression: void <init>()>();
+        $r0.<acteve.symbolic.array.ArrayInternal: java.lang.String exprString> = $r1;
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression _alen()
+    {
+        acteve.symbolic.array.ArrayInternal $r0;
+        acteve.symbolic.integer.Expression $r1;
+
+        $r0 := @this: acteve.symbolic.array.ArrayInternal;
+        $r1 = $r0.<acteve.symbolic.array.ArrayInternal: acteve.symbolic.integer.Expression length>;
+        return $r1;
+    }
+
+    public abstract acteve.symbolic.integer.Expression get(acteve.symbolic.integer.Expression);
+
+    public abstract acteve.symbolic.array.ArrayInternal set(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression);
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.array.ArrayInternal $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.array.ArrayInternal;
+        $r1 = $r0.<acteve.symbolic.array.ArrayInternal: java.lang.String exprString>;
+        return $r1;
+    }
+}

@@ -1,0 +1,103 @@
+public class acteve.symbolic.integer.SymbolicLong extends acteve.symbolic.integer.LongExpression
+{
+    private static int count;
+    private java.lang.String name;
+
+    static void <clinit>()
+    {
+        <acteve.symbolic.integer.SymbolicLong: int count> = 0;
+        return;
+    }
+
+    public void <init>(long)
+    {
+        acteve.symbolic.integer.SymbolicLong $r0;
+        long $l0;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicLong;
+        $l0 := @parameter0: long;
+        specialinvoke $r0.<acteve.symbolic.integer.SymbolicLong: void <init>(java.lang.String,long)>(null, $l0);
+        return;
+    }
+
+    public void <init>(java.lang.String, long)
+    {
+        acteve.symbolic.integer.SymbolicLong $r0;
+        java.lang.String $r1;
+        long $l0;
+        java.lang.StringBuilder $r2;
+        int $i1, $i2;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicLong;
+        $r1 := @parameter0: java.lang.String;
+        $l0 := @parameter1: long;
+        specialinvoke $r0.<acteve.symbolic.integer.LongExpression: void <init>()>();
+        $r0.<acteve.symbolic.integer.SymbolicLong: long seed> = $l0;
+        if $r1 != null goto label1;
+
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$L$");
+        $i2 = <acteve.symbolic.integer.SymbolicLong: int count>;
+        $i1 = $i2 + 1;
+        <acteve.symbolic.integer.SymbolicLong: int count> = $i1;
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i2);
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+
+     label0:
+        $r0.<acteve.symbolic.integer.SymbolicLong: java.lang.String name> = $r1;
+        return;
+
+     label1:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("$L$");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        goto label0;
+    }
+
+    static java.lang.String makeName()
+    {
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        int $i0, $i1;
+
+        $r0 = new java.lang.StringBuilder;
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>("$L$");
+        $i1 = <acteve.symbolic.integer.SymbolicLong: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.integer.SymbolicLong: int count> = $i0;
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.SymbolicLong $r0;
+        java.lang.StringBuilder $r1;
+        java.lang.String $r2;
+        long $l0;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicLong;
+        $r1 = new java.lang.StringBuilder;
+        $r2 = $r0.<acteve.symbolic.integer.SymbolicLong: java.lang.String name>;
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r2);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("[");
+        $l0 = $r0.<acteve.symbolic.integer.SymbolicLong: long seed>;
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(long)>($l0);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("]");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.SymbolicLong $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicLong;
+        $r1 = $r0.<acteve.symbolic.integer.SymbolicLong: java.lang.String name>;
+        return $r1;
+    }
+}

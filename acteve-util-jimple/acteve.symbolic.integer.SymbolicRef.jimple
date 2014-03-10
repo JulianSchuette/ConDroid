@@ -1,0 +1,66 @@
+public class acteve.symbolic.integer.SymbolicRef extends acteve.symbolic.integer.RefExpression
+{
+    private static int count;
+    private java.lang.String name;
+
+    static void <clinit>()
+    {
+        <acteve.symbolic.integer.SymbolicRef: int count> = 0;
+        return;
+    }
+
+    public void <init>(java.lang.Object)
+    {
+        acteve.symbolic.integer.SymbolicRef $r0;
+        java.lang.Object $r1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicRef;
+        $r1 := @parameter0: java.lang.Object;
+        specialinvoke $r0.<acteve.symbolic.integer.SymbolicRef: void <init>(java.lang.String,java.lang.Object)>(null, $r1);
+        return;
+    }
+
+    public void <init>(java.lang.String, java.lang.Object)
+    {
+        acteve.symbolic.integer.SymbolicRef $r0;
+        java.lang.String $r1;
+        java.lang.Object $r2;
+        java.lang.StringBuilder $r3;
+        int $i0, $i1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicRef;
+        $r1 := @parameter0: java.lang.String;
+        $r2 := @parameter1: java.lang.Object;
+        specialinvoke $r0.<acteve.symbolic.integer.RefExpression: void <init>(java.lang.Object)>($r2);
+        if $r1 != null goto label1;
+
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("$R$");
+        $i1 = <acteve.symbolic.integer.SymbolicRef: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.integer.SymbolicRef: int count> = $i0;
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+
+     label0:
+        $r0.<acteve.symbolic.integer.SymbolicRef: java.lang.String name> = $r1;
+        return;
+
+     label1:
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("$R$");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r1 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        goto label0;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.SymbolicRef $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicRef;
+        $r1 = $r0.<acteve.symbolic.integer.SymbolicRef: java.lang.String name>;
+        return $r1;
+    }
+}

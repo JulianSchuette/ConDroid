@@ -1,0 +1,392 @@
+public class acteve.symbolic.integer.ConstraintPrinterBV extends acteve.symbolic.integer.ConstraintPrinter
+{
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        specialinvoke $r0.<acteve.symbolic.integer.ConstraintPrinter: void <init>()>();
+        return;
+    }
+
+    public java.lang.String doubleConstant(double)
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+        double $d0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        $d0 := @parameter0: double;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(double)>($d0);
+        return $r1;
+    }
+
+    public java.lang.String floatConstant(float)
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+        float $f0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        $f0 := @parameter0: float;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(float)>($f0);
+        return $r1;
+    }
+
+    public java.lang.String ge()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsge";
+    }
+
+    public java.lang.String gt()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsgt";
+    }
+
+    public java.lang.String i2b()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "i2b";
+    }
+
+    public java.lang.String i2c()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "i2c";
+    }
+
+    public java.lang.String i2d()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "i2d";
+    }
+
+    public java.lang.String i2f()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "i2f";
+    }
+
+    public java.lang.String i2l()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "i2l";
+    }
+
+    public java.lang.String i2s()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "i2s";
+    }
+
+    public java.lang.String iadd()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvadd";
+    }
+
+    public java.lang.String iand()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvand";
+    }
+
+    public java.lang.String idiv()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsdiv";
+    }
+
+    public java.lang.String imul()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvmul";
+    }
+
+    public java.lang.String ineg()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvneg";
+    }
+
+    public java.lang.String intConstant(int)
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+        int $i0, $i1;
+        java.lang.StringBuilder $r1;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        $i0 := @parameter0: int;
+        if $i0 >= 0 goto label0;
+
+        $i0 = $i0 + 1;
+        $i1 = 2147483647 + $i0;
+        $r1 = new java.lang.StringBuilder;
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>("(concat bit1 bv");
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("[31])");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+
+     label0:
+        $r1 = new java.lang.StringBuilder;
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>("bv");
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("[32]");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String ior()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvor";
+    }
+
+    public java.lang.String irem()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsrem";
+    }
+
+    public java.lang.String ishl()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvshl";
+    }
+
+    public java.lang.String ishr()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvashr";
+    }
+
+    public java.lang.String isub()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsub";
+    }
+
+    public java.lang.String iushr()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvlshr";
+    }
+
+    public java.lang.String ixor()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvxor";
+    }
+
+    public java.lang.String l2d()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "l2d";
+    }
+
+    public java.lang.String l2f()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "l2f";
+    }
+
+    public java.lang.String l2i()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "l2i";
+    }
+
+    public java.lang.String ladd()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvadd";
+    }
+
+    public java.lang.String land()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvand";
+    }
+
+    public java.lang.String ldiv()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsdiv";
+    }
+
+    public java.lang.String le()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsle";
+    }
+
+    public java.lang.String lmul()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvmul";
+    }
+
+    public java.lang.String lneg()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvneg";
+    }
+
+    public java.lang.String longConstant(long)
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+        long $l0, $l1, $l3;
+        java.lang.String $r1;
+        java.lang.StringBuilder $r2;
+        byte $b2;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        $l0 := @parameter0: long;
+        $b2 = $l0 cmp 0L;
+        if $b2 >= 0 goto label0;
+
+        $l1 = 1L + $l0;
+        $l3 = 9223372036854775807L + $l1;
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("(concat bit1 bv");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(long)>($l3);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("[63])");
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+
+     label0:
+        $r2 = new java.lang.StringBuilder;
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>("bv");
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(long)>($l0);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("[64]");
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    public java.lang.String lor()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvor";
+    }
+
+    public java.lang.String lrem()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsrem";
+    }
+
+    public java.lang.String lshl()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvshl";
+    }
+
+    public java.lang.String lshr()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvashr";
+    }
+
+    public java.lang.String lsub()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvsub";
+    }
+
+    public java.lang.String lt()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvslt";
+    }
+
+    public java.lang.String lushr()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvlshr";
+    }
+
+    public java.lang.String lxor()
+    {
+        acteve.symbolic.integer.ConstraintPrinterBV $r0;
+
+        $r0 := @this: acteve.symbolic.integer.ConstraintPrinterBV;
+        return "bvxor";
+    }
+}

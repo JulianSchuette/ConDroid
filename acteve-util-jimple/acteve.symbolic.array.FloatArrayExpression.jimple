@@ -1,0 +1,35 @@
+public abstract class acteve.symbolic.array.FloatArrayExpression extends acteve.symbolic.array.Array
+{
+
+    public void <init>(acteve.symbolic.array.ArrayInternal)
+    {
+        acteve.symbolic.array.FloatArrayExpression $r0;
+        acteve.symbolic.array.ArrayInternal $r1;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayExpression;
+        $r1 := @parameter0: acteve.symbolic.array.ArrayInternal;
+        specialinvoke $r0.<acteve.symbolic.array.Array: void <init>(acteve.symbolic.array.ArrayInternal)>($r1);
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression _aset(acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.array.FloatArrayExpression $r0;
+        acteve.symbolic.integer.Expression $r1, $r2;
+        acteve.symbolic.array.UpdatedFloatArrayInternal $r3;
+        acteve.symbolic.array.ArrayInternal $r4;
+        acteve.symbolic.integer.IntegerExpression $r5;
+        acteve.symbolic.integer.FloatExpression $r6;
+
+        $r0 := @this: acteve.symbolic.array.FloatArrayExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 = new acteve.symbolic.array.UpdatedFloatArrayInternal;
+        $r4 = $r0.<acteve.symbolic.array.FloatArrayExpression: acteve.symbolic.array.ArrayInternal array>;
+        $r5 = (acteve.symbolic.integer.IntegerExpression) $r1;
+        $r6 = (acteve.symbolic.integer.FloatExpression) $r2;
+        specialinvoke $r3.<acteve.symbolic.array.UpdatedFloatArrayInternal: void <init>(acteve.symbolic.array.ArrayInternal,acteve.symbolic.integer.IntegerExpression,acteve.symbolic.integer.Expression)>($r4, $r5, $r6);
+        $r0.<acteve.symbolic.array.FloatArrayExpression: acteve.symbolic.array.ArrayInternal array> = $r3;
+        return $r0;
+    }
+}

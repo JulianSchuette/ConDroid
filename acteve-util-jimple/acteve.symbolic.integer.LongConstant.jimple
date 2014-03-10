@@ -1,0 +1,79 @@
+public final class acteve.symbolic.integer.LongConstant extends acteve.symbolic.integer.LongExpression implements acteve.symbolic.integer.Constant
+{
+    private static acteve.symbolic.integer.LRUCacheLong cache;
+
+    static void <clinit>()
+    {
+        acteve.symbolic.integer.LRUCacheLong $r0;
+
+        $r0 = new acteve.symbolic.integer.LRUCacheLong;
+        specialinvoke $r0.<acteve.symbolic.integer.LRUCacheLong: void <init>()>();
+        <acteve.symbolic.integer.LongConstant: acteve.symbolic.integer.LRUCacheLong cache> = $r0;
+        return;
+    }
+
+    protected void <init>(long)
+    {
+        acteve.symbolic.integer.LongConstant $r0;
+        long $l0;
+
+        $r0 := @this: acteve.symbolic.integer.LongConstant;
+        $l0 := @parameter0: long;
+        specialinvoke $r0.<acteve.symbolic.integer.LongExpression: void <init>()>();
+        $r0.<acteve.symbolic.integer.LongConstant: long seed> = $l0;
+        return;
+    }
+
+    public static acteve.symbolic.integer.LongConstant get(long)
+    {
+        long $l0;
+        acteve.symbolic.integer.LRUCacheLong $r0;
+        acteve.symbolic.integer.LongConstant $r1;
+
+        $l0 := @parameter0: long;
+        $r0 = <acteve.symbolic.integer.LongConstant: acteve.symbolic.integer.LRUCacheLong cache>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.LRUCacheLong: acteve.symbolic.integer.LongConstant get(long)>($l0);
+        return $r1;
+    }
+
+    public long seed()
+    {
+        acteve.symbolic.integer.LongConstant $r0;
+        long $l0;
+
+        $r0 := @this: acteve.symbolic.integer.LongConstant;
+        $l0 = $r0.<acteve.symbolic.integer.LongConstant: long seed>;
+        return $l0;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.LongConstant $r0;
+        java.lang.StringBuilder $r1;
+        long $l0;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.LongConstant;
+        $r1 = new java.lang.StringBuilder;
+        $l0 = $r0.<acteve.symbolic.integer.LongConstant: long seed>;
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(long)>($l0);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("l");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.LongConstant $r0;
+        acteve.symbolic.integer.operation.Operations $r1;
+        long $l0;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.LongConstant;
+        $r1 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $l0 = $r0.<acteve.symbolic.integer.LongConstant: long seed>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.integer.operation.Operations: java.lang.String longConstant(long)>($l0);
+        return $r2;
+    }
+}

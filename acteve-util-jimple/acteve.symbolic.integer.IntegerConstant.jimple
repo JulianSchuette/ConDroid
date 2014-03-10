@@ -1,0 +1,116 @@
+public class acteve.symbolic.integer.IntegerConstant extends acteve.symbolic.integer.IntegerExpression implements acteve.symbolic.integer.Constant
+{
+    private static acteve.symbolic.integer.LRUCacheInteger cache;
+
+    static void <clinit>()
+    {
+        acteve.symbolic.integer.LRUCacheInteger $r0;
+
+        $r0 = new acteve.symbolic.integer.LRUCacheInteger;
+        specialinvoke $r0.<acteve.symbolic.integer.LRUCacheInteger: void <init>()>();
+        <acteve.symbolic.integer.IntegerConstant: acteve.symbolic.integer.LRUCacheInteger cache> = $r0;
+        return;
+    }
+
+    protected void <init>(int)
+    {
+        acteve.symbolic.integer.IntegerConstant $r0;
+        int $i0;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerConstant;
+        $i0 := @parameter0: int;
+        specialinvoke $r0.<acteve.symbolic.integer.IntegerExpression: void <init>()>();
+        $r0.<acteve.symbolic.integer.IntegerConstant: int seed> = $i0;
+        return;
+    }
+
+    public static acteve.symbolic.integer.IntegerConstant get(int)
+    {
+        int $i0;
+        acteve.symbolic.integer.LRUCacheInteger $r0;
+        acteve.symbolic.integer.IntegerConstant $r1;
+
+        $i0 := @parameter0: int;
+        $r0 = <acteve.symbolic.integer.IntegerConstant: acteve.symbolic.integer.LRUCacheInteger cache>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.LRUCacheInteger: acteve.symbolic.integer.IntegerConstant get(int)>($i0);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _eq(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerConstant $r0;
+        acteve.symbolic.integer.Expression $r1;
+        boolean $z0;
+        acteve.symbolic.integer.BooleanExpression $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerConstant;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $z0 = $r1 instanceof acteve.symbolic.integer.BooleanExpression;
+        if $z0 == 0 goto label0;
+
+        $r2 = (acteve.symbolic.integer.BooleanExpression) $r1;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.Expression _eq(acteve.symbolic.integer.Expression)>($r0);
+        return $r1;
+
+     label0:
+        $r1 = specialinvoke $r0.<acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.Expression _eq(acteve.symbolic.integer.Expression)>($r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _ne(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerConstant $r0;
+        acteve.symbolic.integer.Expression $r1;
+        boolean $z0;
+        acteve.symbolic.integer.BooleanExpression $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerConstant;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $z0 = $r1 instanceof acteve.symbolic.integer.BooleanExpression;
+        if $z0 == 0 goto label0;
+
+        $r2 = (acteve.symbolic.integer.BooleanExpression) $r1;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.Expression _ne(acteve.symbolic.integer.Expression)>($r0);
+        return $r1;
+
+     label0:
+        $r1 = specialinvoke $r0.<acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.Expression _ne(acteve.symbolic.integer.Expression)>($r1);
+        return $r1;
+    }
+
+    public int seed()
+    {
+        acteve.symbolic.integer.IntegerConstant $r0;
+        int $i0;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerConstant;
+        $i0 = $r0.<acteve.symbolic.integer.IntegerConstant: int seed>;
+        return $i0;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.IntegerConstant $r0;
+        int $i0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerConstant;
+        $i0 = $r0.<acteve.symbolic.integer.IntegerConstant: int seed>;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        return $r1;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.IntegerConstant $r0;
+        acteve.symbolic.integer.operation.Operations $r1;
+        int $i0;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerConstant;
+        $r1 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $i0 = $r0.<acteve.symbolic.integer.IntegerConstant: int seed>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.integer.operation.Operations: java.lang.String intConstant(int)>($i0);
+        return $r2;
+    }
+}

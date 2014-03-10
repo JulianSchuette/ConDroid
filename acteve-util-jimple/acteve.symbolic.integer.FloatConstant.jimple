@@ -1,0 +1,67 @@
+public final class acteve.symbolic.integer.FloatConstant extends acteve.symbolic.integer.FloatExpression implements acteve.symbolic.integer.Constant
+{
+
+    protected void <init>(float)
+    {
+        acteve.symbolic.integer.FloatConstant $r0;
+        float $f0;
+
+        $r0 := @this: acteve.symbolic.integer.FloatConstant;
+        $f0 := @parameter0: float;
+        specialinvoke $r0.<acteve.symbolic.integer.FloatExpression: void <init>()>();
+        $r0.<acteve.symbolic.integer.FloatConstant: float seed> = $f0;
+        return;
+    }
+
+    public static acteve.symbolic.integer.FloatConstant get(float)
+    {
+        float $f0;
+        acteve.symbolic.integer.FloatConstant $r0;
+
+        $f0 := @parameter0: float;
+        $r0 = new acteve.symbolic.integer.FloatConstant;
+        specialinvoke $r0.<acteve.symbolic.integer.FloatConstant: void <init>(float)>($f0);
+        return $r0;
+    }
+
+    public float seed()
+    {
+        acteve.symbolic.integer.FloatConstant $r0;
+        float $f0;
+
+        $r0 := @this: acteve.symbolic.integer.FloatConstant;
+        $f0 = $r0.<acteve.symbolic.integer.FloatConstant: float seed>;
+        return $f0;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.FloatConstant $r0;
+        java.lang.StringBuilder $r1;
+        float $f0;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.FloatConstant;
+        $r1 = new java.lang.StringBuilder;
+        $f0 = $r0.<acteve.symbolic.integer.FloatConstant: float seed>;
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(float)>($f0);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("f");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.FloatConstant $r0;
+        acteve.symbolic.integer.operation.Operations $r1;
+        float $f0;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.FloatConstant;
+        $r1 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $f0 = $r0.<acteve.symbolic.integer.FloatConstant: float seed>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.integer.operation.Operations: java.lang.String floatConstant(float)>($f0);
+        return $r2;
+    }
+}

@@ -1,0 +1,446 @@
+public abstract class acteve.symbolic.integer.IntegerExpression extends acteve.symbolic.integer.Expression implements acteve.symbolic.integer.Equality, acteve.symbolic.integer.Algebraic, acteve.symbolic.integer.Bitwise
+{
+    public static final acteve.symbolic.integer.UnaryOperator I2B;
+    public static final acteve.symbolic.integer.UnaryOperator I2C;
+    public static final acteve.symbolic.integer.UnaryOperator I2D;
+    public static final acteve.symbolic.integer.UnaryOperator I2F;
+    public static final acteve.symbolic.integer.UnaryOperator I2L;
+    public static final acteve.symbolic.integer.UnaryOperator I2S;
+    public static final acteve.symbolic.integer.BinaryOperator IADD;
+    public static final acteve.symbolic.integer.BinaryOperator IAND;
+    public static final acteve.symbolic.integer.BinaryOperator ICMPEQ;
+    public static final acteve.symbolic.integer.BinaryOperator ICMPGE;
+    public static final acteve.symbolic.integer.BinaryOperator ICMPGT;
+    public static final acteve.symbolic.integer.BinaryOperator ICMPLE;
+    public static final acteve.symbolic.integer.BinaryOperator ICMPLT;
+    public static final acteve.symbolic.integer.BinaryOperator ICMPNE;
+    public static final acteve.symbolic.integer.BinaryOperator IDIV;
+    public static final acteve.symbolic.integer.BinaryOperator IMUL;
+    public static final acteve.symbolic.integer.UnaryOperator INEG;
+    public static final acteve.symbolic.integer.BinaryOperator IOR;
+    public static final acteve.symbolic.integer.BinaryOperator IREM;
+    public static final acteve.symbolic.integer.BinaryOperator ISHL;
+    public static final acteve.symbolic.integer.BinaryOperator ISHR;
+    public static final acteve.symbolic.integer.BinaryOperator ISUB;
+    public static final acteve.symbolic.integer.BinaryOperator IUSHR;
+    public static final acteve.symbolic.integer.BinaryOperator IXOR;
+    public int seed;
+
+    static void <clinit>()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BinaryOperator $r1;
+        acteve.symbolic.integer.UnaryOperator $r2;
+
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator icmpeq()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPEQ> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator icmpne()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPNE> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator icmplt()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPLT> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator icmpgt()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPGT> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator icmple()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPLE> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator icmpge()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPGE> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator iadd()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IADD> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator isub()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ISUB> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator imul()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IMUL> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator idiv()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IDIV> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator irem()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IREM> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator ineg()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator INEG> = $r2;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator ior()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IOR> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator iand()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IAND> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator ixor()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IXOR> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator ishr()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ISHR> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator ishl()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ISHL> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator iushr()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IUSHR> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator i2s()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2S> = $r2;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator i2b()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2B> = $r2;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator i2c()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2C> = $r2;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator i2l()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2L> = $r2;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator i2f()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2F> = $r2;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator i2d()>();
+        <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2D> = $r2;
+        return;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        specialinvoke $r0.<acteve.symbolic.integer.Expression: void <init>()>();
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression _and(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IAND>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _cast(int)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        int $i0;
+        java.lang.StringBuilder $r1;
+        java.lang.String $r2;
+        acteve.symbolic.integer.Expression $r3;
+        acteve.symbolic.integer.UnaryOperator $r4;
+        java.lang.RuntimeException $r5;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $i0 := @parameter0: int;
+        if $i0 != 2 goto label0;
+
+        $r4 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2S>;
+        $r3 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r3;
+
+     label0:
+        if $i0 != 3 goto label1;
+
+        $r4 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2B>;
+        $r3 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r3;
+
+     label1:
+        if $i0 != 1 goto label2;
+
+        $r4 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2C>;
+        $r3 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r3;
+
+     label2:
+        if $i0 != 5 goto label3;
+
+        $r4 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2L>;
+        $r3 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r3;
+
+     label3:
+        if $i0 != 6 goto label4;
+
+        $r4 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2F>;
+        $r3 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r3;
+
+     label4:
+        if $i0 != 7 goto label5;
+
+        $r4 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2D>;
+        $r3 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r3;
+
+     label5:
+        $r5 = new java.lang.RuntimeException;
+        $r1 = new java.lang.StringBuilder;
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>("unexpected type ");
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        specialinvoke $r5.<java.lang.RuntimeException: void <init>(java.lang.String)>($r2);
+        throw $r5;
+    }
+
+    public acteve.symbolic.integer.Expression _div(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IDIV>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _eq(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPEQ>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _ge(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPGE>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _gt(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPGT>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _le(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPLE>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _lt(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPLT>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _minus(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ISUB>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _mul(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IMUL>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _ne(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ICMPNE>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _neg()
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.UnaryOperator $r1;
+        acteve.symbolic.integer.Expression $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator INEG>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r2;
+    }
+
+    public acteve.symbolic.integer.Expression _or(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IOR>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _plus(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IADD>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _rem(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IREM>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _shiftL(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ISHL>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _shiftR(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator ISHR>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _shiftUR(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IUSHR>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _xor(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.BinaryOperator IXOR>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public int seed()
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        int $i0;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $i0 = $r0.<acteve.symbolic.integer.IntegerExpression: int seed>;
+        return $i0;
+    }
+
+    protected final java.lang.String toYicesString(java.lang.String)
+    {
+        acteve.symbolic.integer.IntegerExpression $r0;
+        java.lang.String $r1, $r5, $r6;
+        acteve.symbolic.integer.PathCondition $r3;
+        java.lang.StringBuilder $r4;
+
+        $r0 := @this: acteve.symbolic.integer.IntegerExpression;
+        $r1 := @parameter0: java.lang.String;
+        $r6 = staticinvoke <acteve.symbolic.integer.SymbolicInteger: java.lang.String makeName()>();
+        $r3 = <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc>;
+        $r4 = new java.lang.StringBuilder;
+        specialinvoke $r4.<java.lang.StringBuilder: void <init>(java.lang.String)>("(= ");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r6);
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.String toString()>();
+        virtualinvoke $r3.<acteve.symbolic.integer.PathCondition: void printConstraint(java.lang.String)>($r5);
+        return $r6;
+    }
+}

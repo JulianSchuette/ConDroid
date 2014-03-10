@@ -1,0 +1,58 @@
+public abstract class acteve.symbolic.integer.RefExpression extends acteve.symbolic.integer.Expression implements acteve.symbolic.integer.Equality
+{
+    public static final acteve.symbolic.integer.BinaryOperator ACMPEQ;
+    public static final acteve.symbolic.integer.BinaryOperator ACMPNE;
+    public java.lang.Object seed;
+
+    static void <clinit>()
+    {
+        acteve.symbolic.integer.operation.Operations $r0;
+        acteve.symbolic.integer.BinaryOperator $r1;
+
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator acmpeq()>();
+        <acteve.symbolic.integer.RefExpression: acteve.symbolic.integer.BinaryOperator ACMPEQ> = $r1;
+        $r0 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r1 = virtualinvoke $r0.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator acmpne()>();
+        <acteve.symbolic.integer.RefExpression: acteve.symbolic.integer.BinaryOperator ACMPNE> = $r1;
+        return;
+    }
+
+    public void <init>(java.lang.Object)
+    {
+        acteve.symbolic.integer.RefExpression $r0;
+        java.lang.Object $r1;
+
+        $r0 := @this: acteve.symbolic.integer.RefExpression;
+        $r1 := @parameter0: java.lang.Object;
+        specialinvoke $r0.<acteve.symbolic.integer.Expression: void <init>()>();
+        $r0.<acteve.symbolic.integer.RefExpression: java.lang.Object seed> = $r1;
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression _eq(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.RefExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.RefExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.RefExpression: acteve.symbolic.integer.BinaryOperator ACMPEQ>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _ne(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.RefExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.RefExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.RefExpression: acteve.symbolic.integer.BinaryOperator ACMPNE>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+}

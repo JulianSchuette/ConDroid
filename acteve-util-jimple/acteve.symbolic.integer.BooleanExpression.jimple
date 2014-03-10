@@ -1,0 +1,141 @@
+public abstract class acteve.symbolic.integer.BooleanExpression extends acteve.symbolic.integer.Expression implements acteve.symbolic.integer.Equality
+{
+    static final boolean $assertionsDisabled;
+    public static final acteve.symbolic.integer.BinaryOperator CONJUNCT;
+    public static final acteve.symbolic.integer.UnaryOperator NEGATION;
+
+    static void <clinit>()
+    {
+        java.lang.Class $r0;
+        boolean $z0;
+        acteve.symbolic.integer.operation.Operations $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+        acteve.symbolic.integer.UnaryOperator $r3;
+
+        $r0 = class "acteve/symbolic/integer/BooleanExpression";
+        $z0 = virtualinvoke $r0.<java.lang.Class: boolean desiredAssertionStatus()>();
+        if $z0 != 0 goto label1;
+
+        $z0 = 1;
+
+     label0:
+        <acteve.symbolic.integer.BooleanExpression: boolean $assertionsDisabled> = $z0;
+        $r1 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.BinaryOperator conjunct()>();
+        <acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.BinaryOperator CONJUNCT> = $r2;
+        $r1 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $r3 = virtualinvoke $r1.<acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.UnaryOperator negation()>();
+        <acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.UnaryOperator NEGATION> = $r3;
+        return;
+
+     label1:
+        $z0 = 0;
+        goto label0;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.integer.BooleanExpression $r0;
+
+        $r0 := @this: acteve.symbolic.integer.BooleanExpression;
+        specialinvoke $r0.<acteve.symbolic.integer.Expression: void <init>()>();
+        return;
+    }
+
+    public acteve.symbolic.integer.Expression _conjunct(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.BooleanExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        acteve.symbolic.integer.BinaryOperator $r2;
+
+        $r0 := @this: acteve.symbolic.integer.BooleanExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $r2 = <acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.BinaryOperator CONJUNCT>;
+        $r1 = virtualinvoke $r2.<acteve.symbolic.integer.BinaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)>($r0, $r1);
+        return $r1;
+    }
+
+    public acteve.symbolic.integer.Expression _eq(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.BooleanExpression $r0;
+        acteve.symbolic.integer.Expression $r1;
+        int $i0;
+        boolean $z0;
+        acteve.symbolic.integer.IntegerConstant $r3;
+        acteve.symbolic.integer.UnaryOperator $r4;
+        java.lang.AssertionError $r5;
+        java.lang.RuntimeException $r6;
+
+        $r0 := @this: acteve.symbolic.integer.BooleanExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $z0 = $r1 instanceof acteve.symbolic.integer.IntegerConstant;
+        if $z0 == 0 goto label2;
+
+        $r3 = (acteve.symbolic.integer.IntegerConstant) $r1;
+        $i0 = $r3.<acteve.symbolic.integer.IntegerConstant: int seed>;
+        if $i0 != 1 goto label0;
+
+        return $r0;
+
+     label0:
+        if $i0 != 0 goto label1;
+
+        $r4 = <acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.UnaryOperator NEGATION>;
+        $r1 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+        return $r1;
+
+     label1:
+        $z0 = <acteve.symbolic.integer.BooleanExpression: boolean $assertionsDisabled>;
+        if $z0 != 0 goto label2;
+
+        $r5 = new java.lang.AssertionError;
+        specialinvoke $r5.<java.lang.AssertionError: void <init>()>();
+        throw $r5;
+
+     label2:
+        $r6 = new java.lang.RuntimeException;
+        specialinvoke $r6.<java.lang.RuntimeException: void <init>(java.lang.String)>("Take care");
+        throw $r6;
+    }
+
+    public acteve.symbolic.integer.Expression _ne(acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.Expression $r0, $r1;
+        int $i0;
+        boolean $z0;
+        acteve.symbolic.integer.IntegerConstant $r3;
+        acteve.symbolic.integer.UnaryOperator $r4;
+        java.lang.AssertionError $r5;
+        java.lang.RuntimeException $r6;
+
+        $r0 := @this: acteve.symbolic.integer.BooleanExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.Expression;
+        $z0 = $r1 instanceof acteve.symbolic.integer.IntegerConstant;
+        if $z0 == 0 goto label2;
+
+        $r3 = (acteve.symbolic.integer.IntegerConstant) $r1;
+        $i0 = $r3.<acteve.symbolic.integer.IntegerConstant: int seed>;
+        if $i0 != 1 goto label1;
+
+        $r4 = <acteve.symbolic.integer.BooleanExpression: acteve.symbolic.integer.UnaryOperator NEGATION>;
+        $r0 = virtualinvoke $r4.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r0);
+
+     label0:
+        return $r0;
+
+     label1:
+        if $i0 == 0 goto label0;
+
+        $z0 = <acteve.symbolic.integer.BooleanExpression: boolean $assertionsDisabled>;
+        if $z0 != 0 goto label2;
+
+        $r5 = new java.lang.AssertionError;
+        specialinvoke $r5.<java.lang.AssertionError: void <init>()>();
+        throw $r5;
+
+     label2:
+        $r6 = new java.lang.RuntimeException;
+        specialinvoke $r6.<java.lang.RuntimeException: void <init>(java.lang.String)>("Take care");
+        throw $r6;
+    }
+}

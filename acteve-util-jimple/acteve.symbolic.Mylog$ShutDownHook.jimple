@@ -1,0 +1,102 @@
+class acteve.symbolic.Mylog$ShutDownHook extends java.lang.Thread
+{
+
+    void <init>()
+    {
+        acteve.symbolic.Mylog$ShutDownHook $r0;
+
+        $r0 := @this: acteve.symbolic.Mylog$ShutDownHook;
+        specialinvoke $r0.<java.lang.Thread: void <init>()>();
+        return;
+    }
+
+    public void run()
+    {
+        acteve.symbolic.Mylog$ShutDownHook $r0;
+        java.lang.InterruptedException $r1;
+        java.io.File $r2;
+        java.lang.String $r3, $r5;
+        java.io.BufferedWriter $r4;
+        boolean $z0;
+        java.io.PrintWriter $r6;
+        java.lang.Error $r7;
+        java.io.BufferedReader $r8;
+        java.io.FileReader $r9;
+        java.lang.StringBuilder $r10;
+        java.io.FileWriter $r11;
+        java.io.IOException $r12;
+
+        $r0 := @this: acteve.symbolic.Mylog$ShutDownHook;
+        $r2 = new java.io.File;
+        specialinvoke $r2.<java.io.File: void <init>(java.lang.String)>("/sdcard/a3t_kill_proc");
+
+     label0:
+        $z0 = virtualinvoke $r2.<java.io.File: boolean exists()>();
+        if $z0 != 0 goto label2;
+
+     label1:
+        staticinvoke <android.util.Slog: int e(java.lang.String,java.lang.String)>("Mylog", "Shutting down");
+        $r6 = staticinvoke <acteve.symbolic.Mylog: java.io.PrintWriter access$0()>();
+        if $r6 == null goto label6;
+
+        $r6 = staticinvoke <acteve.symbolic.Mylog: java.io.PrintWriter access$0()>();
+        $z0 = virtualinvoke $r6.<java.io.PrintWriter: boolean checkError()>();
+        if $z0 == 0 goto label5;
+
+        $r7 = new java.lang.Error;
+        specialinvoke $r7.<java.lang.Error: void <init>(java.lang.String)>("error in writing to mylog.txt");
+        throw $r7;
+
+     label2:
+        staticinvoke <acteve.symbolic.Mylog$ShutDownHook: void sleep(long)>(500L);
+
+     label3:
+        goto label0;
+
+     label4:
+        $r1 := @caughtexception;
+        goto label1;
+
+     label5:
+        $r6 = staticinvoke <acteve.symbolic.Mylog: java.io.PrintWriter access$0()>();
+        virtualinvoke $r6.<java.io.PrintWriter: void flush()>();
+        $r6 = staticinvoke <acteve.symbolic.Mylog: java.io.PrintWriter access$0()>();
+        virtualinvoke $r6.<java.io.PrintWriter: void close()>();
+
+     label6:
+        $r8 = new java.io.BufferedReader;
+        $r9 = new java.io.FileReader;
+
+     label7:
+        specialinvoke $r9.<java.io.FileReader: void <init>(java.lang.String)>("/sdcard/pkg.txt");
+        specialinvoke $r8.<java.io.BufferedReader: void <init>(java.io.Reader)>($r9);
+        $r3 = virtualinvoke $r8.<java.io.BufferedReader: java.lang.String readLine()>();
+        $r2 = new java.io.File;
+        $r10 = new java.lang.StringBuilder;
+        specialinvoke $r10.<java.lang.StringBuilder: void <init>(java.lang.String)>("/data/data/");
+        $r10 = virtualinvoke $r10.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r3);
+        $r10 = virtualinvoke $r10.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("/a3t_killed_proc");
+        $r5 = virtualinvoke $r10.<java.lang.StringBuilder: java.lang.String toString()>();
+        specialinvoke $r2.<java.io.File: void <init>(java.lang.String)>($r5);
+        $r4 = new java.io.BufferedWriter;
+        $r11 = new java.io.FileWriter;
+        specialinvoke $r11.<java.io.FileWriter: void <init>(java.io.File)>($r2);
+        specialinvoke $r4.<java.io.BufferedWriter: void <init>(java.io.Writer)>($r11);
+        virtualinvoke $r4.<java.io.BufferedWriter: void write(int)>(0);
+        virtualinvoke $r4.<java.io.BufferedWriter: void close()>();
+
+     label8:
+        staticinvoke <android.util.Slog: int e(java.lang.String,java.lang.String)>("Mylog", "About to exit.");
+        staticinvoke <java.lang.System: void exit(int)>(0);
+        return;
+
+     label9:
+        $r12 := @caughtexception;
+        $r7 = new java.lang.Error;
+        specialinvoke $r7.<java.lang.Error: void <init>(java.lang.Throwable)>($r12);
+        throw $r7;
+
+        catch java.lang.InterruptedException from label2 to label3 with label4;
+        catch java.io.IOException from label7 to label8 with label9;
+    }
+}

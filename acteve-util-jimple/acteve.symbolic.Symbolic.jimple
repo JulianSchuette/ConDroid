@@ -1,0 +1,3 @@
+public annotation interface  acteve.symbolic.Symbolic extends java.lang.Object implements java.lang.annotation.Annotation
+{
+}

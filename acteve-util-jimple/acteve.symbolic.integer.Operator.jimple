@@ -1,0 +1,37 @@
+public abstract class acteve.symbolic.integer.Operator extends java.lang.Object
+{
+    protected final java.lang.String op;
+
+    public void <init>(java.lang.String)
+    {
+        acteve.symbolic.integer.Operator $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.Operator;
+        $r1 := @parameter0: java.lang.String;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        $r0.<acteve.symbolic.integer.Operator: java.lang.String op> = $r1;
+        return;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.Operator $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.Operator;
+        $r1 = $r0.<acteve.symbolic.integer.Operator: java.lang.String op>;
+        return $r1;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.Operator $r0;
+        java.lang.RuntimeException $r1;
+
+        $r0 := @this: acteve.symbolic.integer.Operator;
+        $r1 = new java.lang.RuntimeException;
+        specialinvoke $r1.<java.lang.RuntimeException: void <init>(java.lang.String)>("");
+        throw $r1;
+    }
+}

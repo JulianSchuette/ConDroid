@@ -1,0 +1,67 @@
+public class acteve.symbolic.integer.BinaryDoubleExpression extends acteve.symbolic.integer.DoubleExpression
+{
+    acteve.symbolic.integer.Expression left;
+    acteve.symbolic.integer.BinaryOperator op;
+    acteve.symbolic.integer.Expression right;
+
+    public void <init>(acteve.symbolic.integer.BinaryOperator, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        acteve.symbolic.integer.BinaryDoubleExpression $r0;
+        acteve.symbolic.integer.BinaryOperator $r1;
+        acteve.symbolic.integer.Expression $r2, $r3;
+
+        $r0 := @this: acteve.symbolic.integer.BinaryDoubleExpression;
+        $r1 := @parameter0: acteve.symbolic.integer.BinaryOperator;
+        $r2 := @parameter1: acteve.symbolic.integer.Expression;
+        $r3 := @parameter2: acteve.symbolic.integer.Expression;
+        specialinvoke $r0.<acteve.symbolic.integer.DoubleExpression: void <init>()>();
+        $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.Expression left> = $r2;
+        $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.BinaryOperator op> = $r1;
+        $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.Expression right> = $r3;
+        return;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.BinaryDoubleExpression $r0;
+        java.lang.StringBuilder $r1;
+        java.lang.String $r2;
+        acteve.symbolic.integer.Expression $r3;
+        acteve.symbolic.integer.BinaryOperator $r4;
+
+        $r0 := @this: acteve.symbolic.integer.BinaryDoubleExpression;
+        $r1 = new java.lang.StringBuilder;
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>("(");
+        $r3 = $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.Expression left>;
+        $r2 = virtualinvoke $r3.<java.lang.Object: java.lang.String toString()>();
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r4 = $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.BinaryOperator op>;
+        $r2 = virtualinvoke $r4.<acteve.symbolic.integer.BinaryOperator: java.lang.String toString()>();
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r3 = $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.Expression right>;
+        $r2 = virtualinvoke $r3.<java.lang.Object: java.lang.String toString()>();
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.BinaryDoubleExpression $r0;
+        acteve.symbolic.integer.BinaryOperator $r1;
+        acteve.symbolic.integer.Expression $r2;
+        java.lang.String $r3, $r4;
+
+        $r0 := @this: acteve.symbolic.integer.BinaryDoubleExpression;
+        $r1 = $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.BinaryOperator op>;
+        $r2 = $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.Expression left>;
+        $r3 = virtualinvoke $r2.<acteve.symbolic.integer.Expression: java.lang.String exprString()>();
+        $r2 = $r0.<acteve.symbolic.integer.BinaryDoubleExpression: acteve.symbolic.integer.Expression right>;
+        $r4 = virtualinvoke $r2.<acteve.symbolic.integer.Expression: java.lang.String exprString()>();
+        $r4 = virtualinvoke $r1.<acteve.symbolic.integer.BinaryOperator: java.lang.String toYicesString(java.lang.String,java.lang.String)>($r3, $r4);
+        $r4 = specialinvoke $r0.<acteve.symbolic.integer.DoubleExpression: java.lang.String toYicesString(java.lang.String)>($r4);
+        return $r4;
+    }
+}

@@ -1,0 +1,67 @@
+public final class acteve.symbolic.integer.DoubleConstant extends acteve.symbolic.integer.DoubleExpression implements acteve.symbolic.integer.Constant
+{
+
+    protected void <init>(double)
+    {
+        acteve.symbolic.integer.DoubleConstant $r0;
+        double $d0;
+
+        $r0 := @this: acteve.symbolic.integer.DoubleConstant;
+        $d0 := @parameter0: double;
+        specialinvoke $r0.<acteve.symbolic.integer.DoubleExpression: void <init>()>();
+        $r0.<acteve.symbolic.integer.DoubleConstant: double seed> = $d0;
+        return;
+    }
+
+    public static acteve.symbolic.integer.DoubleConstant get(double)
+    {
+        double $d0;
+        acteve.symbolic.integer.DoubleConstant $r0;
+
+        $d0 := @parameter0: double;
+        $r0 = new acteve.symbolic.integer.DoubleConstant;
+        specialinvoke $r0.<acteve.symbolic.integer.DoubleConstant: void <init>(double)>($d0);
+        return $r0;
+    }
+
+    public double seed()
+    {
+        acteve.symbolic.integer.DoubleConstant $r0;
+        double $d0;
+
+        $r0 := @this: acteve.symbolic.integer.DoubleConstant;
+        $d0 = $r0.<acteve.symbolic.integer.DoubleConstant: double seed>;
+        return $d0;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.DoubleConstant $r0;
+        java.lang.StringBuilder $r1;
+        double $d0;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.DoubleConstant;
+        $r1 = new java.lang.StringBuilder;
+        $d0 = $r0.<acteve.symbolic.integer.DoubleConstant: double seed>;
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(double)>($d0);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("d");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.DoubleConstant $r0;
+        acteve.symbolic.integer.operation.Operations $r1;
+        double $d0;
+        java.lang.String $r2;
+
+        $r0 := @this: acteve.symbolic.integer.DoubleConstant;
+        $r1 = <acteve.symbolic.integer.operation.Operations: acteve.symbolic.integer.operation.Operations v>;
+        $d0 = $r0.<acteve.symbolic.integer.DoubleConstant: double seed>;
+        $r2 = virtualinvoke $r1.<acteve.symbolic.integer.operation.Operations: java.lang.String doubleConstant(double)>($d0);
+        return $r2;
+    }
+}

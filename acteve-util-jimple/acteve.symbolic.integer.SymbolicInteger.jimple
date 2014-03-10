@@ -1,0 +1,162 @@
+public class acteve.symbolic.integer.SymbolicInteger extends acteve.symbolic.integer.IntegerExpression
+{
+    private static int count;
+
+    static void <clinit>()
+    {
+        <acteve.symbolic.integer.SymbolicInteger: int count> = 0;
+        return;
+    }
+
+    public void <init>(int, int)
+    {
+        acteve.symbolic.integer.SymbolicInteger $r0;
+        int $i0, $i1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicInteger;
+        $i0 := @parameter0: int;
+        $i1 := @parameter1: int;
+        specialinvoke $r0.<acteve.symbolic.integer.SymbolicInteger: void <init>(int,java.lang.String,int)>($i0, null, $i1);
+        return;
+    }
+
+    public void <init>(int, java.lang.String, int)
+    {
+        acteve.symbolic.integer.SymbolicInteger $r0;
+        int $i0, $i1;
+        java.lang.String $r1, $r4;
+        java.lang.RuntimeException $r2;
+        java.lang.StringBuilder $r3;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicInteger;
+        $i0 := @parameter0: int;
+        $r1 := @parameter1: java.lang.String;
+        $i1 := @parameter2: int;
+        specialinvoke $r0.<acteve.symbolic.integer.IntegerExpression: void <init>()>();
+        lookupswitch($i0)
+        {
+            case 0: goto label6;
+            case 1: goto label1;
+            case 2: goto label4;
+            case 3: goto label3;
+            case 4: goto label5;
+            default: goto label0;
+        };
+
+     label0:
+        $r2 = new java.lang.RuntimeException;
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("unexpected type ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r1);
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        specialinvoke $r2.<java.lang.RuntimeException: void <init>(java.lang.String)>($r4);
+        throw $r2;
+
+     label1:
+        $r4 = specialinvoke $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String makeName(java.lang.String,java.lang.String)>("$C$", $r1);
+        $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String exprString> = $r4;
+
+     label2:
+        $r0.<acteve.symbolic.integer.SymbolicInteger: int seed> = $i1;
+        return;
+
+     label3:
+        $r4 = specialinvoke $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String makeName(java.lang.String,java.lang.String)>("$B$", $r1);
+        $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String exprString> = $r4;
+        goto label2;
+
+     label4:
+        $r4 = specialinvoke $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String makeName(java.lang.String,java.lang.String)>("$S$", $r1);
+        $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String exprString> = $r4;
+        goto label2;
+
+     label5:
+        $r4 = specialinvoke $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String makeName(java.lang.String,java.lang.String)>("$I$", $r1);
+        $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String exprString> = $r4;
+        goto label2;
+
+     label6:
+        $r4 = specialinvoke $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String makeName(java.lang.String,java.lang.String)>("$Z$", $r1);
+        $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String exprString> = $r4;
+        goto label2;
+    }
+
+    static java.lang.String makeName()
+    {
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        int $i0, $i1;
+
+        $r0 = new java.lang.StringBuilder;
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>("$I$");
+        $i1 = <acteve.symbolic.integer.SymbolicInteger: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.integer.SymbolicInteger: int count> = $i0;
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r1;
+    }
+
+    private java.lang.String makeName(java.lang.String, java.lang.String)
+    {
+        acteve.symbolic.integer.SymbolicInteger $r0;
+        java.lang.String $r1, $r2;
+        java.lang.StringBuilder $r3;
+        int $i0, $i1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicInteger;
+        $r1 := @parameter0: java.lang.String;
+        $r2 := @parameter1: java.lang.String;
+        if $r2 != null goto label0;
+
+        $r3 = new java.lang.StringBuilder;
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r1);
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $i1 = <acteve.symbolic.integer.SymbolicInteger: int count>;
+        $i0 = $i1 + 1;
+        <acteve.symbolic.integer.SymbolicInteger: int count> = $i0;
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r2 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+
+     label0:
+        $r3 = new java.lang.StringBuilder;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r1);
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>($r1);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r2);
+        $r2 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toString()
+    {
+        acteve.symbolic.integer.SymbolicInteger $r0;
+        java.lang.StringBuilder $r1;
+        java.lang.String $r2;
+        int $i0;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicInteger;
+        $r1 = new java.lang.StringBuilder;
+        $r2 = $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String exprString>;
+        $r2 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r2);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("[");
+        $i0 = $r0.<acteve.symbolic.integer.SymbolicInteger: int seed>;
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("]");
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        return $r2;
+    }
+
+    public java.lang.String toYicesString()
+    {
+        acteve.symbolic.integer.SymbolicInteger $r0;
+        java.lang.String $r1;
+
+        $r0 := @this: acteve.symbolic.integer.SymbolicInteger;
+        $r1 = $r0.<acteve.symbolic.integer.SymbolicInteger: java.lang.String exprString>;
+        return $r1;
+    }
+}

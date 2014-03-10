@@ -1,0 +1,24 @@
+class acteve.symbolic.Util$SymArgs extends java.lang.Object
+{
+    int subSignatureId;
+    acteve.symbolic.integer.Expression[] symArgs;
+    long threadId;
+
+    void <init>(int, long, acteve.symbolic.integer.Expression[])
+    {
+        acteve.symbolic.Util$SymArgs $r0;
+        int $i0;
+        long $l1;
+        acteve.symbolic.integer.Expression[] $r1;
+
+        $r0 := @this: acteve.symbolic.Util$SymArgs;
+        $i0 := @parameter0: int;
+        $l1 := @parameter1: long;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression[];
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        $r0.<acteve.symbolic.Util$SymArgs: acteve.symbolic.integer.Expression[] symArgs> = $r1;
+        $r0.<acteve.symbolic.Util$SymArgs: int subSignatureId> = $i0;
+        $r0.<acteve.symbolic.Util$SymArgs: long threadId> = $l1;
+        return;
+    }
+}
