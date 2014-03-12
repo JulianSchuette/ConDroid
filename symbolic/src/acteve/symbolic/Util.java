@@ -78,7 +78,7 @@ public class Util
 
 	// Flag used to determine whether testing has begun
 	// invariant: started => monitor
-	private static boolean started;
+	private static boolean started = true;
 
 	private static File settingsFile = new File("/sdcard/settings.txt");
 
@@ -626,12 +626,14 @@ public class Util
 	//}
 
 	public static void rw(int evId, int fldId) {
+		Mylog.e("A3T_PRE_RW", (evId-1) + " " + fldId);
 		if(evId > 0 && evId != eventId && started){
 			Mylog.e("A3T_RW", (evId-1) + " " + fldId);
 		}
 	}
 
 	public static void ww(int evId, int fldId) {
+		Mylog.e("A3T_PRE_WW", (evId-1) + " " + fldId);
 		if(evId > 0 && evId != eventId && started){
 			Mylog.e("A3T_WW", (evId-1) + " " + fldId);
 		}

@@ -1,0 +1,32 @@
+public class android.util.Slog extends java.lang.Object
+{
+
+    public void <init>()
+    {
+        android.util.Slog $r0;
+
+        $r0 := @this: android.util.Slog;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+
+    public static int e(java.lang.String, java.lang.String)
+    {
+        java.lang.String $r0, $r1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 := @parameter1: java.lang.String;
+        return 0;
+    }
+
+    public static int e(java.lang.String, java.lang.String, java.lang.Throwable)
+    {
+        java.lang.String $r0, $r1;
+        java.lang.Throwable $r2;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 := @parameter1: java.lang.String;
+        $r2 := @parameter2: java.lang.Throwable;
+        return 0;
+    }
+}

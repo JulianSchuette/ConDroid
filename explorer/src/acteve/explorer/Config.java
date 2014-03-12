@@ -68,8 +68,8 @@ public final class Config {
 
 	private Config() {
         monkeyScript = System.getProperty("a3t.monkey", "monkey_script.txt");
-        appPkgName = System.getProperty("a3t.pkg", "de.ecspride");
-        mainActivity = System.getProperty("a3t.mainact", "de.ecspride.RV2013");
+        appPkgName = System.getProperty("a3t.pkg", "com.devuni.flashlight");
+        mainActivity = System.getProperty("a3t.mainact", "com.devuni.flashlight.MainActivity");
 		activityArgs = System.getProperty("a3t.actargs");
         z3Path = System.getProperty("env.Z3_BIN", "/opt/z3/bin");
         maxExecs = Integer.getInteger("a3t.max.iters", DEFAULT_MAX_EXECS);

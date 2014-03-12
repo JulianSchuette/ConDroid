@@ -1,3 +1,2047 @@
-class acteve.symbolic.Util
+public class acteve.symbolic.Util extends java.lang.Object
 {
+    private static int eventId;
+    private static boolean monitor;
+    private static int numEvents;
+    private static int numSDKConds;
+    private static boolean[] reachedMeths;
+    private static boolean readConfTxt;
+    private static java.io.File settingsFile;
+    private static boolean started;
+    private static acteve.symbolic.Util$SymArgs symArgs;
+    private static acteve.symbolic.Util$SymRet symRet;
+
+    static void <clinit>()
+    {
+        boolean[] $r1;
+        java.io.File $r2;
+
+        $r1 = newarray (boolean)[50000];
+        <acteve.symbolic.Util: boolean[] reachedMeths> = $r1;
+        <acteve.symbolic.Util: boolean monitor> = 1;
+        $r2 = new java.io.File;
+        specialinvoke $r2.<java.io.File: void <init>(java.lang.String)>("/sdcard/settings.txt");
+        <acteve.symbolic.Util: java.io.File settingsFile> = $r2;
+        return;
+    }
+
+    public void <init>()
+    {
+        acteve.symbolic.Util $r0;
+
+        $r0 := @this: acteve.symbolic.Util;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+
+    public static acteve.symbolic.integer.Expression[] argpop(int, int, int)
+    {
+        int $i0, $i1, $i2, $i4, $i5;
+        acteve.symbolic.Util$SymArgs $r0;
+        long $l3, $l6;
+        java.lang.Thread $r1;
+        boolean[] $r2;
+        byte $b7;
+        acteve.symbolic.integer.Expression[] $r3;
+
+        $i0 := @parameter0: int;
+        $i1 := @parameter1: int;
+        $i2 := @parameter2: int;
+        if $i1 < 0 goto label0;
+
+        $i4 = <acteve.symbolic.Util: int eventId>;
+        $i5 = <acteve.symbolic.Util: int numEvents>;
+        if $i4 != $i5 goto label0;
+
+        $r2 = <acteve.symbolic.Util: boolean[] reachedMeths>;
+        $r2[$i1] = 1;
+
+     label0:
+        $r0 = <acteve.symbolic.Util: acteve.symbolic.Util$SymArgs symArgs>;
+        if $r0 == null goto label2;
+
+        $l3 = $r0.<acteve.symbolic.Util$SymArgs: long threadId>;
+        $r1 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+        $l6 = virtualinvoke $r1.<java.lang.Thread: long getId()>();
+        $b7 = $l3 cmp $l6;
+        if $b7 != 0 goto label2;
+
+        $i1 = $r0.<acteve.symbolic.Util$SymArgs: int subSignatureId>;
+        if $i0 < 0 goto label1;
+
+        if $i1 != $i0 goto label2;
+
+     label1:
+        $r3 = $r0.<acteve.symbolic.Util$SymArgs: acteve.symbolic.integer.Expression[] symArgs>;
+        return $r3;
+
+     label2:
+        $r3 = newarray (acteve.symbolic.integer.Expression)[$i2];
+        return $r3;
+    }
+
+    public static void argpush(int)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression[] $r0;
+
+        $i0 := @parameter0: int;
+        $r0 = newarray (acteve.symbolic.integer.Expression)[0];
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r0);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0;
+        acteve.symbolic.integer.Expression[] $r1;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 = newarray (acteve.symbolic.integer.Expression)[1];
+        $r1[0] = $r0;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r1);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1;
+        acteve.symbolic.integer.Expression[] $r2;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 = newarray (acteve.symbolic.integer.Expression)[2];
+        $r2[0] = $r0;
+        $r2[1] = $r1;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r2);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2;
+        acteve.symbolic.integer.Expression[] $r3;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 = newarray (acteve.symbolic.integer.Expression)[3];
+        $r3[0] = $r0;
+        $r3[1] = $r1;
+        $r3[2] = $r2;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r3);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3;
+        acteve.symbolic.integer.Expression[] $r4;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 = newarray (acteve.symbolic.integer.Expression)[4];
+        $r4[0] = $r0;
+        $r4[1] = $r1;
+        $r4[2] = $r2;
+        $r4[3] = $r3;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r4);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4;
+        acteve.symbolic.integer.Expression[] $r5;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 = newarray (acteve.symbolic.integer.Expression)[5];
+        $r5[0] = $r0;
+        $r5[1] = $r1;
+        $r5[2] = $r2;
+        $r5[3] = $r3;
+        $r5[4] = $r4;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r5);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5;
+        acteve.symbolic.integer.Expression[] $r6;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 = newarray (acteve.symbolic.integer.Expression)[6];
+        $r6[0] = $r0;
+        $r6[1] = $r1;
+        $r6[2] = $r2;
+        $r6[3] = $r3;
+        $r6[4] = $r4;
+        $r6[5] = $r5;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r6);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6;
+        acteve.symbolic.integer.Expression[] $r7;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 = newarray (acteve.symbolic.integer.Expression)[7];
+        $r7[0] = $r0;
+        $r7[1] = $r1;
+        $r7[2] = $r2;
+        $r7[3] = $r3;
+        $r7[4] = $r4;
+        $r7[5] = $r5;
+        $r7[6] = $r6;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r7);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7;
+        acteve.symbolic.integer.Expression[] $r8;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 = newarray (acteve.symbolic.integer.Expression)[8];
+        $r8[0] = $r0;
+        $r8[1] = $r1;
+        $r8[2] = $r2;
+        $r8[3] = $r3;
+        $r8[4] = $r4;
+        $r8[5] = $r5;
+        $r8[6] = $r6;
+        $r8[7] = $r7;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r8);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8;
+        acteve.symbolic.integer.Expression[] $r9;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 = newarray (acteve.symbolic.integer.Expression)[9];
+        $r9[0] = $r0;
+        $r9[1] = $r1;
+        $r9[2] = $r2;
+        $r9[3] = $r3;
+        $r9[4] = $r4;
+        $r9[5] = $r5;
+        $r9[6] = $r6;
+        $r9[7] = $r7;
+        $r9[8] = $r8;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r9);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9;
+        acteve.symbolic.integer.Expression[] $r10;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 = newarray (acteve.symbolic.integer.Expression)[10];
+        $r10[0] = $r0;
+        $r10[1] = $r1;
+        $r10[2] = $r2;
+        $r10[3] = $r3;
+        $r10[4] = $r4;
+        $r10[5] = $r5;
+        $r10[6] = $r6;
+        $r10[7] = $r7;
+        $r10[8] = $r8;
+        $r10[9] = $r9;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r10);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10;
+        acteve.symbolic.integer.Expression[] $r11;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 = newarray (acteve.symbolic.integer.Expression)[11];
+        $r11[0] = $r0;
+        $r11[1] = $r1;
+        $r11[2] = $r2;
+        $r11[3] = $r3;
+        $r11[4] = $r4;
+        $r11[5] = $r5;
+        $r11[6] = $r6;
+        $r11[7] = $r7;
+        $r11[8] = $r8;
+        $r11[9] = $r9;
+        $r11[10] = $r10;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r11);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11;
+        acteve.symbolic.integer.Expression[] $r12;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 = newarray (acteve.symbolic.integer.Expression)[12];
+        $r12[0] = $r0;
+        $r12[1] = $r1;
+        $r12[2] = $r2;
+        $r12[3] = $r3;
+        $r12[4] = $r4;
+        $r12[5] = $r5;
+        $r12[6] = $r6;
+        $r12[7] = $r7;
+        $r12[8] = $r8;
+        $r12[9] = $r9;
+        $r12[10] = $r10;
+        $r12[11] = $r11;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r12);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12;
+        acteve.symbolic.integer.Expression[] $r13;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 = newarray (acteve.symbolic.integer.Expression)[13];
+        $r13[0] = $r0;
+        $r13[1] = $r1;
+        $r13[2] = $r2;
+        $r13[3] = $r3;
+        $r13[4] = $r4;
+        $r13[5] = $r5;
+        $r13[6] = $r6;
+        $r13[7] = $r7;
+        $r13[8] = $r8;
+        $r13[9] = $r9;
+        $r13[10] = $r10;
+        $r13[11] = $r11;
+        $r13[12] = $r12;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r13);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13;
+        acteve.symbolic.integer.Expression[] $r14;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 = newarray (acteve.symbolic.integer.Expression)[14];
+        $r14[0] = $r0;
+        $r14[1] = $r1;
+        $r14[2] = $r2;
+        $r14[3] = $r3;
+        $r14[4] = $r4;
+        $r14[5] = $r5;
+        $r14[6] = $r6;
+        $r14[7] = $r7;
+        $r14[8] = $r8;
+        $r14[9] = $r9;
+        $r14[10] = $r10;
+        $r14[11] = $r11;
+        $r14[12] = $r12;
+        $r14[13] = $r13;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r14);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14;
+        acteve.symbolic.integer.Expression[] $r15;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 = newarray (acteve.symbolic.integer.Expression)[15];
+        $r15[0] = $r0;
+        $r15[1] = $r1;
+        $r15[2] = $r2;
+        $r15[3] = $r3;
+        $r15[4] = $r4;
+        $r15[5] = $r5;
+        $r15[6] = $r6;
+        $r15[7] = $r7;
+        $r15[8] = $r8;
+        $r15[9] = $r9;
+        $r15[10] = $r10;
+        $r15[11] = $r11;
+        $r15[12] = $r12;
+        $r15[13] = $r13;
+        $r15[14] = $r14;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r15);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15;
+        acteve.symbolic.integer.Expression[] $r16;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 = newarray (acteve.symbolic.integer.Expression)[16];
+        $r16[0] = $r0;
+        $r16[1] = $r1;
+        $r16[2] = $r2;
+        $r16[3] = $r3;
+        $r16[4] = $r4;
+        $r16[5] = $r5;
+        $r16[6] = $r6;
+        $r16[7] = $r7;
+        $r16[8] = $r8;
+        $r16[9] = $r9;
+        $r16[10] = $r10;
+        $r16[11] = $r11;
+        $r16[12] = $r12;
+        $r16[13] = $r13;
+        $r16[14] = $r14;
+        $r16[15] = $r15;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r16);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16;
+        acteve.symbolic.integer.Expression[] $r17;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 = newarray (acteve.symbolic.integer.Expression)[17];
+        $r17[0] = $r0;
+        $r17[1] = $r1;
+        $r17[2] = $r2;
+        $r17[3] = $r3;
+        $r17[4] = $r4;
+        $r17[5] = $r5;
+        $r17[6] = $r6;
+        $r17[7] = $r7;
+        $r17[8] = $r8;
+        $r17[9] = $r9;
+        $r17[10] = $r10;
+        $r17[11] = $r11;
+        $r17[12] = $r12;
+        $r17[13] = $r13;
+        $r17[14] = $r14;
+        $r17[15] = $r15;
+        $r17[16] = $r16;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r17);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17;
+        acteve.symbolic.integer.Expression[] $r18;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 = newarray (acteve.symbolic.integer.Expression)[18];
+        $r18[0] = $r0;
+        $r18[1] = $r1;
+        $r18[2] = $r2;
+        $r18[3] = $r3;
+        $r18[4] = $r4;
+        $r18[5] = $r5;
+        $r18[6] = $r6;
+        $r18[7] = $r7;
+        $r18[8] = $r8;
+        $r18[9] = $r9;
+        $r18[10] = $r10;
+        $r18[11] = $r11;
+        $r18[12] = $r12;
+        $r18[13] = $r13;
+        $r18[14] = $r14;
+        $r18[15] = $r15;
+        $r18[16] = $r16;
+        $r18[17] = $r17;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r18);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18;
+        acteve.symbolic.integer.Expression[] $r19;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 = newarray (acteve.symbolic.integer.Expression)[19];
+        $r19[0] = $r0;
+        $r19[1] = $r1;
+        $r19[2] = $r2;
+        $r19[3] = $r3;
+        $r19[4] = $r4;
+        $r19[5] = $r5;
+        $r19[6] = $r6;
+        $r19[7] = $r7;
+        $r19[8] = $r8;
+        $r19[9] = $r9;
+        $r19[10] = $r10;
+        $r19[11] = $r11;
+        $r19[12] = $r12;
+        $r19[13] = $r13;
+        $r19[14] = $r14;
+        $r19[15] = $r15;
+        $r19[16] = $r16;
+        $r19[17] = $r17;
+        $r19[18] = $r18;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r19);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19;
+        acteve.symbolic.integer.Expression[] $r20;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 = newarray (acteve.symbolic.integer.Expression)[20];
+        $r20[0] = $r0;
+        $r20[1] = $r1;
+        $r20[2] = $r2;
+        $r20[3] = $r3;
+        $r20[4] = $r4;
+        $r20[5] = $r5;
+        $r20[6] = $r6;
+        $r20[7] = $r7;
+        $r20[8] = $r8;
+        $r20[9] = $r9;
+        $r20[10] = $r10;
+        $r20[11] = $r11;
+        $r20[12] = $r12;
+        $r20[13] = $r13;
+        $r20[14] = $r14;
+        $r20[15] = $r15;
+        $r20[16] = $r16;
+        $r20[17] = $r17;
+        $r20[18] = $r18;
+        $r20[19] = $r19;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r20);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20;
+        acteve.symbolic.integer.Expression[] $r21;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 = newarray (acteve.symbolic.integer.Expression)[21];
+        $r21[0] = $r0;
+        $r21[1] = $r1;
+        $r21[2] = $r2;
+        $r21[3] = $r3;
+        $r21[4] = $r4;
+        $r21[5] = $r5;
+        $r21[6] = $r6;
+        $r21[7] = $r7;
+        $r21[8] = $r8;
+        $r21[9] = $r9;
+        $r21[10] = $r10;
+        $r21[11] = $r11;
+        $r21[12] = $r12;
+        $r21[13] = $r13;
+        $r21[14] = $r14;
+        $r21[15] = $r15;
+        $r21[16] = $r16;
+        $r21[17] = $r17;
+        $r21[18] = $r18;
+        $r21[19] = $r19;
+        $r21[20] = $r20;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r21);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21;
+        acteve.symbolic.integer.Expression[] $r22;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 = newarray (acteve.symbolic.integer.Expression)[22];
+        $r22[0] = $r0;
+        $r22[1] = $r1;
+        $r22[2] = $r2;
+        $r22[3] = $r3;
+        $r22[4] = $r4;
+        $r22[5] = $r5;
+        $r22[6] = $r6;
+        $r22[7] = $r7;
+        $r22[8] = $r8;
+        $r22[9] = $r9;
+        $r22[10] = $r10;
+        $r22[11] = $r11;
+        $r22[12] = $r12;
+        $r22[13] = $r13;
+        $r22[14] = $r14;
+        $r22[15] = $r15;
+        $r22[16] = $r16;
+        $r22[17] = $r17;
+        $r22[18] = $r18;
+        $r22[19] = $r19;
+        $r22[20] = $r20;
+        $r22[21] = $r21;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r22);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22;
+        acteve.symbolic.integer.Expression[] $r23;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 = newarray (acteve.symbolic.integer.Expression)[23];
+        $r23[0] = $r0;
+        $r23[1] = $r1;
+        $r23[2] = $r2;
+        $r23[3] = $r3;
+        $r23[4] = $r4;
+        $r23[5] = $r5;
+        $r23[6] = $r6;
+        $r23[7] = $r7;
+        $r23[8] = $r8;
+        $r23[9] = $r9;
+        $r23[10] = $r10;
+        $r23[11] = $r11;
+        $r23[12] = $r12;
+        $r23[13] = $r13;
+        $r23[14] = $r14;
+        $r23[15] = $r15;
+        $r23[16] = $r16;
+        $r23[17] = $r17;
+        $r23[18] = $r18;
+        $r23[19] = $r19;
+        $r23[20] = $r20;
+        $r23[21] = $r21;
+        $r23[22] = $r22;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r23);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23;
+        acteve.symbolic.integer.Expression[] $r24;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 := @parameter24: acteve.symbolic.integer.Expression;
+        $r24 = newarray (acteve.symbolic.integer.Expression)[24];
+        $r24[0] = $r0;
+        $r24[1] = $r1;
+        $r24[2] = $r2;
+        $r24[3] = $r3;
+        $r24[4] = $r4;
+        $r24[5] = $r5;
+        $r24[6] = $r6;
+        $r24[7] = $r7;
+        $r24[8] = $r8;
+        $r24[9] = $r9;
+        $r24[10] = $r10;
+        $r24[11] = $r11;
+        $r24[12] = $r12;
+        $r24[13] = $r13;
+        $r24[14] = $r14;
+        $r24[15] = $r15;
+        $r24[16] = $r16;
+        $r24[17] = $r17;
+        $r24[18] = $r18;
+        $r24[19] = $r19;
+        $r24[20] = $r20;
+        $r24[21] = $r21;
+        $r24[22] = $r22;
+        $r24[23] = $r23;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r24);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23, $r24;
+        acteve.symbolic.integer.Expression[] $r25;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 := @parameter24: acteve.symbolic.integer.Expression;
+        $r24 := @parameter25: acteve.symbolic.integer.Expression;
+        $r25 = newarray (acteve.symbolic.integer.Expression)[25];
+        $r25[0] = $r0;
+        $r25[1] = $r1;
+        $r25[2] = $r2;
+        $r25[3] = $r3;
+        $r25[4] = $r4;
+        $r25[5] = $r5;
+        $r25[6] = $r6;
+        $r25[7] = $r7;
+        $r25[8] = $r8;
+        $r25[9] = $r9;
+        $r25[10] = $r10;
+        $r25[11] = $r11;
+        $r25[12] = $r12;
+        $r25[13] = $r13;
+        $r25[14] = $r14;
+        $r25[15] = $r15;
+        $r25[16] = $r16;
+        $r25[17] = $r17;
+        $r25[18] = $r18;
+        $r25[19] = $r19;
+        $r25[20] = $r20;
+        $r25[21] = $r21;
+        $r25[22] = $r22;
+        $r25[23] = $r23;
+        $r25[24] = $r24;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r25);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23, $r24, $r25;
+        acteve.symbolic.integer.Expression[] $r26;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 := @parameter24: acteve.symbolic.integer.Expression;
+        $r24 := @parameter25: acteve.symbolic.integer.Expression;
+        $r25 := @parameter26: acteve.symbolic.integer.Expression;
+        $r26 = newarray (acteve.symbolic.integer.Expression)[26];
+        $r26[0] = $r0;
+        $r26[1] = $r1;
+        $r26[2] = $r2;
+        $r26[3] = $r3;
+        $r26[4] = $r4;
+        $r26[5] = $r5;
+        $r26[6] = $r6;
+        $r26[7] = $r7;
+        $r26[8] = $r8;
+        $r26[9] = $r9;
+        $r26[10] = $r10;
+        $r26[11] = $r11;
+        $r26[12] = $r12;
+        $r26[13] = $r13;
+        $r26[14] = $r14;
+        $r26[15] = $r15;
+        $r26[16] = $r16;
+        $r26[17] = $r17;
+        $r26[18] = $r18;
+        $r26[19] = $r19;
+        $r26[20] = $r20;
+        $r26[21] = $r21;
+        $r26[22] = $r22;
+        $r26[23] = $r23;
+        $r26[24] = $r24;
+        $r26[25] = $r25;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r26);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23, $r24, $r25, $r26;
+        acteve.symbolic.integer.Expression[] $r27;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 := @parameter24: acteve.symbolic.integer.Expression;
+        $r24 := @parameter25: acteve.symbolic.integer.Expression;
+        $r25 := @parameter26: acteve.symbolic.integer.Expression;
+        $r26 := @parameter27: acteve.symbolic.integer.Expression;
+        $r27 = newarray (acteve.symbolic.integer.Expression)[27];
+        $r27[0] = $r0;
+        $r27[1] = $r1;
+        $r27[2] = $r2;
+        $r27[3] = $r3;
+        $r27[4] = $r4;
+        $r27[5] = $r5;
+        $r27[6] = $r6;
+        $r27[7] = $r7;
+        $r27[8] = $r8;
+        $r27[9] = $r9;
+        $r27[10] = $r10;
+        $r27[11] = $r11;
+        $r27[12] = $r12;
+        $r27[13] = $r13;
+        $r27[14] = $r14;
+        $r27[15] = $r15;
+        $r27[16] = $r16;
+        $r27[17] = $r17;
+        $r27[18] = $r18;
+        $r27[19] = $r19;
+        $r27[20] = $r20;
+        $r27[21] = $r21;
+        $r27[22] = $r22;
+        $r27[23] = $r23;
+        $r27[24] = $r24;
+        $r27[25] = $r25;
+        $r27[26] = $r26;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r27);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23, $r24, $r25, $r26, $r27;
+        acteve.symbolic.integer.Expression[] $r28;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 := @parameter24: acteve.symbolic.integer.Expression;
+        $r24 := @parameter25: acteve.symbolic.integer.Expression;
+        $r25 := @parameter26: acteve.symbolic.integer.Expression;
+        $r26 := @parameter27: acteve.symbolic.integer.Expression;
+        $r27 := @parameter28: acteve.symbolic.integer.Expression;
+        $r28 = newarray (acteve.symbolic.integer.Expression)[28];
+        $r28[0] = $r0;
+        $r28[1] = $r1;
+        $r28[2] = $r2;
+        $r28[3] = $r3;
+        $r28[4] = $r4;
+        $r28[5] = $r5;
+        $r28[6] = $r6;
+        $r28[7] = $r7;
+        $r28[8] = $r8;
+        $r28[9] = $r9;
+        $r28[10] = $r10;
+        $r28[11] = $r11;
+        $r28[12] = $r12;
+        $r28[13] = $r13;
+        $r28[14] = $r14;
+        $r28[15] = $r15;
+        $r28[16] = $r16;
+        $r28[17] = $r17;
+        $r28[18] = $r18;
+        $r28[19] = $r19;
+        $r28[20] = $r20;
+        $r28[21] = $r21;
+        $r28[22] = $r22;
+        $r28[23] = $r23;
+        $r28[24] = $r24;
+        $r28[25] = $r25;
+        $r28[26] = $r26;
+        $r28[27] = $r27;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r28);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23, $r24, $r25, $r26, $r27, $r28;
+        acteve.symbolic.integer.Expression[] $r29;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 := @parameter24: acteve.symbolic.integer.Expression;
+        $r24 := @parameter25: acteve.symbolic.integer.Expression;
+        $r25 := @parameter26: acteve.symbolic.integer.Expression;
+        $r26 := @parameter27: acteve.symbolic.integer.Expression;
+        $r27 := @parameter28: acteve.symbolic.integer.Expression;
+        $r28 := @parameter29: acteve.symbolic.integer.Expression;
+        $r29 = newarray (acteve.symbolic.integer.Expression)[29];
+        $r29[0] = $r0;
+        $r29[1] = $r1;
+        $r29[2] = $r2;
+        $r29[3] = $r3;
+        $r29[4] = $r4;
+        $r29[5] = $r5;
+        $r29[6] = $r6;
+        $r29[7] = $r7;
+        $r29[8] = $r8;
+        $r29[9] = $r9;
+        $r29[10] = $r10;
+        $r29[11] = $r11;
+        $r29[12] = $r12;
+        $r29[13] = $r13;
+        $r29[14] = $r14;
+        $r29[15] = $r15;
+        $r29[16] = $r16;
+        $r29[17] = $r17;
+        $r29[18] = $r18;
+        $r29[19] = $r19;
+        $r29[20] = $r20;
+        $r29[21] = $r21;
+        $r29[22] = $r22;
+        $r29[23] = $r23;
+        $r29[24] = $r24;
+        $r29[25] = $r25;
+        $r29[26] = $r26;
+        $r29[27] = $r27;
+        $r29[28] = $r28;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r29);
+        return;
+    }
+
+    public static void argpush(int, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7, $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15, $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23, $r24, $r25, $r26, $r27, $r28, $r29;
+        acteve.symbolic.integer.Expression[] $r30;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 := @parameter2: acteve.symbolic.integer.Expression;
+        $r2 := @parameter3: acteve.symbolic.integer.Expression;
+        $r3 := @parameter4: acteve.symbolic.integer.Expression;
+        $r4 := @parameter5: acteve.symbolic.integer.Expression;
+        $r5 := @parameter6: acteve.symbolic.integer.Expression;
+        $r6 := @parameter7: acteve.symbolic.integer.Expression;
+        $r7 := @parameter8: acteve.symbolic.integer.Expression;
+        $r8 := @parameter9: acteve.symbolic.integer.Expression;
+        $r9 := @parameter10: acteve.symbolic.integer.Expression;
+        $r10 := @parameter11: acteve.symbolic.integer.Expression;
+        $r11 := @parameter12: acteve.symbolic.integer.Expression;
+        $r12 := @parameter13: acteve.symbolic.integer.Expression;
+        $r13 := @parameter14: acteve.symbolic.integer.Expression;
+        $r14 := @parameter15: acteve.symbolic.integer.Expression;
+        $r15 := @parameter16: acteve.symbolic.integer.Expression;
+        $r16 := @parameter17: acteve.symbolic.integer.Expression;
+        $r17 := @parameter18: acteve.symbolic.integer.Expression;
+        $r18 := @parameter19: acteve.symbolic.integer.Expression;
+        $r19 := @parameter20: acteve.symbolic.integer.Expression;
+        $r20 := @parameter21: acteve.symbolic.integer.Expression;
+        $r21 := @parameter22: acteve.symbolic.integer.Expression;
+        $r22 := @parameter23: acteve.symbolic.integer.Expression;
+        $r23 := @parameter24: acteve.symbolic.integer.Expression;
+        $r24 := @parameter25: acteve.symbolic.integer.Expression;
+        $r25 := @parameter26: acteve.symbolic.integer.Expression;
+        $r26 := @parameter27: acteve.symbolic.integer.Expression;
+        $r27 := @parameter28: acteve.symbolic.integer.Expression;
+        $r28 := @parameter29: acteve.symbolic.integer.Expression;
+        $r29 := @parameter30: acteve.symbolic.integer.Expression;
+        $r30 = newarray (acteve.symbolic.integer.Expression)[30];
+        $r30[0] = $r0;
+        $r30[1] = $r1;
+        $r30[2] = $r2;
+        $r30[3] = $r3;
+        $r30[4] = $r4;
+        $r30[5] = $r5;
+        $r30[6] = $r6;
+        $r30[7] = $r7;
+        $r30[8] = $r8;
+        $r30[9] = $r9;
+        $r30[10] = $r10;
+        $r30[11] = $r11;
+        $r30[12] = $r12;
+        $r30[13] = $r13;
+        $r30[14] = $r14;
+        $r30[15] = $r15;
+        $r30[16] = $r16;
+        $r30[17] = $r17;
+        $r30[18] = $r18;
+        $r30[19] = $r19;
+        $r30[20] = $r20;
+        $r30[21] = $r21;
+        $r30[22] = $r22;
+        $r30[23] = $r23;
+        $r30[24] = $r24;
+        $r30[25] = $r25;
+        $r30[26] = $r26;
+        $r30[27] = $r27;
+        $r30[28] = $r28;
+        $r30[29] = $r29;
+        staticinvoke <acteve.symbolic.Util: void argpush0(int,acteve.symbolic.integer.Expression[])>($i0, $r30);
+        return;
+    }
+
+    private static void argpush0(int, acteve.symbolic.integer.Expression[])
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression[] $r0;
+        long $l1;
+        java.lang.Thread $r1;
+        acteve.symbolic.Util$SymArgs $r2;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression[];
+        <acteve.symbolic.Util: acteve.symbolic.Util$SymRet symRet> = null;
+        $r1 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+        $l1 = virtualinvoke $r1.<java.lang.Thread: long getId()>();
+        $r2 = new acteve.symbolic.Util$SymArgs;
+        specialinvoke $r2.<acteve.symbolic.Util$SymArgs: void <init>(int,long,acteve.symbolic.integer.Expression[])>($i0, $l1, $r0);
+        <acteve.symbolic.Util: acteve.symbolic.Util$SymArgs symArgs> = $r2;
+        return;
+    }
+
+    public static void assume(acteve.symbolic.integer.Expression, int, boolean)
+    {
+        acteve.symbolic.integer.Expression $r0;
+        int $i0;
+        boolean $z0, $z1;
+        java.lang.String $r1;
+        java.lang.StringBuilder $r2;
+        acteve.symbolic.integer.PathCondition $r3;
+
+        $r0 := @parameter0: acteve.symbolic.integer.Expression;
+        $i0 := @parameter1: int;
+        $z0 := @parameter2: boolean;
+        if $r0 != null goto label1;
+
+     label0:
+        return;
+
+     label1:
+        $z1 = staticinvoke <acteve.symbolic.Util: boolean readConfTxt()>();
+        if $z1 == 0 goto label0;
+
+        $z1 = <acteve.symbolic.Util: boolean started>;
+        if $z1 != 0 goto label2;
+
+        <acteve.symbolic.Util: boolean started> = 1;
+
+     label2:
+        if $r0 == null goto label0;
+
+        if $z0 == 0 goto label5;
+
+        $r3 = <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc>;
+        virtualinvoke $r3.<acteve.symbolic.integer.PathCondition: void assumeTru(acteve.symbolic.integer.Expression)>($r0);
+
+     label3:
+        $r2 = new java.lang.StringBuilder;
+        if $z0 == 0 goto label6;
+
+        $r1 = "T";
+
+     label4:
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>($r1);
+        specialinvoke $r2.<java.lang.StringBuilder: void <init>(java.lang.String)>($r1);
+        $r2 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r1 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_BRANCH", $r1);
+        goto label0;
+
+     label5:
+        $r3 = <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc>;
+        virtualinvoke $r3.<acteve.symbolic.integer.PathCondition: void assumeFls(acteve.symbolic.integer.Expression)>($r0);
+        goto label3;
+
+     label6:
+        $r1 = "F";
+        goto label4;
+    }
+
+    public static void e(java.lang.String, java.lang.String)
+    {
+        java.lang.String $r0, $r1;
+        boolean $z0;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 := @parameter1: java.lang.String;
+        $z0 = staticinvoke <acteve.symbolic.Util: boolean readConfTxt()>();
+        if $z0 == 0 goto label0;
+
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>($r0, $r1);
+
+     label0:
+        return;
+    }
+
+    public static int eventId()
+    {
+        int $i0;
+
+        $i0 = <acteve.symbolic.Util: int eventId>;
+        return $i0;
+    }
+
+    public static int newEvent()
+    {
+        int $i0;
+
+        $i0 = <acteve.symbolic.Util: int eventId>;
+        $i0 = $i0 + 1;
+        <acteve.symbolic.Util: int eventId> = $i0;
+        $i0 = <acteve.symbolic.Util: int eventId>;
+        return $i0;
+    }
+
+    public static void only_write(int)
+    {
+        int $i0, $i1, $i2;
+        boolean $z0;
+        java.lang.String $r0;
+
+        $i0 := @parameter0: int;
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $i2 = <acteve.symbolic.Util: int eventId>;
+        $i1 = <acteve.symbolic.Util: int numEvents>;
+        if $i2 != $i1 goto label0;
+
+        $r0 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_WRITE", $r0);
+
+     label0:
+        return;
+    }
+
+    public static java.lang.String reachedMethsStr()
+    {
+        int $i0, $i3;
+        java.lang.StringBuffer $r0, $r3;
+        java.lang.String $r1;
+        boolean[] $r2;
+        boolean $z0;
+
+        $r0 = new java.lang.StringBuffer;
+        specialinvoke $r0.<java.lang.StringBuffer: void <init>(int)>(15000);
+        $i0 = 0;
+
+     label0:
+        $r2 = <acteve.symbolic.Util: boolean[] reachedMeths>;
+        $i3 = lengthof $r2;
+        if $i0 < $i3 goto label1;
+
+        $r1 = virtualinvoke $r0.<java.lang.StringBuffer: java.lang.String toString()>();
+        return $r1;
+
+     label1:
+        $r2 = <acteve.symbolic.Util: boolean[] reachedMeths>;
+        $z0 = $r2[$i0];
+        if $z0 == 0 goto label2;
+
+        $r3 = virtualinvoke $r0.<java.lang.StringBuffer: java.lang.StringBuffer append(int)>($i0);
+        virtualinvoke $r3.<java.lang.StringBuffer: java.lang.StringBuffer append(char)>(44);
+
+     label2:
+        $i0 = $i0 + 1;
+        goto label0;
+    }
+
+    public static void read(int)
+    {
+        int $i0;
+        boolean $z0;
+        java.lang.String $r0;
+
+        $i0 := @parameter0: int;
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $r0 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_READ", $r0);
+
+     label0:
+        return;
+    }
+
+    public static void read(java.lang.Object, int)
+    {
+        java.lang.Object $r0;
+        int $i0;
+
+        $r0 := @parameter0: java.lang.Object;
+        $i0 := @parameter1: int;
+        return;
+    }
+
+    public static void readArray(java.lang.Object, int)
+    {
+        java.lang.Object $r0;
+        int $i0, $i1;
+        java.lang.StringBuilder $r1;
+        boolean $z0;
+        java.lang.String $r3;
+
+        $r0 := @parameter0: java.lang.Object;
+        $i0 := @parameter1: int;
+        $i1 = <acteve.symbolic.Util: int eventId>;
+        if $i1 <= 0 goto label0;
+
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $r1 = new java.lang.StringBuilder;
+        $i1 = staticinvoke <java.lang.System: int identityHashCode(java.lang.Object)>($r0);
+        $r3 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i1);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r3);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r3 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_AREAD", $r3);
+
+     label0:
+        return;
+    }
+
+    private static boolean readConfTxt()
+    {
+        java.lang.String[] $r0;
+        java.io.IOException $r1;
+        java.io.BufferedReader $r2;
+        java.lang.String $r3, $r5, $r8;
+        boolean $z0, $z1, $z2;
+        java.io.File $r4;
+        java.lang.StringBuilder $r6;
+        int $i0;
+        java.io.FileReader $r7;
+        java.lang.Error $r9;
+
+        $z0 = <acteve.symbolic.Util: boolean readConfTxt>;
+        if $z0 == 0 goto label0;
+
+        $z2 = <acteve.symbolic.Util: boolean monitor>;
+        return $z2;
+
+     label0:
+        <acteve.symbolic.Util: boolean readConfTxt> = 1;
+        $r4 = <acteve.symbolic.Util: java.io.File settingsFile>;
+        $z1 = virtualinvoke $r4.<java.io.File: boolean exists()>();
+        if $z1 == 0 goto label11;
+
+        $r6 = new java.lang.StringBuilder;
+        specialinvoke $r6.<java.lang.StringBuilder: void <init>(java.lang.String)>("FOUND FILE: ");
+        $r4 = <acteve.symbolic.Util: java.io.File settingsFile>;
+        $r6 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>($r4);
+        $r6 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" pid = ");
+        $i0 = staticinvoke <android.os.Process: int myPid()>();
+        $r6 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r3 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <android.util.Slog: int e(java.lang.String,java.lang.String)>("A3T", $r3);
+        $r2 = new java.io.BufferedReader;
+        $r7 = new java.io.FileReader;
+        $r4 = <acteve.symbolic.Util: java.io.File settingsFile>;
+
+     label1:
+        specialinvoke $r7.<java.io.FileReader: void <init>(java.io.File)>($r4);
+        specialinvoke $r2.<java.io.BufferedReader: void <init>(java.io.Reader)>($r7);
+
+     label2:
+        $r3 = virtualinvoke $r2.<java.io.BufferedReader: java.lang.String readLine()>();
+        if $r3 != null goto label5;
+
+        virtualinvoke $r2.<java.io.BufferedReader: void close()>();
+        $r4 = <acteve.symbolic.Util: java.io.File settingsFile>;
+        virtualinvoke $r4.<java.io.File: boolean delete()>();
+
+     label3:
+        <acteve.symbolic.Util: boolean monitor> = 1;
+
+     label4:
+        $z2 = <acteve.symbolic.Util: boolean monitor>;
+        return $z2;
+
+     label5:
+        $r0 = virtualinvoke $r3.<java.lang.String: java.lang.String[] split(java.lang.String)>("=");
+        $i0 = lengthof $r0;
+        if $i0 == 2 goto label8;
+
+        $r6 = new java.lang.StringBuilder;
+        specialinvoke $r6.<java.lang.StringBuilder: void <init>(java.lang.String)>("Malformed line in settings.txt; ignoring: ");
+        $r6 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r3);
+        $r8 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T", $r8);
+
+     label6:
+        goto label2;
+
+     label7:
+        $r1 := @caughtexception;
+        $r9 = new java.lang.Error;
+        specialinvoke $r9.<java.lang.Error: void <init>(java.lang.Throwable)>($r1);
+        throw $r9;
+
+     label8:
+        $r8 = $r0[0];
+
+     label9:
+        $z2 = virtualinvoke $r8.<java.lang.String: boolean equals(java.lang.Object)>("numevents");
+        if $z2 == 0 goto label2;
+
+        $r8 = $r0[1];
+        $i0 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>($r8);
+
+     label10:
+        <acteve.symbolic.Util: int numEvents> = $i0;
+        goto label2;
+
+     label11:
+        $r6 = new java.lang.StringBuilder;
+        specialinvoke $r6.<java.lang.StringBuilder: void <init>(java.lang.String)>("FOUND not FILE: ");
+        $r4 = <acteve.symbolic.Util: java.io.File settingsFile>;
+        $r6 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>($r4);
+        $r6 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" pid = ");
+        $i0 = staticinvoke <android.os.Process: int myPid()>();
+        $r6 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r5 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <android.util.Slog: int e(java.lang.String,java.lang.String)>("A3T", $r5);
+        <acteve.symbolic.Util: boolean monitor> = 0;
+        goto label4;
+
+        catch java.io.IOException from label1 to label3 with label7;
+        catch java.io.IOException from label5 to label6 with label7;
+        catch java.io.IOException from label9 to label10 with label7;
+    }
+
+    public static acteve.symbolic.integer.Expression retpop(int)
+    {
+        int $i0, $i1;
+        acteve.symbolic.Util$SymRet $r0;
+        long $l2, $l3;
+        java.lang.Thread $r1;
+        byte $b4;
+        acteve.symbolic.integer.Expression $r2;
+
+        $i0 := @parameter0: int;
+        $r0 = <acteve.symbolic.Util: acteve.symbolic.Util$SymRet symRet>;
+        if $r0 == null goto label1;
+
+        $l2 = $r0.<acteve.symbolic.Util$SymRet: long threadId>;
+        $r1 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+        $l3 = virtualinvoke $r1.<java.lang.Thread: long getId()>();
+        $b4 = $l2 cmp $l3;
+        if $b4 != 0 goto label1;
+
+        $i1 = $r0.<acteve.symbolic.Util$SymRet: int subSignatureId>;
+        if $i1 < 0 goto label0;
+
+        if $i1 != $i0 goto label1;
+
+     label0:
+        $r2 = $r0.<acteve.symbolic.Util$SymRet: acteve.symbolic.integer.Expression symRet>;
+        return $r2;
+
+     label1:
+        return null;
+    }
+
+    public static void retpush(int, acteve.symbolic.integer.Expression)
+    {
+        int $i0;
+        acteve.symbolic.integer.Expression $r0;
+        acteve.symbolic.Util$SymRet $r1;
+        java.lang.Thread $r2;
+        long $l1;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: acteve.symbolic.integer.Expression;
+        $r1 = new acteve.symbolic.Util$SymRet;
+        $r2 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+        $l1 = virtualinvoke $r2.<java.lang.Thread: long getId()>();
+        specialinvoke $r1.<acteve.symbolic.Util$SymRet: void <init>(int,long,acteve.symbolic.integer.Expression)>($i0, $l1, $r0);
+        <acteve.symbolic.Util: acteve.symbolic.Util$SymRet symRet> = $r1;
+        return;
+    }
+
+    public static void rw(int, int)
+    {
+        int $i0, $i1, $i2;
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        boolean $z0;
+
+        $i0 := @parameter0: int;
+        $i1 := @parameter1: int;
+        if $i0 <= 0 goto label0;
+
+        $i2 = <acteve.symbolic.Util: int eventId>;
+        if $i0 == $i2 goto label0;
+
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $r0 = new java.lang.StringBuilder;
+        $i2 = $i0 + -1;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i2);
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>($r1);
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_RW", $r1);
+
+     label0:
+        return;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_boolean(int, java.lang.String)
+    {
+        int $i0;
+        java.lang.String $r0;
+        acteve.symbolic.integer.SymbolicInteger $r1;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: java.lang.String;
+        $r1 = new acteve.symbolic.integer.SymbolicInteger;
+        specialinvoke $r1.<acteve.symbolic.integer.SymbolicInteger: void <init>(int,java.lang.String,int)>(0, $r0, $i0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_byte(byte, java.lang.String)
+    {
+        byte $b0;
+        java.lang.String $r0;
+        acteve.symbolic.integer.SymbolicInteger $r1;
+
+        $b0 := @parameter0: byte;
+        $r0 := @parameter1: java.lang.String;
+        $r1 = new acteve.symbolic.integer.SymbolicInteger;
+        specialinvoke $r1.<acteve.symbolic.integer.SymbolicInteger: void <init>(int,java.lang.String,int)>(3, $r0, $b0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_byteArray(java.lang.String)
+    {
+        java.lang.String $r0;
+        acteve.symbolic.array.SymbolicIntegerArray $r1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 = new acteve.symbolic.array.SymbolicIntegerArray;
+        specialinvoke $r1.<acteve.symbolic.array.SymbolicIntegerArray: void <init>(int,java.lang.String)>(3, $r0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_char(char, java.lang.String)
+    {
+        char $c0;
+        java.lang.String $r0;
+        acteve.symbolic.integer.SymbolicInteger $r1;
+
+        $c0 := @parameter0: char;
+        $r0 := @parameter1: java.lang.String;
+        $r1 = new acteve.symbolic.integer.SymbolicInteger;
+        specialinvoke $r1.<acteve.symbolic.integer.SymbolicInteger: void <init>(int,java.lang.String,int)>(1, $r0, $c0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_charArray(java.lang.String)
+    {
+        java.lang.String $r0;
+        acteve.symbolic.array.SymbolicIntegerArray $r1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 = new acteve.symbolic.array.SymbolicIntegerArray;
+        specialinvoke $r1.<acteve.symbolic.array.SymbolicIntegerArray: void <init>(int,java.lang.String)>(1, $r0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_double(double, java.lang.String)
+    {
+        double $d0;
+        java.lang.String $r0;
+        acteve.symbolic.integer.SymbolicDouble $r1;
+
+        $d0 := @parameter0: double;
+        $r0 := @parameter1: java.lang.String;
+        $r1 = new acteve.symbolic.integer.SymbolicDouble;
+        specialinvoke $r1.<acteve.symbolic.integer.SymbolicDouble: void <init>(java.lang.String,double)>($r0, $d0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_doubleArray(java.lang.String)
+    {
+        java.lang.String $r0;
+        acteve.symbolic.array.SymbolicDoubleArray $r1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 = new acteve.symbolic.array.SymbolicDoubleArray;
+        specialinvoke $r1.<acteve.symbolic.array.SymbolicDoubleArray: void <init>(java.lang.String)>($r0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_float(float, java.lang.String)
+    {
+        float $f0;
+        java.lang.String $r0;
+        acteve.symbolic.integer.SymbolicFloat $r1;
+
+        $f0 := @parameter0: float;
+        $r0 := @parameter1: java.lang.String;
+        $r1 = new acteve.symbolic.integer.SymbolicFloat;
+        specialinvoke $r1.<acteve.symbolic.integer.SymbolicFloat: void <init>(java.lang.String,float)>($r0, $f0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_floatArray(java.lang.String)
+    {
+        java.lang.String $r0;
+        acteve.symbolic.array.SymbolicFloatArray $r1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 = new acteve.symbolic.array.SymbolicFloatArray;
+        specialinvoke $r1.<acteve.symbolic.array.SymbolicFloatArray: void <init>(java.lang.String)>($r0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_int(int, java.lang.String)
+    {
+        int $i0;
+        java.lang.String $r0;
+        acteve.symbolic.integer.SymbolicInteger $r1;
+
+        $i0 := @parameter0: int;
+        $r0 := @parameter1: java.lang.String;
+        $r1 = new acteve.symbolic.integer.SymbolicInteger;
+        specialinvoke $r1.<acteve.symbolic.integer.SymbolicInteger: void <init>(int,java.lang.String,int)>(4, $r0, $i0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_intArray(java.lang.String)
+    {
+        java.lang.String $r0;
+        acteve.symbolic.array.SymbolicIntegerArray $r1;
+
+        $r0 := @parameter0: java.lang.String;
+        $r1 = new acteve.symbolic.array.SymbolicIntegerArray;
+        specialinvoke $r1.<acteve.symbolic.array.SymbolicIntegerArray: void <init>(int,java.lang.String)>(4, $r0);
+        return $r1;
+    }
+
+    public static acteve.symbolic.integer.Expression symbolic_long(long, java.lang.String)
+    {
+        long $l0;
+        java.lang.String $r0;
+        acteve.symbolic.integer.SymbolicLong $r1;
+
+        $l0 := @parameter0: long;
+        $r0 := @parameter1: java.lang.String;
+        $r1 = new acteve.symbolic.integer.SymbolicLong;
+        specialinvoke $r1.<acteve.symbolic.integer.SymbolicLong: void <init>(java.lang.String,long)>($r0, $l0);
+        return $r1;
+    }
+
+    public static void write(int)
+    {
+        int $i0, $i1;
+        java.lang.String $r0;
+        boolean $z0;
+
+        $i0 := @parameter0: int;
+        $i1 = <acteve.symbolic.Util: int eventId>;
+        if $i1 <= 0 goto label0;
+
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $r0 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_WRITE", $r0);
+
+     label0:
+        return;
+    }
+
+    public static void write(java.lang.Object, int)
+    {
+        java.lang.Object $r0;
+        int $i0;
+        boolean $z0;
+        java.lang.StringBuilder $r1;
+        java.lang.Class $r2;
+        java.lang.String $r4;
+
+        $r0 := @parameter0: java.lang.Object;
+        $i0 := @parameter1: int;
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $r1 = new java.lang.StringBuilder;
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>()>();
+        $r2 = virtualinvoke $r0.<java.lang.Object: java.lang.Class getClass()>();
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>($r2);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r4 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i0);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r4);
+        $r4 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_WRITE", $r4);
+
+     label0:
+        return;
+    }
+
+    public static void writeArray(java.lang.Object, int)
+    {
+        java.lang.Object $r0;
+        int $i0, $i1;
+        java.lang.StringBuilder $r1;
+        boolean $z0;
+        java.lang.String $r3;
+
+        $r0 := @parameter0: java.lang.Object;
+        $i0 := @parameter1: int;
+        $i1 = <acteve.symbolic.Util: int eventId>;
+        if $i1 <= 0 goto label0;
+
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $r1 = new java.lang.StringBuilder;
+        $i1 = staticinvoke <java.lang.System: int identityHashCode(java.lang.Object)>($r0);
+        $r3 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i1);
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>($r3);
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i0);
+        $r3 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_AWRITE", $r3);
+
+     label0:
+        return;
+    }
+
+    public static void ww(int, int)
+    {
+        int $i0, $i1, $i2;
+        java.lang.StringBuilder $r0;
+        java.lang.String $r1;
+        boolean $z0;
+
+        $i0 := @parameter0: int;
+        $i1 := @parameter1: int;
+        if $i0 <= 0 goto label0;
+
+        $i2 = <acteve.symbolic.Util: int eventId>;
+        if $i0 == $i2 goto label0;
+
+        $z0 = <acteve.symbolic.Util: boolean started>;
+        if $z0 == 0 goto label0;
+
+        $r0 = new java.lang.StringBuilder;
+        $i2 = $i0 + -1;
+        $r1 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>($i2);
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>($r1);
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+        $r0 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>($i1);
+        $r1 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.String toString()>();
+        staticinvoke <acteve.symbolic.Mylog: void e(java.lang.String,java.lang.String)>("A3T_WW", $r1);
+
+     label0:
+        return;
+    }
 }

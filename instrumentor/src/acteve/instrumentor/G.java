@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Arrays;
 
 import soot.Body;
+import soot.BooleanType;
 import soot.Immediate;
 import soot.Local;
 import soot.ByteType;
@@ -84,7 +85,6 @@ import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.SubExpr;
 import soot.jimple.VirtualInvokeExpr;
-
 import acteve.symbolic.Util;
 import acteve.symbolic.integer.Types;
 
@@ -179,6 +179,7 @@ public class G
 		negationMap.put("<=", ">");
 		negationMap.put("<", ">=");
 		
+		typeMap.put(BooleanType.v(), Types.BOOLEAN);
 		typeMap.put(ByteType.v(), Types.BYTE);
 		typeMap.put(CharType.v(), Types.CHAR);
 		typeMap.put(ShortType.v(), Types.SHORT);

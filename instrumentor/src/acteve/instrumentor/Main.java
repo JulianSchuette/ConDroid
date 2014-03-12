@@ -30,11 +30,13 @@
  */
 package acteve.instrumentor;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -54,52 +56,60 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
+import acteve.explorer.Z3Model.Array;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.JimpleClassSource;
 import soot.Modifier;
 import soot.PackManager;
 import soot.Scene;
+import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.SootResolver;
+import soot.SourceLocator;
 import soot.Transform;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.options.Options;
+import soot.util.Chain;
 
-public class Main extends BodyTransformer {
+public class Main extends SceneTransformer {
 	private static Config config;
-	private static List<SootClass> classes = new ArrayList();
-	private static Map<String, List<String>> uninstrumentedClasses = new HashMap();
+	private static List<SootClass> classes = new ArrayList<SootClass>();
+	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	private static boolean DEBUG = true;
 	public final static boolean DUMP_JIMPLE = false; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
-	private final static String libJars = ""; //libraries
-	private final static String apk = "./TestApp2.apk"; //Example app to instrument
+	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
+	private final static String apk = "./com.devuni.flashlight.apk"; //Example app to instrument
+	private final static String jimpleFolder = "./acteve-util-jimple/";
+	private final static String acteveSymbolicUtilityJimple = jimpleFolder + "acteve.symbolic.Util.jimple";
 
 	
 	// private static Pattern includePat =
 	// Pattern.compile("(android.view.ViewGroup)|(android.graphics.Rect)");
 	// Pattern.compile("android\\..*|com\\.android\\..*|com\\.google\\.android\\..*");
 	private static Pattern excludePat = Pattern
-			.compile("(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
+			.compile("(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
 
-	@Deprecated
+	@Override
 	protected void internalTransform(String phaseName, Map options) {
-//		if (DEBUG)
-//			printClasses("bef_instr.txt");
-//
-//		ModelMethodsHandler.readModelMethods(config.modelMethsFile);
-//		Instrumentor ci = new Instrumentor(config.rwKind, config.outDir, config.sdkDir, config.fldsWhitelist,
-//				config.fldsBlacklist, config.methsWhitelist, config.instrAllFields);
-//		ci.instrument(classes);
-//		InputMethodsHandler.instrument(config.inputMethsFile);
-//		ModelMethodsHandler.addInvokerBodies();
-//		Scene.v().getApplicationClasses().remove(Scene.v().getSootClass(dummyMainClassName));
-//
-//		if (DEBUG)
-//			printClasses("aft_instr.txt");
+		if (DEBUG)
+			printClasses("bef_instr.txt");
+
+		ModelMethodsHandler.readModelMethods(config.modelMethsFile);
+		Instrumentor ci = new Instrumentor(config.rwKind, config.outDir, config.sdkDir, config.fldsWhitelist,
+				config.fldsBlacklist, config.methsWhitelist, config.instrAllFields);
+		ci.instrument(classes);
+		InputMethodsHandler.instrument(config.inputMethsFile);
+		ModelMethodsHandler.addInvokerBodies();
+		Scene.v().getApplicationClasses().remove(Scene.v().getSootClass(dummyMainClassName));
+
+		if (DEBUG)
+			printClasses("aft_instr.txt");
+		System.out.println("Ananasas");
 	}
 
 	private void printClasses(String fileName) {
@@ -118,7 +128,8 @@ public class Main extends BodyTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		config = Config.g();
 
-//		Scene.v().setSootClassPath(androidJAR + File.pathSeparator + libJars);
+		Options.v().set_soot_classpath("/home/julian/workspace/acteve/android-concolic-execution/libs/android-19.jar"+":"+libJars);
+//		Scene.v().setSootClassPath("/home/fedler/android-concolic-execution/android-concolic-execution/symbolic:/home/fedler/android-concolic-execution/android-concolic-execution/jars:/home/fedler/android-concolic-execution/android-concolic-execution/libs/");
 
 		Options.v().set_whole_program(true);
 //		Options.v().setPhaseOption("cg", "off");
@@ -126,26 +137,24 @@ public class Main extends BodyTransformer {
 		Options.v().set_keep_offset(true);
 		
 		//Dynamic classes are not in soot classpath but considered to be available at runtime
-		Options.v().set_dynamic_class(Arrays.asList(new String[] { "acteve.symbolic.Util" }));
+		//Options.v().set_dynamic_class(Arrays.asList(new String[] { "acteve.symbolic.integer.DoubleExpression" }));
 
-		//Dynamic packages are not in soot classpath but considered to be available at runtime		
-		Options.v().set_dynamic_package(Arrays.asList(new String[] { "acteve.symbolic.integer. ", "models. " }));
 
 		// replace Soot's printer with our logger
 		// G.v().out = new PrintStream(new LogStream(Logger.getLogger("SOOT"),
 		// Level.DEBUG), true);
 
 		Options.v().set_allow_phantom_refs(true);
-		Options.v().set_whole_program(true);
+//		Options.v().set_whole_program(true);
 		Options.v().set_prepend_classpath(true);
-		Options.v().set_validate(true);
+		Options.v().set_validate(VALIDATE);
 
 		if (DUMP_JIMPLE) {
 			Options.v().set_output_format(Options.output_format_jimple);
 		} else {
 			Options.v().set_output_format(Options.output_format_dex);
 		}
-		Options.v().set_app(true);
+//		Options.v().set_app(true);
 		Options.v().set_process_dir(Collections.singletonList(apk));
 		Options.v().set_force_android_jar(androidJAR);
 		Options.v().set_android_jars(libJars);
@@ -156,33 +165,92 @@ public class Main extends BodyTransformer {
 		// All packages which are not already in the app's transivite hull but
 		// are required by the injected code need to be marked as dynamic.
 		Options.v().set_dynamic_package(
-				Arrays.asList(new String[] { "acteve", "android.", "com.android", "org.json", "org.apache", "org.w3c",
+				Arrays.asList(new String[] { "acteve.symbolic.", "models.","com.android", "org.json", "org.apache", "org.w3c",
 						"org.xml", "junit", "javax", "javax.crypto"}));
+//		Options.v().set_dynamic_class(Arrays.asList(new String[]{"acteve.symbolic.SymbolicOperations", "acteve.symbolic.Util"}));
 		// Make sure all classes to be added to the apk are in Soot classpath
 		// Options.v().set_soot_classpath(androidJAR+":./bin"); //OWN
-		Options.v().set_soot_classpath(androidJAR + File.pathSeparator + libJars);
+//		Options.v().set_soot_classpath(androidJAR + File.pathSeparator + libJars);
 
+		Scene.v().loadNecessaryClasses();
 
+		Chain<SootClass> appclasses = Scene.v().getClasses();
+		for (SootClass c:appclasses) {
+			System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
+		}
+
+		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");
+		
+		for (String s:libClassesToInject) {
+			Scene.v().addBasicClass(s, SootClass.BODIES);
+			Scene.v().loadClassAndSupport(s);
+			SootClass clazz = Scene.v().forceResolve(s, SootClass.BODIES);
+			clazz.setApplicationClass();
+		}
+		
 		// A better way to resolve dependency classes is to add them to the
 		// library path
 		// Scene.v().addBasicClass("org.simalliance.openmobileapi.Session",SootClass.SIGNATURES);
-
+//		Scene.v().forceResolve("acteve.symbolic.integer.DoubleExpression",SootClass.BODIES);
 		//Force load Util class which is not present in the app (yet)
 		//TODO The class must be available in soot classpath. Probably it has to be in Jimple format
-		SootClass util = Scene.v().getSootClass("acteve.symbolic.Util");
-		Scene.v().forceResolve(util.getName(), SootClass.BODIES);
-		util.setApplicationClass();
-		System.out.println("Printing methods of acteve.symbolic.Util");
-		for (SootMethod m: util.getMethods() ) {
-			System.out.println("   DEBUG in MAIN: Method in Util: " + m.getDeclaration());
-		}
+//		List<SootClass> clsToLoad = loadFromJimples(jimpleFolder);
+//		for (SootClass cls: clsToLoad) {
+//			System.out.println("Loading from jimple: " + cls.getName());
+//			if (!Scene.v().containsClass(cls.getName()))
+//				Scene.v().addClass(cls);
+//			if (cls.isPhantom())
+//				cls.setPhantom(false);
+////			Scene.v().loadClass(cls.getName(), SootClass.BODIES);
+//			SootClass clazz = Scene.v().forceResolve(cls.getName(), SootClass.BODIES);
+//			SootResolver.v().reResolve(cls, SootClass.BODIES);
+//			cls.setApplicationClass();
+////			appclasses = Scene.v().getClasses();
+////			for (SootClass c:appclasses) {
+////				System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
+////			}
+//		}
+//		
+//		SootClass integerConstant = Scene.v().getSootClass("acteve.symbolic.integer.IntegerConstant");
+//		Scene.v().forceResolve(integerConstant.getName(), SootClass.BODIES);
+//		integerConstant.setApplicationClass();
+//		System.out.println("Printing methods of acteve.symbolic.integer.IntegerConstant");
+//		for (SootMethod m: integerConstant.getMethods() ) {
+//			System.out.println("   DEBUG in MAIN: Method in Util: " + m.getDeclaration());
+//		}
 
 		
-		Scene.v().loadNecessaryClasses();
-		loadClassesToInstrument();
-		loadOtherClasses();
-//		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
-		PackManager.v().getPack("jtp").add(new Transform("jtp.acteve", new Main()));
+//		loadClassesToInstrument_old(config.inJars); //Android jar
+//		loadClassesToInstrument_old(apk); //target APK
+		classes.add(Main.resolveSootClass("com.devuni.flashlight.MainActivity"));
+		classes.add(Main.resolveSootClass("com.devuni.light.LightActivity"));
+//		classes.add(Main.resolveSootClass("com.devuni.light.LightActivity$1"));
+		classes.add(Main.resolveSootClass("com.devuni.light.LightCamera"));
+//		classes.add(Main.resolveSootClass("com.devuni.light.LightCamera$1"));
+//		classes.add(Main.resolveSootClass("com.devuni.light.LightCamera$2"));
+		classes.add(Main.resolveSootClass("com.devuni.flashlight.BaseActivity"));
+		
+		//loadOtherClasses();
+		
+		/*
+		 * loading only this one file was in fact NOT enough:
+		//load acteve.symbolic.Util body from jimple:
+		SootClass acteveSymbolicUtilSC = loadFromJimple(new File(acteveSymbolicUtilityJimple), "acteve.symbolic.Util");
+		Scene.v().addClass(acteveSymbolicUtilSC);
+		*/
+		
+		//load ALL acteve jimples:
+//		File folder = new File(jimpleFolder);
+//		File[] listOfFiles = folder.listFiles();
+//		for (int i = 0; i < listOfFiles.length; i++) {
+//			if (listOfFiles[i].isFile()) {
+//				SootClass tmp = loadFromJimple(listOfFiles[i], listOfFiles[i].getName().replace(".jimple", ""));
+//				Scene.v().addClass(tmp);
+//			}
+//		}
+		
+		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
+//		PackManager.v().getPack("jtp").add(new Transform("jtp.acteve", new Main()));
 
 		// Scene.v().forceResolve(TOAST_CLASS, SootClass.BODIES);
 		// Scene.v().forceResolve("instrumentation.Main", SootClass.BODIES);
@@ -254,16 +322,33 @@ public class Main extends BodyTransformer {
 			String cmd = "jarsigner -verbose -digestalg SHA1 -sigalg MD5withRSA -storepass android -keystore /home/julian/.android/debug.keystore "
 					+ apk + " androiddebugkey";
 			System.out.println("Calling " + cmd);
-			Runtime.getRuntime().exec(cmd);
+			Process p = Runtime.getRuntime().exec(cmd);
+			printProcessOutput(p);
 
 			// zipalign is part of the Android SDK
 			System.out.println("Zipalign " + apk + " ...");
 			cmd = "zipalign -v 4 " + apk + " " + new File(apk).getName() + "_signed.apk";
 			System.out.println(cmd);
-			Runtime.getRuntime().exec(cmd);
+			p = Runtime.getRuntime().exec(cmd);
+			printProcessOutput(p);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static void printProcessOutput(Process p) throws IOException{
+		String line;
+		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		while ((line = input.readLine()) != null) {
+		  System.out.println(line);
+		}
+		input.close();
+		
+		input = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+		while ((line = input.readLine()) != null) {
+		  System.out.println(line);
+		}
+		input.close();
 	}
 
 	@Deprecated
@@ -304,10 +389,17 @@ public class Main extends BodyTransformer {
 	private static void loadClassesToInstrument() {
 	}
 	
-	@Deprecated
-	private static void loadClassesToInstrument_old() {
-		for (String pname : config.inJars.split(File.pathSeparator)) {
-			if (pname.endsWith(".jar")) {
+	private static SootClass resolveSootClass(String name) {
+		Scene.v().addBasicClass(name, SootClass.SIGNATURES);
+		Scene.v().forceResolve(name, SootClass.SIGNATURES);
+		SootClass klass = Scene.v().loadClassAndSupport(name);
+		return klass;
+	}
+	
+	
+	private static void loadClassesToInstrument_old(String jarFile) {
+		for (String pname : jarFile.split(File.pathSeparator)) {
+			if (pname.endsWith(".jar") || pname.endsWith(".apk")) {
 				// System.out.println("pname "+pname);
 				JarFile jar = null;
 				try {
@@ -328,8 +420,12 @@ public class Main extends BodyTransformer {
 							continue;
 						}
 						try {
+							Scene.v().addBasicClass(name, SootClass.SIGNATURES);
+							Scene.v().forceResolve(name, SootClass.SIGNATURES);
+//							SootResolver.v().resolveClass(name, SootClass.SIGNATURES);
 							SootClass klass = Scene.v().loadClassAndSupport(name);
-							classes.add(klass);
+							if (!classes.contains(klass))
+								classes.add(klass);
 						} catch (RuntimeException ex) {
 							System.out.println("Failed to load class: " + name);
 							addUninstrumentedClass(pname, name);
@@ -350,6 +446,8 @@ public class Main extends BodyTransformer {
 				"acteve.symbolic.array.CharArrayConstant", "acteve.symbolic.array.IntegerArrayConstant",
 				"acteve.symbolic.array.LongArrayConstant", "acteve.symbolic.array.FloatArrayConstant",
 				"acteve.symbolic.array.DoubleArrayConstant" };
+		
+		
 
 		for (String cname : classNames)
 			Scene.v().loadClassAndSupport(cname);
@@ -378,7 +476,7 @@ public class Main extends BodyTransformer {
 		return false;
 	}
 
-	@Override
+	
 	protected void internalTransform(Body b, String phaseName, Map<String, String> options) {
 		if (DEBUG)
 			printClasses("bef_instr.txt");
@@ -386,7 +484,7 @@ public class Main extends BodyTransformer {
 		ModelMethodsHandler.readModelMethods(config.modelMethsFile);
 		Instrumentor ci = new Instrumentor(config.rwKind, config.outDir, config.sdkDir, config.fldsWhitelist,
 				config.fldsBlacklist, config.methsWhitelist, config.instrAllFields);
-		ci.instrument(b.getMethod());
+//		ci.instrument(b.getMethod());
 //		InputMethodsHandler.instrument(config.inputMethsFile);
 		InputMethodsHandler.apply(b.getMethod()); //Instrument current method //TODO Probably need to check if current method should be instrumented at all
 		ModelMethodsHandler.addInvokerBodies();
@@ -402,7 +500,7 @@ public class Main extends BodyTransformer {
 	 * @param className
 	 * @return
 	 */
-	public SootClass loadFromJimple(File f, String className) {
+	public static SootClass loadFromJimple(File f, String className) {
 		try {
 			// Create FIP for jimple file
 			FileInputStream fip = new FileInputStream(f);
@@ -417,5 +515,21 @@ public class Main extends BodyTransformer {
 			t.printStackTrace();
 		}
 		return null;
+	}
+	
+	/**
+	 * Load class from jimple files in a directory.
+	 * 
+	 * @param dirname
+	 * @return
+	 */
+	public static List<SootClass> loadFromJimples(String dirname) {
+		File dir = new File(dirname);
+		if (!dir.exists() || !dir.isDirectory())
+			return null;
+		List<SootClass> jimples = new ArrayList<SootClass>();
+		for (File f : dir.listFiles())
+			jimples.add(loadFromJimple(f, f.getName().replace(".jimple", "")));
+		return jimples;
 	}
 }

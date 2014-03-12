@@ -130,7 +130,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 	private final boolean instrAllFields;
 	private final Map<SootField, SootField> fieldsMap;
 	private final Map<SootField, SootField> idFieldsMap;
-	private final HashSet<SootClass> symbolicFieldsHaveBeenAdded = new HashSet<SootClass>(); //by Julian
     private final List<String> condIdStrList;
 	//private final Map<Integer, Set<Integer>> writeMap;
 	// map from a original local to its corresponding shadow local
@@ -192,36 +191,31 @@ public class Instrumentor extends AbstractStmtSwitch {
 		instrAllFields = _instrAllFields;
 	}
 
-	public void instrument(SootMethod m) {
-		if (!symbolicFieldsHaveBeenAdded.contains(m.getDeclaringClass())) {
-			addSymbolicFields(m.getDeclaringClass());
-			symbolicFieldsHaveBeenAdded.add(m.getDeclaringClass());
+	public void instrument(List<SootClass> classes) {
+		for (SootClass klass : classes) {
+			klass.setApplicationClass();
+			addSymbolicFields(klass);
+			System.out.println("Added symbolic fields to " + klass.getName());
+			System.out.println(klass.getName());
 		}
-//		for (SootClass klass : classes) {
-//			addSymbolicFields(klass);
-//			klass.setApplicationClass();
-//			System.out.println(klass.getName());
-//		}
 
-		//TODO Unclear if this should remain?
 		loadFiles();
 
-//		for (SootClass klass : classes) {
-//			List<SootMethod> origMethods = klass.getMethods();
-//			for (SootMethod m : origMethods) {
+		for (SootClass klass : classes) {
+			List<SootMethod> origMethods = klass.getMethods();
+			for (SootMethod m : origMethods) {
 				if (!m.isConcrete())
-					return;
+					continue;
 
 				if (ModelMethodsHandler.modelExistsFor(m)) {
 					// do not instrument method if a model for it exists
-					System.out.println("skipping instrumentation of " + m);
-					return;
+					System.out.println("skipping instrumentation of " + m + " (model exists)");
+					continue;
 				}
-				instrumentMeth(m);
-//			}
-//		}
+				instrument(m);
+			}
+		}
 
-				//TODO Unclear if this should remain?
 		saveFiles();
 	}
 
@@ -238,6 +232,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 			// XXX: idField for tracking writes
             if(rwKind == RWKind.ID_FIELD_WRITE && doRW(origField)){
 				SootField idField = new SootField(origField.getName()+"$a3tid", IntType.v(), origField.getModifiers());
+				System.out.println("Adding field " + origField + " for "+c.getName());
+				Thread.dumpStack();
 				c.addField(idField);
 				idFieldsMap.put(origField, idField);
             }
@@ -253,7 +249,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		return false;
 	}
 
-	private void instrumentMeth(SootMethod method) {
+	private void instrument(SootMethod method) {
 		SwitchTransformer.transform(method);
  		localsMap.clear();
 		//currentWriteSet = new HashSet<Integer>();
@@ -326,6 +322,7 @@ public class Instrumentor extends AbstractStmtSwitch {
         for (Unit u : units) {
             if (u instanceof IfStmt) {
                 conds.add((IfStmt) u);
+                System.out.println("Adding condition to handle " + u.toString());
                 String str = getStr(u, methodSigAndFileStr);
                 condIdStrList.add(str);
             } else if (u instanceof LookupSwitchStmt || u instanceof TableSwitchStmt) {
@@ -448,6 +445,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 	}
 
+	@Override
 	public void caseAssignStmt(AssignStmt as)
 	{
 		Value rightOp = as.getRightOp();
@@ -494,6 +492,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 	}
 
+	@Override
 	public void caseIdentityStmt(IdentityStmt is)
 	{
 		if (!(is.getRightOp() instanceof CaughtExceptionRef))
@@ -671,7 +670,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 		//Local leftOp_sym = localsMap.get(leftOp);
 		//G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp_sym, NullConstant.v()));
 	}
-
+	
+	@Override
 	public void caseReturnStmt(ReturnStmt rs)
 	{
 		Immediate retValue = (Immediate) rs.getOp();

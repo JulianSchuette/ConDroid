@@ -265,7 +265,9 @@ public class Printer {
      *   @param out a PrintWriter instance to print to.
      */
     public void printTo(Body b, PrintWriter out) {
-        b.validate();
+        if (Main.VALIDATE) {
+        	b.validate();
+        }
 
         boolean isPrecise = !useAbbreviations();
 

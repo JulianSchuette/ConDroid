@@ -14,6 +14,6 @@
 	<classpathentry kind="lib" path="libs/baksmali-2.0.2-dev.jar"/>
 	<classpathentry kind="lib" path="libs/dexlib2-2.0b5-dev.jar"/>
 	<classpathentry kind="lib" path="libs/jasmin.jar"/>
-	<classpathentry kind="lib" path="libs/soot.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/soot"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

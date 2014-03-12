@@ -41,7 +41,7 @@ import java.io.FileReader;
 
 public class Mylog
 {
-	private static final String MYLOG = "/mylog.txt";
+	private static final String MYLOG = "/sdcard/mylog.txt";
 	private static final String LOG_DIR_PREFIX = "/data/data/";
 	private static final String PKG_FILE = "/sdcard/pkg.txt";
 	private static final String KILLED_FILE = "/a3t_killed_proc";
@@ -57,6 +57,7 @@ public class Mylog
 		if(writer == null) {
 			try{
 				writer = new PrintWriter(new BufferedWriter(new FileWriter("/sdcard"+MYLOG)));
+//				writer = new PrintWriter(System.out);
 			}catch(IOException e){
 				throw new Error(e);
 			}
@@ -66,12 +67,16 @@ public class Mylog
 
 	public static void e(String tag, String msg)
 	{
+		System.out.println(tag + " " + msg);
 		writer().println("E/"+tag+" : "+msg);
+		writer().flush();
 	}
 	
 	public static void println(String msg)
 	{
+		System.out.println(msg);
 		writer().println(msg);
+		writer().flush();
 	}
 
 	private static class ShutDownHook extends Thread
@@ -90,7 +95,7 @@ public class Mylog
 					break;
 				}
 			}
-			// e("A3T_METHS", Util.reachedMethsStr());
+			e("A3T_METHS", Util.reachedMethsStr());
 			android.util.Slog.e("Mylog", "Shutting down");
 			
 			if(writer != null) {

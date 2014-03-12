@@ -121,16 +121,17 @@ public abstract class acteve.symbolic.integer.FloatExpression extends acteve.sym
         if $r3 != null goto label0;
 
         r9 = new acteve.symbolic.integer.SymbolicInteger;
+        $r2 = r9;
         $f0 = $r0.<acteve.symbolic.integer.FloatExpression: float seed>;
         $i0 = (int) $f0;
         specialinvoke r9.<acteve.symbolic.integer.SymbolicInteger: void <init>(int,int)>(4, $i0);
         $r3 = <acteve.symbolic.integer.IntegerExpression: acteve.symbolic.integer.UnaryOperator I2F>;
-        $r1 = virtualinvoke $r3.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>(r9);
+        $r1 = virtualinvoke $r3.<acteve.symbolic.integer.UnaryOperator: acteve.symbolic.integer.Expression apply(acteve.symbolic.integer.Expression)>($r2);
         $r5 = (acteve.symbolic.integer.FloatExpression) $r1;
         $r6 = <acteve.symbolic.integer.Expression: acteve.symbolic.integer.PathCondition pc>;
         $r1 = specialinvoke $r5.<acteve.symbolic.integer.FloatExpression: acteve.symbolic.integer.Expression _realeq(acteve.symbolic.integer.Expression)>($r0);
         virtualinvoke $r6.<acteve.symbolic.integer.PathCondition: void assumeDet(acteve.symbolic.integer.Expression)>($r1);
-        return r9;
+        return $r2;
 
      label0:
         $r3 = <acteve.symbolic.integer.FloatExpression: acteve.symbolic.integer.UnaryOperator F2I>;
