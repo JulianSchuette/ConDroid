@@ -31,14 +31,20 @@
 package acteve.instrumentor;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -109,7 +115,6 @@ public class Main extends SceneTransformer {
 
 		if (DEBUG)
 			printClasses("aft_instr.txt");
-		System.out.println("Ananasas");
 	}
 
 	private void printClasses(String fileName) {
@@ -128,7 +133,7 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		config = Config.g();
 
-		Options.v().set_soot_classpath("/home/julian/workspace/acteve/android-concolic-execution/libs/android-19.jar"+":"+libJars);
+		Options.v().set_soot_classpath("/home/fedler/android-concolic-execution/android-concolic-execution/libs/android-19.jar"+":"+libJars);
 //		Scene.v().setSootClassPath("/home/fedler/android-concolic-execution/android-concolic-execution/symbolic:/home/fedler/android-concolic-execution/android-concolic-execution/jars:/home/fedler/android-concolic-execution/android-concolic-execution/libs/");
 
 		Options.v().set_whole_program(true);
@@ -260,10 +265,15 @@ public class Main extends SceneTransformer {
 
 		// new AddUninstrClassesToJar(uninstrumentedClasses,
 		// config.outJar).apply();
+		
+		//TODO: add WRITE_EXTERNAL_STORAGE to manifest, cause logs are dropped at /sdcard/sdcard/mylog.txt
 
 		String outputApk = "sootOutput/"+new File(apk).getName();
 		if (new File(outputApk).exists()) {
 			File f = new File(outputApk);
+			
+			//add WRITE_EXTERNAL_STORAGE to manifest:
+			addExternalStoragePermission(f.getAbsolutePath());
 			
 			//Sign the APK
 			signAPK(f.getAbsolutePath());
@@ -314,12 +324,77 @@ public class Main extends SceneTransformer {
 
 		return newFile;
 	}
+	
+	private static String readFile(String path) throws IOException 
+	{
+		byte[] encoded = Files.readAllBytes(Paths.get(path));
+		return new String(encoded);
+	}
+	
+	private static void addExternalStoragePermission(String apkpath){
+		try {
+			//need to unpack APK, overwrite manifest, and write back to APK
+			System.out.println("Replacing " + apkpath + " manifest to contain WRITE_EXTERNAL_STORAGE permission.");
+			Process p = Runtime.getRuntime().exec(
+					"java -jar libs/apktool.jar d -s -f " + apkpath + " unpacked");
+			int processExitCode = p.waitFor();
+			if (processExitCode != 0) {
+				System.out.println("Something went wrong when unpacking " + apkpath);
+				//return null;
+			}
+			
+			String manifestString = readFile("unpacked/AndroidManifest.xml");
+			
+			//the following does NOT work cause we cannot write it back properly:
+			/*
+			ManifestData manifest = AndroidManifestParser.parse(new ByteArrayInputStream(manifestString.getBytes("UTF-8")));
+			manifest.addUsesPermission("android.permission.WRITE_EXTERNAL_STORAGE");
+			*/
+			//do some string action now:
+			boolean hasWriteExtPermission = manifestString.contains("WRITE_EXTERNAL_STORAGE");
+			if (hasWriteExtPermission)
+				return; //nothing to do here
+			
+			//find use permissions block:
+			int pos = manifestString.lastIndexOf("<uses-permission android:name=");
+			//find closing tag of the last uses-permission:
+			int pos2 = manifestString.indexOf("</uses-permission>", pos) + "</uses-permission>".length();
+			if (pos2 < pos) //this may seem stupid at first but just means we didnt find above string behind pos
+				pos2 = manifestString.indexOf("/>", pos) + "/>".length();
+			//insert new permission:
+			String outManifestString = manifestString.substring(0, pos2) + "\n<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"></uses-permission>\n" + manifestString.substring(pos2);
+			
+			System.out.println("Writing out new manifest now:");
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+			          new FileOutputStream("unpacked/AndroidManifest.xml"), "utf-8"));
+			writer.write(outManifestString);
+			writer.close();
+			System.out.println("New manifest file written. Now rebuilding APK with new manifest.");
+			
+			p = Runtime.getRuntime().exec("java -jar libs/apktool.jar b unpacked/ " + apkpath);
+			processExitCode = p.waitFor();
+			if (processExitCode != 0) {
+				System.out.println("Something went wrong when packing " + apkpath);
+//				return null;
+			}
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 
 	private static void signAPK(String apk) {
 		try {
 			// jarsigner is part of the Java SDK
 			System.out.println("Signing " + apk + " ...");
-			String cmd = "jarsigner -verbose -digestalg SHA1 -sigalg MD5withRSA -storepass android -keystore /home/julian/.android/debug.keystore "
+			String cmd = "jarsigner -verbose -digestalg SHA1 -sigalg MD5withRSA -storepass android -keystore /home/fedler/.android/debug.keystore "
 					+ apk + " androiddebugkey";
 			System.out.println("Calling " + cmd);
 			Process p = Runtime.getRuntime().exec(cmd);
