@@ -69,7 +69,7 @@ public final class Config {
 	private Config() {
         monkeyScript = System.getProperty("a3t.monkey", "monkey_script.txt");
         appPkgName = System.getProperty("a3t.pkg", "com.example.de.fhg.aisec.concolicexample");
-        mainActivity = System.getProperty("a3t.mainact", "com.example.de.fhg.aisec.permsec.MainActivity");
+        mainActivity = System.getProperty("a3t.mainact", "com.example.de.fhg.aisec.concolicexample.MainActivity");
 		activityArgs = System.getProperty("a3t.actargs");
         z3Path = System.getProperty("env.Z3_BIN", "/opt/z3/bin/z3");
         maxExecs = Integer.getInteger("a3t.max.iters", DEFAULT_MAX_EXECS);
