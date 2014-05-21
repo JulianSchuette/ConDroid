@@ -61,6 +61,10 @@ import soot.jimple.StringConstant;
 import soot.jimple.IdentityStmt;
 import soot.jimple.ParameterRef;
 
+/**
+ * Input methods inject test values which are used for a test run of the program.
+ *
+ */
 public class InputMethodsHandler
 {
 	static void instrument(String fileName)
@@ -108,9 +112,11 @@ public class InputMethodsHandler
 		Body body = method.retrieveActiveBody();
 		List<Local> params = new ArrayList();
 		Chain<Unit> units = body.getUnits().getNonPatchingChain();
+		//Step through statements of this method
 		for (Unit u : units) {
 			Stmt s = (Stmt) u;
 			if (Instrumentor.paramOrThisIdentityStmt(s)) {
+				//Collect parameters of this method
 				if (((IdentityStmt) s).getRightOp() instanceof ParameterRef) {
 					//that is, dont add ThisRef's to params
 					params.add((Local) ((IdentityStmt) s).getLeftOp());
@@ -118,6 +124,7 @@ public class InputMethodsHandler
 				continue;
 			}
 			else {
+				//Immediately after $this assignment in method body, insert an invocation the new injector.
 				SootMethod injector = addInjector(method);
 				units.insertBefore(G.jimple.newInvokeStmt(G.staticInvokeExpr(injector.makeRef(), params)), s);
 				return;
@@ -125,6 +132,29 @@ public class InputMethodsHandler
 		}		
 	}
 
+	/**
+	 * Create a new method "static private void Klass.myMethod$sym(T bla, U blubb)" for a given method "Klass.myMethod(T bla, U blubb)".
+	 * 
+	 * The new method looks like this, for example:
+	 * 
+	 *     
+	 <pre>
+	 private static void doBlubb$sym(android.view.View)
+     {
+        acteve.symbolic.integer.Expression _sym_tmp_2;
+        android.view.View _sym_tmp_1;
+
+        _sym_tmp_1 := @parameter0: android.view.View;
+        _sym_tmp_2 = staticinvoke &lt;models.android.view.View$A3TInvoke: acteve.symbolic.integer.Expression Landroid_view_View_2(java.lang.Object,java.lang.String)&gt;(_sym_tmp_1, "doBlubb$android$view$View$0");
+        staticinvoke &lt;acteve.symbolic.Util: void argpush(int,acteve.symbolic.integer.Expression,acteve.symbolic.integer.Expression)&gt;(-1, null, _sym_tmp_2);
+        return;
+     }
+     </pre>
+	 * 
+	 * i.e., it forwards the original parameters to symbolic invocators models.my.Type$A3TInvoke which can generate symbolic expressions and put them on the stack.
+	 * @param method
+	 * @return the injector method. 
+	 */
 	public static SootMethod addInjector(SootMethod method) 
 	{
 		StringBuilder builder = new StringBuilder();
@@ -155,6 +185,7 @@ public class InputMethodsHandler
 		int i = 0;
 		for (Iterator pit = method.getParameterTypes().iterator(); pit.hasNext();) {
 			Type ptype = (Type) pit.next();
+			//If param is not Boolean:
 			if (((ptype instanceof PrimType) && !(ptype instanceof BooleanType)) || ptype instanceof RefType) {
 				SootMethod m = G.symValueInjectorFor(ptype);
 				Local l = G.newLocal(G.EXPRESSION_TYPE);

@@ -60,7 +60,7 @@ public final class Config {
 		inJars = "libs/android-14.jar";
 		outJar = System.getProperty("a3t.out.jar", "instrumented.jar");
         libJars = System.getProperty("a3t.lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
-		inputMethsFile = System.getProperty("a3t.inputmeths.file", null);
+		inputMethsFile = System.getProperty("a3t.inputmeths.file", "inputs.dat");
 		modelMethsFile = System.getProperty("a3t.modelmeths.file", "models.dat");
 		outDir = System.getProperty("a3t.out.dir", "out");
 		sdkDir = System.getProperty("a3t.sdk.dir", null);

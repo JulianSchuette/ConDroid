@@ -107,19 +107,30 @@ public class ModelMethodsHandler {
 		}
 	}
 
+	/**
+	 * A symbolic injector returns a symbolic expression which is seeded with the last concrete value.
+	 * 
+	 * @param klass
+	 * @return
+	 */
 	public static SootMethod getSymbolInjectorFor(SootClass klass)
 	{
 		String modelMethodName = getJNITypeCode(klass.getName());
 		SootClass invokerClass = getModelInvokerClassFor(klass);
+		
+		//If invoker for model method already exists, return it
 		if (invokerClass.declaresMethodByName(modelMethodName)) {
 			return invokerClass.getMethodByName(modelMethodName);
 		}	
+		
+		//Else, create model method
 		List paramTypes = Arrays.asList(new Type[]{RefType.v(G.OBJECT_CLASS_NAME), 
 												   RefType.v(G.STRING_CLASS_NAME)});
 		Type retType = G.EXPRESSION_TYPE;
 		String modelSubsignature = G.EXPRESSION_CLASS_NAME + " " + 
 			modelMethodName + "(" + G.OBJECT_CLASS_NAME + "," + G.STRING_CLASS_NAME + ")";
 
+		//Create invoker for model method and return it
 		return addInvokerMethod(klass, invokerClass, modelMethodName, paramTypes, retType, modelSubsignature);
 	}
 

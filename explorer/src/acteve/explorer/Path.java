@@ -68,7 +68,7 @@ public class Path
     private static final String AREAD_MARKER = "E/A3T_AREAD";
     private static final String AWRITE_MARKER = "E/A3T_AWRITE";
     private static final String METH_MARKER = "E/A3T_METHS";
-    private static final String Z3_OUT = "z3out.";
+    static final String Z3_OUT = "z3out.";
     private static final String Z3_ERR = "z3err.";
 
     private int seedId;
@@ -119,7 +119,13 @@ public class Path
     {
         return id;
     }
-
+    
+    /**
+     * This is where a new monkey script is generated which leads to different execution path.
+     * 
+     * @return
+     * @throws IOException
+     */
     MonkeyScript generateScript() throws IOException
     {
 		File scriptToRun = Main.newOutFile(Emulator.SCRIPT_TXT+"."+id);
@@ -171,6 +177,12 @@ public class Path
         
         Z3Model model = Z3ModelReader.read(z3OutFile);
         if(model != null){
+        	//TODO By Julian: This is where we received a solution to our path constraint. I.e., the values of the solution must now be injected at the appropriate places and the app must be started again, this time running with the modified values.
+        	// Acteve only deals with tap events, so their way of setting new input values is a monkey script. 
+        	// If path conditions depend on API calls like System.currentTimeMillis() however, there is currently no way of modifying their return values.
+        	// This should be solved by injecting methods which read the values from the solved model
+        	System.out.println("** Solved model **");
+        	model.print();
             File seedMonkeyScript = Main.newOutFile(Emulator.SCRIPT_TXT+"."+seedId);
             MonkeyScript newMonkeyScript = new FuzzedMonkeyScript(seedMonkeyScript, model);
 			newMonkeyScript.addComment("Fuzzed from " + Emulator.SCRIPT_TXT+"."+seedId);
@@ -181,7 +193,7 @@ public class Path
     }
 
     /*
-       Dump the entire trace. 
+       Dump the entire trace. (Called after each execution)
        This trace will be read when this execution will be used as seed execution in future.
        Trace contains events of following form:
         1. E/A3T_BRANCH : [T|F] <sid> #<did>

@@ -10,6 +10,7 @@ public class System
 //    }
     public static Expression currentTimeMillis____J()
     {
-    	return new acteve.symbolic.integer.SymbolicLong(0);
+    	java.lang.System.out.println("MyModels: Generating new symbolic long");
+    	return new acteve.symbolic.integer.SymbolicLong(42);
     }
 }

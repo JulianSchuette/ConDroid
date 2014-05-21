@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
 
 import acteve.symbolic.A3TInstrumented;
 import acteve.symbolic.A3TNative;
-
 import soot.Scene;
 import soot.Body;
 import soot.Immediate;
@@ -86,6 +85,7 @@ import soot.jimple.IntConstant;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
+import soot.jimple.Jimple;
 import soot.jimple.LengthExpr;
 import soot.jimple.NegExpr;
 import soot.jimple.EqExpr;
@@ -98,6 +98,7 @@ import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StaticFieldRef;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
+import soot.jimple.StringConstant;
 import soot.jimple.VirtualInvokeExpr;
 import soot.util.Chain;
 import soot.PatchingChain;
@@ -106,11 +107,13 @@ import soot.jimple.IfStmt;
 import soot.jimple.NullConstant;
 import soot.jimple.TableSwitchStmt;
 import soot.jimple.LookupSwitchStmt;
+import soot.tagkit.GenericAttribute;
 import soot.tagkit.SourceFileTag;
 import soot.tagkit.LineNumberTag;
 import soot.tagkit.SourceLineNumberTag;
 import soot.tagkit.SourceLnPosTag;
 import soot.tagkit.BytecodeOffsetTag;
+import soot.tagkit.StringTag;
 import soot.toolkits.graph.PostDominatorAnalysis;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.graph.UnitGraph;
@@ -207,6 +210,11 @@ public class Instrumentor extends AbstractStmtSwitch {
 				if (!m.isConcrete())
 					continue;
 
+				//BY JULIAN: For Debugging, attach the subsig number to each method.
+				int subSig = methSubsigNumberer.getOrMakeId(m);
+				m.addTag(new StringTag(String.valueOf(subSig)));
+				
+				
 				if (ModelMethodsHandler.modelExistsFor(m)) {
 					// do not instrument method if a model for it exists
 					System.out.println("skipping instrumentation of " + m + " (model exists)");
@@ -265,6 +273,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		currentMethod = method;
 		sigIdOfCurrentMethod = methSigNumberer.getOrMakeId(method);
 
+		//Iterate over stmts of current method and apply symbolic instrumentation
 		while (G.editor.hasNext()) {
 			Stmt s = G.editor.next();
 			if (paramOrThisIdentityStmt(s)) {
@@ -312,7 +321,12 @@ public class Instrumentor extends AbstractStmtSwitch {
         return m.getSignature() + " (" + fileName + ":";
     }
 
-	private void instrumentConds(Body body) {
+	/**
+	 * Instrument conditions (if branches).
+	 * 
+	 * @param body
+	 */
+    private void instrumentConds(Body body) {
 		String methodSigAndFileStr = getMethodSigAndFileStr(body);
         int entryCondId = condIdStrList.size();
 
@@ -323,6 +337,7 @@ public class Instrumentor extends AbstractStmtSwitch {
             if (u instanceof IfStmt) {
                 conds.add((IfStmt) u);
                 System.out.println("Adding condition to handle " + u.toString());
+                System.out.println("methodSigAndFileStr is " + methodSigAndFileStr);
                 String str = getStr(u, methodSigAndFileStr);
                 condIdStrList.add(str);
             } else if (u instanceof LookupSwitchStmt || u instanceof TableSwitchStmt) {
@@ -348,8 +363,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 			// Assign symbolic value of concrete expr 'condExp' to local var 'symVar'.
 			Value v = handleBinopExpr(condExp, false, localsMap);
+
 			if(v == null)
 				v = NullConstant.v();
+			System.out.println("Value v: " + v.toString());
 			Stmt symAsgnStmt = G.jimple.newAssignStmt(symVar, v);
 
 			Stmt assumeFlsStmt, assumeTruStmt;
@@ -359,18 +376,42 @@ public class Instrumentor extends AbstractStmtSwitch {
 				Arrays.asList(new Immediate[]{symVar, condId, IntConstant.v(1)})));
 
 			Stmt oldTarget = ifStmt.getTarget();
+			
+			//Insert symbolic condition before concrete if-statement
 			System.out.println("Inserting before: " + symAsgnStmt.toString());
 			units.insertBefore(symAsgnStmt, ifStmt);
+			
+			//TODO At this point we need to insert a staticinvoke to some helper method which sets op1 and op2 and determined by the solver to enforce a specific path
+			
+			//Insert symbolic "false" assumption immediately after concrete if-statement
 			System.out.println("Inserting after: " + assumeFlsStmt.toString());
 			units.insertAfter(assumeFlsStmt, ifStmt);
+			
+			/* 
+			 * The layout of statements will be reordered like this:
+			 * 
+			 * 			symAsgnStmt
+			 *			if <condition> goto assumeTrue
+			 *			assume false
+			 *			goto oldTarget			  (gotoOldTargetStmt1)
+			 * assumeTrue:
+			 *			assume true				  (assumeTruStmt)
+			 * 			goto oldTarget            (gotoOldTargetStmt2)
+			 * oldTarget:
+			 *          <original true branch>
+			 */
 			Stmt gotoOldTargetStmt1 = G.jimple.newGotoStmt(oldTarget);
 			Stmt gotoOldTargetStmt2 = G.jimple.newGotoStmt(oldTarget);
 			System.out.println("Insert before old target: " + gotoOldTargetStmt2.toString());
 			((PatchingChain) units).insertBeforeNoRedirect(gotoOldTargetStmt2, oldTarget);
+			
 			System.out.println("Insert before old target: " + assumeTruStmt.toString());
 			((PatchingChain) units).insertBeforeNoRedirect(assumeTruStmt, gotoOldTargetStmt2);
+			
 			System.out.println("Insert before old target: " + gotoOldTargetStmt1.toString());
 			((PatchingChain) units).insertBeforeNoRedirect(gotoOldTargetStmt1, assumeTruStmt);
+			
+			//Let if-statement jump to "assume: true" assumption 
 			ifStmt.setTarget(assumeTruStmt);
 		}
 	}
@@ -384,8 +425,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 				continue;
 			}
 			else {
+				//Check if method has @Symbolic annotation
 				boolean isSymbolic = Annotation.isSymbolicMethod(currentMethod);
 
+				//If method is marked @Symbolic, create a symbolic injector for it.
 				if (isSymbolic) {
 					System.out.println("symbolic = " + isSymbolic);
 					SootMethod injector = InputMethodsHandler.addInjector(currentMethod);
@@ -444,6 +487,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 		if (s instanceof AssignStmt) {
 			Local retValue = (Local) ((AssignStmt) s).getLeftOp();
 			if(addSymLocationFor(retValue.getType())) {
+				//BY Julian: Force solution value to drive execution down the new path.
+				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
+				
 				G.editor.insertStmtAfter(G.jimple.newAssignStmt(symLocalfor(retValue),
 																G.staticInvokeExpr(G.retPop, IntConstant.v(subSig))));
 				
@@ -455,6 +501,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 	}
 
+	/**
+	 * Called by soot.util.Switchable.apply()
+	 */
 	@Override
 	public void caseAssignStmt(AssignStmt as)
 	{
@@ -499,6 +548,17 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 		else if (rightOp instanceof Immediate && leftOp instanceof Local) {
 			handleSimpleAssignStmt((Local) leftOp, (Immediate) rightOp);
+		}
+
+		//BY JULIAN: Enforce specific solution values to tracked variables TODO: Unfinished.
+		if (leftOp instanceof Local && localsMap.containsKey(leftOp)) {
+//			G.editor.insertStmtAfter(G.jimple.newAssignStmt((Local) leftOp,IntConstant.v(42)));
+			G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
+					G.staticInvokeExpr(G.getSolution_int, StringConstant.v("$I0"))));
+		} else {
+			//TODO Handle assignment to array entries and fields
+			System.out.println("Not yet implemented: Enforcing a solution value for  " + as.toString());
+		
 		}
 	}
 

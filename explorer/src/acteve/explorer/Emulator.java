@@ -55,6 +55,7 @@ public class Emulator extends Task
 	public static final String SCRIPT_TXT = "script.txt";
 	public static final String PKG_TXT = "pkg.txt";
 	private static final String SETTINGS_TXT = "settings.txt";
+	private static final String SOLUTION_TXT = "solution.txt";
 
 	private List<Task> subtasks = new ArrayList();
 	private Target target = new Target();
@@ -69,6 +70,7 @@ public class Emulator extends Task
 	private AdbTask unlockPhone;
 	private PullLogCatTask pullLogCat;
 	private AdbTask pushSettingsFile;
+	private AdbTask pushNewSolution; 		//Task to push file with variable assignments (= solution) for current iteration. First iteration is empty.
 	private KillTask initialKillActivity;
 	private ClearHistoryTask clearHistory;
 
@@ -127,6 +129,7 @@ public class Emulator extends Task
 		subtasks.add(initialKillActivity);
 	}
 
+	@Override
 	public void execute()
 	{
 		execute(logcatBegin);
@@ -148,6 +151,18 @@ public class Emulator extends Task
 		execute(killActivity);
 		execute(pullLogCat);
 		execute(logcatEnd);
+		try {	
+			int start = this.pushNewSolution.getCmd().indexOf("push ")+5;
+			String solutionFile = this.pushNewSolution.getCmd().substring(start, this.pushNewSolution.getCmd().indexOf(' ', start));
+			if (new File(solutionFile).exists()) {
+				execute(this.pushNewSolution);
+			} else {
+				System.err.println("Solution file " + solutionFile + " does not exist. Nothing to push.");
+			}
+		} catch (Exception e) {	
+			//Execution fails if no model solution has been computed, e.g. at first iteration. That's okay.
+			e.printStackTrace();
+		}
 	}
 
 	public void exec(int executingId, MonkeyScript script)
@@ -164,6 +179,13 @@ public class Emulator extends Task
 		File syslogFile = Main.newOutFile(SYSLOG_OUT+executingId);
 		runMonkey.setOutput(monkeyFile);
 		logcatEnd.setOutput(syslogFile);
+		
+		File z3ModelFile = Main.newOutFile(Path.Z3_OUT+executingId);
+		System.out.println("Pushing " + z3ModelFile.getAbsolutePath() + " to " +  DEVICE_DIR + "/" + SOLUTION_TXT);
+		this.pushNewSolution = new AdbTask(port,  "push " + z3ModelFile.getAbsolutePath() + " " + DEVICE_DIR + "/" + SOLUTION_TXT);
+		this.pushNewSolution.setProject(new Project());
+//		this.pushNewSolution.execute();
+		subtasks.add(pushNewSolution);
 		
 		target.execute();
 

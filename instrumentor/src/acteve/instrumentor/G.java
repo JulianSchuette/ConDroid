@@ -93,7 +93,7 @@ import acteve.symbolic.integer.Types;
 */
 public class G
 {
-    public static final boolean DEBUG = false;//System.getProperty("a3t.debug","false").equals("true");
+    public static final boolean DEBUG = true;//System.getProperty("a3t.debug","false").equals("true");
 
     public static final Jimple jimple = Jimple.v();
 
@@ -136,6 +136,7 @@ public class G
     static final SootMethodRef readArray;
     static final SootMethodRef writeArray;
     static final SootMethodRef only_write;
+    static final SootMethodRef getSolution_int;	//Method which returns a new solution for a given variable
 
     static private final java.io.PrintWriter printer = new java.io.PrintWriter(System.out);
 
@@ -216,6 +217,7 @@ public class G
 		readArray = symUtilClass.getMethod("void readArray(" + OBJECT_CLASS_NAME + ",int)").makeRef();
 		writeArray = symUtilClass.getMethod("void writeArray(" + OBJECT_CLASS_NAME + ",int)").makeRef();
 		only_write = symUtilClass.getMethod("void only_write(int)").makeRef();
+		getSolution_int = symUtilClass.getMethod("int getSolution_int("+OBJECT_CLASS_NAME+")").makeRef();
 
 		symOpsClass = SymOpsClassGenerator.generate();
     }
@@ -231,6 +233,13 @@ public class G
 		return MODELS_PKG_PREFIX+className+"$A3TInvoke";
     }
 
+    /**
+     * Returns a reference to the method which creates a new symbolic variable of the given tyoe.
+     * 
+     * The method name is Util.symbolic_<type>
+     * @param type
+     * @return
+     */
     static SootMethod symValueInjectorFor(Type type)
     {
     	if (type instanceof PrimType) {

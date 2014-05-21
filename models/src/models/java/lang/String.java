@@ -16,7 +16,7 @@ public class String
 
     public static Expression  Ljava_lang_String_2(java.lang.String seed, java.lang.String name)
     {
-	System.out.println("hello");
+    java.lang.System.out.println("hello");
 	return new SymbolicString(seed, name);
     }
     
@@ -39,7 +39,7 @@ public class String
 	new BinaryOperator("java.lang.String.equals"){
 	    public Expression apply(Expression leftOp, Expression rightOp)
 	    {
-		System.out.println(((StringExpression) leftOp).seed + " " + ((StringExpression) rightOp).seed);
+		java.lang.System.out.println(((StringExpression) leftOp).seed + " " + ((StringExpression) rightOp).seed);
 		//boolean r = ((StringExpression) leftOp).seed.equals(((StringExpression) rightOp).seed);
 		return new BinaryIntegerExpression(this, leftOp, rightOp);
 	    }

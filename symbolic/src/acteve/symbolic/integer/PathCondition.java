@@ -60,7 +60,7 @@ public class PathCondition
 
     private void printConstraint(Expression e, boolean flag, boolean det)
     {
-		//Mylog.e("A3T_DEBUG", "e = " + e + " flag = " + flag + " det = " + det);
+		Mylog.e("A3T_DEBUG", "e = " + e + " flag = " + flag + " det = " + det);
 
 		//printST();
 		if(!flag){

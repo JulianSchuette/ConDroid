@@ -112,6 +112,10 @@ public class Main extends SceneTransformer {
 	// private static Pattern includePat =
 	// Pattern.compile("(android.view.ViewGroup)|(android.graphics.Rect)");
 	// Pattern.compile("android\\..*|com\\.android\\..*|com\\.google\\.android\\..*");
+	
+	/**
+	 * Classes to exclude from instrumentation (all acteve, dalvik classes, plus some android SDK classes which are used by the instrumentation itself).
+	 */
 	private static Pattern excludePat = Pattern
 			.compile("(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
 
@@ -148,8 +152,8 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		config = Config.g();
 
-//		Options.v().set_soot_classpath("/home/julian/workspace/acteve/android-concolic-execution/libs/android-19.jar"+":"+libJars+":"+modelClasses);
-		Options.v().set_soot_classpath("/home/fedler/android-concolic-execution/android-concolic-execution/libs/android-19.jar"+":"+libJars);
+		Options.v().set_soot_classpath("/home/julian/workspace/acteve/android-concolic-execution/libs/android-19.jar"+":"+libJars+":"+modelClasses);
+//		Options.v().set_soot_classpath("/home/fedler/android-concolic-execution/android-concolic-execution/libs/android-19.jar"+":"+libJars);
 
 		Options.v().set_whole_program(true);
 		Options.v().setPhaseOption("cg", "on");
@@ -447,7 +451,7 @@ public class Main extends SceneTransformer {
 		try {
 			// jarsigner is part of the Java SDK
 			System.out.println("Signing " + apk + " ...");
-			String cmd = "jarsigner -verbose -digestalg SHA1 -sigalg MD5withRSA -storepass android -keystore /home/fedler/.android/debug.keystore "
+			String cmd = "jarsigner -verbose -digestalg SHA1 -sigalg MD5withRSA -storepass android -keystore /home/julian/.android/debug.keystore "
 					+ apk + " androiddebugkey";
 			System.out.println("Calling " + cmd);
 			Process p = Runtime.getRuntime().exec(cmd);
@@ -597,6 +601,12 @@ public class Main extends SceneTransformer {
 		return classes.contains(klass);
 	}
 
+	/**
+	 * Returns true if a class should be instrumented.
+	 * 
+	 * @param className
+	 * @return
+	 */
 	private static boolean toBeInstrumented(String className) {
 		if (true/* includePat.matcher(className).matches() */) {
 			return excludePat.matcher(className).matches() ? false : true;
@@ -604,7 +614,7 @@ public class Main extends SceneTransformer {
 		return false;
 	}
 
-	
+	@Deprecated 
 	protected void internalTransform(Body b, String phaseName, Map<String, String> options) {
 		if (DEBUG)
 			printClasses("bef_instr.txt");

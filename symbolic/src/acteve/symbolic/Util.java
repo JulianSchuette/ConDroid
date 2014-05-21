@@ -31,31 +31,22 @@
 
 package acteve.symbolic;
 
-import acteve.symbolic.integer.Equality;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+
+import acteve.symbolic.array.SymbolicDoubleArray;
+import acteve.symbolic.array.SymbolicFloatArray;
+import acteve.symbolic.array.SymbolicIntegerArray;
 import acteve.symbolic.integer.Expression;
-import acteve.symbolic.integer.IntegerExpression;
-import acteve.symbolic.integer.IntegerConstant;
 import acteve.symbolic.integer.SymbolicDouble;
-import acteve.symbolic.integer.SymbolicInteger;
 import acteve.symbolic.integer.SymbolicFloat;
+import acteve.symbolic.integer.SymbolicInteger;
 import acteve.symbolic.integer.SymbolicLong;
 import acteve.symbolic.integer.Types;
-import acteve.symbolic.array.SymbolicIntegerArray;
-import acteve.symbolic.array.SymbolicLongArray;
-import acteve.symbolic.array.SymbolicFloatArray;
-import acteve.symbolic.array.SymbolicDoubleArray;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.HashSet;
 
 //import dalvik.system.VMStack;
 //import android.util.Slog;
@@ -63,6 +54,9 @@ import java.util.HashSet;
 public class Util
 {
     private static boolean[] reachedMeths = new boolean[50000];
+	private static long latestSolution = 0l;	//Timestamp of latest solution file
+	private static HashMap<String, String> solutionMap = new HashMap<String, String>();
+
 
     public static String reachedMethsStr() {
         StringBuffer sb = new StringBuffer(15000);
@@ -780,6 +774,71 @@ public class Util
 	{
 		Expression ret = new SymbolicDoubleArray(name);
 		return ret;
+	}
+	
+	/**
+	 * Returns the value which must be enforced for the given variable, according to the current solution.
+	 * TODO Variable name is not globally unique.
+	 * 
+	 */
+	public static int getSolution_int(Object local) {
+		System.out.println("return new solution for "+local);
+		readLatestSolution();
+		if (solutionMap.containsKey(local.toString())) {
+			return Integer.parseInt(solutionMap.get(local.toString()));
+		} else {
+			System.err.println("Hm. Solution for " + local + " required but not available. This is the current solutionMap: ");
+			for (String key: solutionMap.keySet()) {
+				System.out.println("   " + key + " : " + solutionMap.get(key));
+			}
+			return 42;	//42 is the answer to everything
+		}
+	}
+
+	
+	/**
+	 * Check if /sdcard/solution.txt has been modified since last time and reload solutions.
+	 *
+	 * The solution file looks like this:
+	 * sat
+	 *  (model 
+  	 *  (define-fun $L$0 () Int
+     *	  34)
+  	 * 	  (define-fun $I$0 () Int
+     *	   34)
+	 *	 )
+
+	 */
+	private static synchronized void readLatestSolution() {
+		File solutionFile = new File("/sdcard/solution.txt");		
+		if (solutionFile.exists() && solutionFile.canRead()) {
+			if (latestSolution < solutionFile.lastModified()) {
+				latestSolution  = solutionFile.lastModified();
+				solutionMap.clear();
+				try {
+					BufferedReader fr = new BufferedReader(new FileReader(solutionFile));
+					String line = null;
+					String currentVar = "";
+					String currentValue = "";
+					while ((line = fr.readLine()) != null) {
+						int i = line.indexOf("define-fun ");
+						if (i>=0) {
+							currentVar = line.substring(i+11, line.indexOf(" ("));
+						} else if (line.endsWith(")")) {
+							currentValue = line.substring(0,line.length()-2).trim();
+						}
+						System.out.println("Solution: " + currentVar + " : " + currentValue);
+						solutionMap.put(currentVar,  currentValue);
+					}
+				} catch (IOException ioe) {
+					ioe.printStackTrace();
+				}
+			} else {
+				System.out.println("Solution file not modified. No update required.");
+			}
+		} else {
+			System.err.println("Cannot read from solution file " + solutionFile.getAbsolutePath());
+		}
 	}
 }
 

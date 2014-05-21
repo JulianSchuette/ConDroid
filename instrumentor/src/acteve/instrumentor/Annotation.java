@@ -41,12 +41,17 @@ public class Annotation
 	private static final String symbolicClassName = 
 		"L" + acteve.symbolic.Symbolic.class.getName().replace(".", "/") + ";";
 
+	/**
+	 * Returns <code>true</code> if the given method has a @Symbolic annotation.
+	 * @param method
+	 * @return
+	 */
 	static boolean isSymbolicMethod(SootMethod method)
-	{
+	{		
 		for (Tag tag : method.getTags()) {
 			//System.out.println("name: " + tag.getName());
 			//System.out.println("val: " + tag.getValue
-			if (tag instanceof VisibilityAnnotationTag) {
+			if (tag instanceof VisibilityAnnotationTag) { //VisibilityAnnotationTag = Java Annotation
 				for (AnnotationTag atag : ((VisibilityAnnotationTag) tag).getAnnotations()) {
 					String type = atag.getType();
 					System.out.println("type " + type);
