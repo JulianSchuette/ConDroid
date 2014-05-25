@@ -68,15 +68,15 @@ public final class Config {
 
 	private Config() {
         monkeyScript = System.getProperty("a3t.monkey", "monkey_script.txt");
-//        appPkgName = System.getProperty("a3t.pkg", "com.example.de.fhg.aisec.concolicexample");
-        appPkgName = System.getProperty("a3t.pkg", "com.devuni.flashlight");
-//        mainActivity = System.getProperty("a3t.mainact", "com.example.de.fhg.aisec.concolicexample.MainActivity");
-        mainActivity = System.getProperty("a3t.mainact", "com.devuni.flashlight.MainActivity");
+        appPkgName = System.getProperty("a3t.pkg", "com.example.de.fhg.aisec.concolicexample");
+//        appPkgName = System.getProperty("a3t.pkg", "com.devuni.flashlight");
+        mainActivity = System.getProperty("a3t.mainact", "com.example.de.fhg.aisec.concolicexample.MainActivity");
+//        mainActivity = System.getProperty("a3t.mainact", "com.devuni.flashlight.MainActivity");
 		activityArgs = System.getProperty("a3t.actargs");
         z3Path = System.getProperty("env.Z3_BIN", "/opt/z3/bin/z3");
         maxExecs = Integer.getInteger("a3t.max.iters", DEFAULT_MAX_EXECS);
-//      outDir = System.getProperty("a3t.out.dir", "/home/julian/workspace/acteve/results/");
-        outDir = System.getProperty("a3t.out.dir", "/home/fedler/workspace-concolic/results/");
+        outDir = System.getProperty("a3t.out.dir", "/home/julian/workspace/acteve/results/");
+//        outDir = System.getProperty("a3t.out.dir", "/home/fedler/workspace-concolic/results/");
         emulatorPort = System.getProperty("a3t.port", DEFAULT_EMU_PORT);
         userWait = Integer.getInteger("a3t.userwait", 4);
         K = Integer.getInteger("a3t.K",2);

@@ -50,6 +50,8 @@ import java.util.regex.Pattern;
 
 import acteve.symbolic.A3TInstrumented;
 import acteve.symbolic.A3TNative;
+import soot.BooleanType;
+import soot.FloatType;
 import soot.Scene;
 import soot.Body;
 import soot.Immediate;
@@ -488,7 +490,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			Local retValue = (Local) ((AssignStmt) s).getLeftOp();
 			if(addSymLocationFor(retValue.getType())) {
 				//BY Julian: Force solution value to drive execution down the new path.
-				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
+//				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
 				
 				G.editor.insertStmtAfter(G.jimple.newAssignStmt(symLocalfor(retValue),
 																G.staticInvokeExpr(G.retPop, IntConstant.v(subSig))));
@@ -552,9 +554,16 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 		//BY JULIAN: Enforce specific solution values to tracked variables TODO: Unfinished.
 		if (leftOp instanceof Local && localsMap.containsKey(leftOp)) {
-//			G.editor.insertStmtAfter(G.jimple.newAssignStmt((Local) leftOp,IntConstant.v(42)));
-			G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
-					G.staticInvokeExpr(G.getSolution_int, StringConstant.v("$I0"))));
+			Type t = leftOp.getType();
+			if (t instanceof IntType) {
+				System.out.println("BLABLABLA! " + leftOp.toString().toUpperCase() );
+				G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
+					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()))));
+			} else if (t instanceof FloatType) {
+				//TODO support floats
+			} else if (t instanceof BooleanType) {
+				//TODO support booleans
+			} // ...
 		} else {
 			//TODO Handle assignment to array entries and fields
 			System.out.println("Not yet implemented: Enforcing a solution value for  " + as.toString());

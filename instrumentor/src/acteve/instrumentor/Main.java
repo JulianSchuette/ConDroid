@@ -96,7 +96,7 @@ public class Main extends SceneTransformer {
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	static boolean DEBUG = true;
-	public final static boolean DUMP_JIMPLE = true; //default: false. Set to true to create Jimple code instead of APK
+	public final static boolean DUMP_JIMPLE = false	; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
 	private static boolean LIMIT_TO_CALL_PATH = false; //Limit instrumentation to methods along the CP to reflection use?
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
@@ -104,7 +104,7 @@ public class Main extends SceneTransformer {
 	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
 //	private final static String apk = "./de.fhg.aisec.classloadtest.apk"; //Example app USING REFLECTIVE LOADING to instrument
 //	private final static String apk = "./SkeletonApp/lib/SkeletonApp.apk"; //Example app to instrument
-	private final static String apk = "/home/julian/workspace/acteve/de.fhg.aisec.concolicexample.apk";
+	private final static String apk = "./de.fhg.aisec.concolicexample.apk";
 //	private final static String apk = "/home/fedler/android-concolic-execution/android-concolic-execution/de.fhg.aisec.concolicexample.apk";
 	private final static String jimpleFolder = "./acteve-util-jimple/";
 	private final static String acteveSymbolicUtilityJimple = jimpleFolder + "acteve.symbolic.Util.jimple";
@@ -153,7 +153,7 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		config = Config.g();
 
-		Options.v().set_soot_classpath("/home/julian/workspace/acteve/android-concolic-execution/libs/android-19.jar"+":"+libJars+":"+modelClasses);
+		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses);
 //		Options.v().set_soot_classpath("/home/fedler/android-concolic-execution/android-concolic-execution/libs/android-19.jar"+":"+libJars);
 
 		Options.v().set_whole_program(true);	//Implicitly "on" when instrumenting Android, AFAIR.

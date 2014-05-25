@@ -785,6 +785,7 @@ public class Util
 		System.out.println("return new solution for "+local);
 		readLatestSolution();
 		if (solutionMap.containsKey(local.toString())) {
+			System.out.println(local + " -> " + Integer.parseInt(solutionMap.get(local.toString())));
 			return Integer.parseInt(solutionMap.get(local.toString()));
 		} else {
 			System.err.println("Hm. Solution for " + local + " required but not available. This is the current solutionMap: ");
@@ -821,11 +822,16 @@ public class Util
 					String currentVar = "";
 					String currentValue = "";
 					while ((line = fr.readLine()) != null) {
+						//Quite verzettelt, but works...
 						int i = line.indexOf("define-fun ");
+						int j = line.lastIndexOf("(");
 						if (i>=0) {
-							currentVar = line.substring(i+11, line.indexOf(" ("));
-						} else if (line.endsWith(")")) {
-							currentValue = line.substring(0,line.length()-2).trim();
+							currentVar = line.substring(i+11, j).trim();
+							//$I$0 -> $I0
+							if (currentVar.charAt(2)=='$')
+								currentVar = currentVar.substring(0,2) + currentVar.substring(3, currentVar.length());
+						} else if (line.endsWith(")") && line.trim().length()>1) {
+							currentValue = line.substring(0,line.length()-1).trim();
 						}
 						System.out.println("Solution: " + currentVar + " : " + currentValue);
 						solutionMap.put(currentVar,  currentValue);

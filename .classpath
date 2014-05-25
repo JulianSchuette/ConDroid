@@ -14,7 +14,12 @@
 	<classpathentry kind="lib" path="libs/baksmali-2.0.2-dev.jar"/>
 	<classpathentry kind="lib" path="libs/dexlib2-2.0b5-dev.jar"/>
 	<classpathentry kind="lib" path="libs/jasmin.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/soot"/>
+	<classpathentry kind="lib" path="libs/soot.jar" sourcepath="/soot">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/home/fedler/BSI/permsec/workspace/soot/doc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/apktool.jar"/>
 	<classpathentry kind="lib" path="libs/commons-io-2.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

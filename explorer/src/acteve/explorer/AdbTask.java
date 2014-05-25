@@ -40,13 +40,13 @@ public class AdbTask extends ExecTask
 {
 	protected int port;
 
-	public AdbTask(int port, String args)
+	public AdbTask(int port, String cmd)
 	{
 		this.port = port;
 		setExecutable("adb");
 		Commandline.Argument cmdLineArgs = createArg();
-		args = "-s emulator-"+port+" " + args;
-		cmdLineArgs.setLine(args);
+		cmd = "-s emulator-"+port+" " + cmd;
+		cmdLineArgs.setLine(cmd);
 
 		setFailonerror(true);
 		
@@ -54,6 +54,10 @@ public class AdbTask extends ExecTask
 		setOutput(Main.newOutFile("adbout."+port));
 	}
 	
+	public String getCmd() {
+		return this.cmdl.toString();
+	}
+		
 	public void execute()
 	{
 		System.out.println("exec " + Arrays.toString(cmdl.getCommandline()));
