@@ -1,4 +1,9 @@
 # Model definitions
 # By Julian
+#
+# Models describe the behavior of concrete methods in terms of symbols. 
+# Every method which is not instrumented itself and whose effects should affect the
+# path condition must be modelled.
+# 
 java.lang.System long currentTimeMillis()
 android.view.View android.view.View <init>()

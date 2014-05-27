@@ -28,6 +28,43 @@ public class MethodUtils {
 	private static final String MAIN_SIGNATURE = "void main(java.lang.String[])";
 	private static final String RUN_SIGNATURE = "void run()";
 	
+	/**
+	 * These are our pseudo-entry points. They consist of both actual Android
+	 * life cycle entry points and of UI methods, i.e. ones that can be
+	 * triggered by user UI interaction. Note: We only consider subsignatures
+	 * here.
+	 */
+	private static final String[] LIFECYCLE_AND_UI_SUBSIGS = {
+		//life cycle:
+		"void onCreate(android.os.Bundle)", //every UI element has its onCreate() called, thus we don't need to explicitly list anything downstream from here
+		MAIN_SIGNATURE,
+		RUN_SIGNATURE,
+		"void onRestart()",
+		"void onStart()",
+		"void onResume()",
+		"void onPause()",
+		"void onStop()",
+		"void onDestroy()",
+		"void onReceive(android.content.Context, android.content.Intent)",
+		"boolean onCreate()", //for example used by ContentProviders
+		//UI events:
+		"void onClick(android.view.View)",
+		"void onTabSelected(android.app.ActionBar.Tab, android.app.FragmentTransaction)",
+		"void onTabReselected(android.app.ActionBar.Tab, android.app.FragmentTransaction)",
+		"void onTabUnselected(android.app.ActionBar.Tab, android.app.FragmentTransaction)",
+		"void onLongClick(android.view.View)",
+		"void onFocusChange(android.view.View, boolean)",
+		"void onKey(android.view.View, int, android.view.KeyEvent)",
+		"void onTouch(android.view.View, android.view.MotionEvent)",
+		"void onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)",
+		"void onKeyDown(int, android.view.KeyEvent)",
+		"void onKeyUp(int, android.view.KeyEvent)",
+		"void onTrackballEvent(android.view.MotionEvent)",
+		"void onTouchEvent(android.view.MotionEvent)",
+		"void onFocusChanged(boolean, int, android.graphics.Rect)",
+		"void onInterceptTouchEvent(android.view.MotionEvent)",
+	};
+	
 	private static final String[] REFLECTIVE_LOADING_SIGS = {
 		"<java.lang.Class: T newInstance()>", //how to deal with generics in signatures? TODO
 		"<java.lang.Class: newInstance()>", //afaik dynamic types are "type-erased" at runtime, so removing the type ought to yield the correct signature
@@ -58,6 +95,13 @@ public class MethodUtils {
 	public static boolean isReflectiveLoading(SootMethod method){
 		for (String s : REFLECTIVE_LOADING_SIGS)
 			if (method.getSignature().equals(s))
+				return true;
+		return false;
+	}
+	
+	public static boolean isPseudoEntryPoint(SootMethod method){
+		for (String s : LIFECYCLE_AND_UI_SUBSIGS)
+			if (method.getSubSignature().equals(s))
 				return true;
 		return false;
 	}
@@ -145,6 +189,28 @@ public class MethodUtils {
 				if (method.getDeclaringClass().isApplicationClass()) {
 					col.add(method);
 				}
+			}
+		}
+
+		return col;
+	}
+	
+	/**
+	 * Returns life cycle determined entry points, i.e. callback methods, and
+	 * UI event handlers, i.e. any "user-induced" entry point.
+	 * @return
+	 */
+	public static List<SootMethod> findApplicationPseudoEntryPoints() {
+		List<SootMethod> col = new ArrayList<SootMethod>();
+		ReachableMethods reachableMethods = Scene.v().getReachableMethods();
+		QueueReader<MethodOrMethodContext> listener = reachableMethods.listener();
+		while (listener.hasNext()) {
+			MethodOrMethodContext next = listener.next();
+			SootMethod method = next.method();
+			if (isPseudoEntryPoint(method)) {
+				//if (method.getDeclaringClass().isApplicationClass()) {
+					col.add(method);
+				//}
 			}
 		}
 

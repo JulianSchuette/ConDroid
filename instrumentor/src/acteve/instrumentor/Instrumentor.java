@@ -431,15 +431,16 @@ public class Instrumentor extends AbstractStmtSwitch {
 				boolean isSymbolic = Annotation.isSymbolicMethod(currentMethod);
 
 				//If method is marked @Symbolic, create a symbolic injector for it.
-				if (isSymbolic) {
-					System.out.println("symbolic = " + isSymbolic);
-					SootMethod injector = InputMethodsHandler.addInjector(currentMethod);
-					List ps = new ArrayList(params);
-					if (!currentMethod.isStatic()) {
-						ps.remove(0);
-					}
-					units.insertBefore(G.jimple.newInvokeStmt(G.staticInvokeExpr(injector.makeRef(), ps)), s);
-				}
+				//JULIAN: Looks like we don't need this
+//				if (isSymbolic) {
+//					System.out.println("symbolic = " + isSymbolic);
+//					SootMethod injector = InputMethodsHandler.addInjector(currentMethod);
+//					List ps = new ArrayList(params);
+//					if (!currentMethod.isStatic()) {
+//						ps.remove(0);
+//					}
+//					units.insertBefore(G.jimple.newInvokeStmt(G.staticInvokeExpr(injector.makeRef(), ps)), s);
+//				}
 				Local symArgsArray = G.jimple.newLocal(new String("a3targs$symargs"), ArrayType.v(G.EXPRESSION_TYPE, 1));
 				body.getLocals().addFirst(symArgsArray);
 				int subsigId = methSubsigNumberer.getOrMakeId(currentMethod);

@@ -124,7 +124,7 @@ public class InputMethodsHandler
 				continue;
 			}
 			else {
-				//Immediately after $this assignment in method body, insert an invocation the new injector.
+				//Immediately after $this assignment in method body, insert an invocation of the new injector.
 				SootMethod injector = addInjector(method);
 				units.insertBefore(G.jimple.newInvokeStmt(G.staticInvokeExpr(injector.makeRef(), params)), s);
 				return;

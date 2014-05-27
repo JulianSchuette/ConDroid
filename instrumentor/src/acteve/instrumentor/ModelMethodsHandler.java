@@ -411,20 +411,22 @@ public class ModelMethodsHandler {
 			String line = reader.readLine();
 			while (line != null) {
 				int index = line.indexOf(' ');
-				String className = line.substring(0, index);				
-				if (!Scene.v().containsClass(className)) {
-					System.out.println("will not model class: " + line);
-				}
-				else {
-					String methodSig = line.substring(index+1).trim();
-					SootClass declClass = Scene.v().getSootClass(className);
-					if (declClass.declaresMethod(methodSig)) {
-						SootMethod method = declClass.getMethod(methodSig);
-						methodsWithModels.add(method);
-						System.out.println("model method requested for: " + declClass.getName() + "." + method.getSignature() + " which is available in scene");
+				if (!line.startsWith("#") && index >=0) {	//Skip comments
+					String className = line.substring(0, index);				
+					if (!Scene.v().containsClass(className)) {
+						System.out.println("will not model class: " + line);
 					}
 					else {
-						System.out.println("will not model method: " + line);
+						String methodSig = line.substring(index+1).trim();
+						SootClass declClass = Scene.v().getSootClass(className);
+						if (declClass.declaresMethod(methodSig)) {
+							SootMethod method = declClass.getMethod(methodSig);
+							methodsWithModels.add(method);
+							System.out.println("model method requested for: " + declClass.getName() + "." + method.getSignature() + " which is available in scene");
+						}
+						else {
+							System.out.println("will not model method: " + line);
+						}
 					}
 				}
 				line = reader.readLine();
