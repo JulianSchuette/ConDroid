@@ -61,7 +61,10 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Transform;
+import soot.JastAddJ.Opt;
 import soot.javaToJimple.IInitialResolver.Dependencies;
+import soot.jimple.infoflow.android.SetupApplication;
+import soot.jimple.infoflow.android.data.AndroidMethod;
 import soot.options.Options;
 import soot.util.Chain;
 
@@ -77,7 +80,8 @@ public class Main extends SceneTransformer {
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
 	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
-	private final static String apk = "./de.fhg.aisec.concolicexample.apk";
+	private final static String apk = "./de.fhg.aisec.classloadtest.apk";
+	private final static String androidPlatforms = "/home/fedler/android-sdks/platforms";
 	private static boolean OMIT_MANIFEST_MODIFICATION = false;
 	
 	/**
@@ -130,10 +134,31 @@ public class Main extends SceneTransformer {
 	 * @throws SAXException
 	 */
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+		soot.G.reset();
 		config = Config.g();
 
-		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses);
-
+		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
+		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
+		
+		// inject correct dummy main:
+		SetupApplication setupApplication = new SetupApplication(androidPlatforms, apk);
+		try {
+			/** ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+			 *  ! NOTE: calculateSourcesSinksEntrypoints() calls soot.G.reset()
+			 *  , i.e. it clears all global settings! ! ! ! ! ! ! ! ! ! ! ! ! !
+			 */ 
+			setupApplication.calculateSourcesSinksEntrypoints(new HashSet<AndroidMethod>(), new HashSet<AndroidMethod>());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		//restore the class path because those Deppen delete it in calculateSourcesSinksEntrypoints by calling soot.G.reset():
+		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
+		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
+		
+		Options.v().set_no_bodies_for_excluded(true);
+		Options.v().set_src_prec(Options.src_prec_apk);
+		
 		Options.v().set_whole_program(true);	//Implicitly "on" when instrumenting Android, AFAIR.
 		Options.v().setPhaseOption("cg", "on");	//"On" by default.
 		Options.v().setPhaseOption("cg", "verbose");
@@ -168,14 +193,14 @@ public class Main extends SceneTransformer {
 						"org.xml", "junit", "javax", "javax.crypto"}));
 
 		Scene.v().loadNecessaryClasses();
-
+		
 		//Register all application classes for instrumentation
 		System.out.println("Application classes");
 		Chain<SootClass> appclasses = Scene.v().getApplicationClasses();
 		for (SootClass c:appclasses) {
 			System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
 		}
-
+		
 		//Collect additional classes which will be injected into the app
 		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
 		for (String s:libClassesToInject) {
@@ -184,6 +209,11 @@ public class Main extends SceneTransformer {
 			SootClass clazz = Scene.v().forceResolve(s, SootClass.BODIES);
 			clazz.setApplicationClass();
 		}
+		
+		SootMethod dummyMain = setupApplication.getEntryPointCreator().createDummyMain();
+
+		Scene.v().setEntryPoints(Collections.singletonList(dummyMain));
+		Scene.v().addBasicClass(dummyMain.getDeclaringClass().getName(), SootClass.BODIES);
 		
 		PackManager.v().getPack("cg").apply();
 		

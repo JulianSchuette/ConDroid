@@ -68,6 +68,7 @@ public class MethodUtils {
 	private static final String[] REFLECTIVE_LOADING_SIGS = {
 		"<java.lang.Class: T newInstance()>", //how to deal with generics in signatures? TODO
 		"<java.lang.Class: newInstance()>", //afaik dynamic types are "type-erased" at runtime, so removing the type ought to yield the correct signature
+		"<java.lang.Class: java.lang.Object newInstance()>",
 		"<java.lang.Class: T newInstance(java.lang.Object...)>",
 		"<java.lang.Class: newInstance(java.lang.Object...)>",
 		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
