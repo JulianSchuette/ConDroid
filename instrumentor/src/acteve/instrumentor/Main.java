@@ -79,8 +79,7 @@ public class Main extends SceneTransformer {
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
 	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
-	private final static String apk = "./de.fhg.aisec.classloadtest.apk";
-	private final static String androidPlatforms = "/home/fedler/android-sdks/platforms";
+	private final static String apk = "./de.fhg.aisec.concolicexample.apk";
 	private static boolean OMIT_MANIFEST_MODIFICATION = false;
 	
 	/**
@@ -137,11 +136,11 @@ public class Main extends SceneTransformer {
 		soot.G.reset();
 		config = Config.g();
 
-		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
-		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
+		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
+//		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
 		
 		// inject correct dummy main:
-		SetupApplication setupApplication = new SetupApplication(androidPlatforms, apk);
+		SetupApplication setupApplication = new SetupApplication(androidJAR, apk);
 		try {
 			/** ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 			 *  ! NOTE: calculateSourcesSinksEntrypoints() calls soot.G.reset()
@@ -153,8 +152,8 @@ public class Main extends SceneTransformer {
 		}
 		
 		//restore the class path because those Deppen delete it in calculateSourcesSinksEntrypoints by calling soot.G.reset():
-		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
-		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
+		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
+		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
 		
 		Options.v().set_no_bodies_for_excluded(true);
 		Options.v().set_src_prec(Options.src_prec_apk);
