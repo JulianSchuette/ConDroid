@@ -14,19 +14,15 @@
 	<classpathentry kind="lib" path="libs/baksmali-2.0.2-dev.jar"/>
 	<classpathentry kind="lib" path="libs/dexlib2-2.0b5-dev.jar"/>
 	<classpathentry kind="lib" path="libs/jasmin.jar"/>
-	<classpathentry kind="lib" path="libs/soot.jar" sourcepath="/soot">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/home/fedler/BSI/permsec/workspace/soot/doc/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="libs/apktool.jar"/>
 	<classpathentry kind="lib" path="libs/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="libs/axml-1.0.jar"/>
 	<classpathentry kind="lib" path="libs/axmlprinter.jar"/>
 	<classpathentry kind="lib" path="libs/AXMLPrinter2.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-api-1.7.5.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-simple-1.7.5.jar"/>
 	<classpathentry kind="lib" path="libs/soot-infoflow-android.jar"/>
 	<classpathentry kind="lib" path="libs/soot-infoflow.jar"/>
+	<classpathentry kind="lib" path="libs/soot.jar"/>
+	<classpathentry kind="lib" path="libs/axml-2.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
