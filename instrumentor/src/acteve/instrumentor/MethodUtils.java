@@ -1,7 +1,10 @@
 package acteve.instrumentor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -99,10 +102,87 @@ public class MethodUtils {
 		"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)>"
 	};
 	
-	public static boolean isReflectiveLoading(SootMethod method){
+	private static HashMap<String,String[]> REFLECTIVE_LOADING_MAP = new HashMap<String,String[]>();
+	static {
+		HashMap<String,String[]> aHashSet = new HashMap<String,String[]>();
+		aHashSet.put("java.lang.Class", new String[]
+				{"T newInstance()",
+				 "newInstance()",
+				 "java.lang.Object newInstance()",
+				 "T newInstance(java.lang.Object...)",
+				 "newInstance(java.lang.Object...)",
+				 "java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)",
+				 "java.lang.reflect.Constructor getConstructor(java.lang.Class...)",
+				 "java.lang.reflect.Constructor<?>[] getConstructors()",
+				 "java.lang.reflect.Constructor[] getConstructors()",
+				 "java.lang.reflect.Constructor<?>[] getDeclaredConstructors()",
+				 "java.lang.reflect.Constructor[] getDeclaredConstructors()",
+				 "java.lang.Class<T> forName(java.lang.String)",
+				 "java.lang.Class forName(java.lang.String)"
+				});
+		aHashSet.put("java.lang.ClassLoader", new String[]
+				{"java.lang.Class<T> loadClass(java.lang.String)",
+				 "java.lang.Class loadClass(java.lang.String)",
+				 "java.lang.Class<T> loadClass(java.lang.String,boolean)",
+				 "java.lang.Class loadClass(java.lang.String,boolean)",
+				 "void <init>()",
+				 "void <init>(java.lang.ClassLoader)",
+				 "java.lang.ClassLoader getSystemClassLoader()"
+				});
+		aHashSet.put("java.net.URLClassLoader", new String[]
+				{"void <init>(java.net.URL[])",
+				 "void <init>(java.net.URL[],java.lang.ClassLoader)",
+				 "void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)"
+				});
+		aHashSet.put("java.security.SecureClassLoader", new String[]
+				{"void <init>()",
+				 "void <init>(java.lang.ClassLoader)"
+				});
+		aHashSet.put("dalvik.system.BaseDexClassLoader", new String[]
+				{"void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)"
+				});
+		aHashSet.put("dalvik.system.DexClassLoader", new String[]
+				{"void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)"
+				});
+		aHashSet.put("dalvik.system.PathClassLoader", new String[]
+				{"void <init>(Java.lang.String,java.lang.ClassLoader)",
+				 "void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)"
+				});
+		REFLECTIVE_LOADING_MAP = aHashSet;
+	};
+	
+	/**
+	 * Tests whether a method's signature is among the well-known method
+	 * signatures for reflective class loading defined in the JRE classes.
+	 * However, it does NOT recognize methods gained by inheritance from these
+	 * JRE classes. Use {@link isReflectiveLoading} instead.
+	 * @param method
+	 * @return
+	 */
+	@Deprecated
+	public static boolean isReflectiveLoadingOld(SootMethod method){
 		for (String s : REFLECTIVE_LOADING_SIGS)
 			if (method.getSignature().equals(s))
 				return true;
+		return false;
+	}
+	
+	/**
+	 * Supersedes {@link isReflectiveLoadingOld}. Tests whether a method
+	 * has a signature as defined in {@link REFLECTIVE_LOADING_MAP},
+	 * additionally taking inheritance into account. For example, if a 
+	 * declaring class is a subclass of any of the JRE classes and overrides
+	 * or inherits a reflective loading method, it will be found.
+	 * @param method
+	 * @return
+	 */
+	public static boolean isReflectiveLoading(SootMethod method){
+		SootClass declaringClass = method.getDeclaringClass();
+		for (String key : REFLECTIVE_LOADING_MAP.keySet())
+			if (isOrExtendsClass(declaringClass.getName(), key))
+				for (String meth : REFLECTIVE_LOADING_MAP.get(key))
+					if(method.getSubSignature().equals(meth))
+						return true;
 		return false;
 	}
 	
