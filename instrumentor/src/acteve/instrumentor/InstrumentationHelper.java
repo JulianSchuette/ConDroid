@@ -6,9 +6,11 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -320,6 +322,103 @@ public class InstrumentationHelper {
 		
 	}
 	
+	/**
+	 * Please not that this method assumes the decoded APK to be in the
+	 * directory "decoded".
+	 * @return
+	 * @throws ParserConfigurationException 
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws XPathExpressionException 
+	 */
+	public static HashSet<String> getOnClickFromLayout() throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
+		HashSet<String> result = new HashSet<String>();
+		
+		/*
+		 * Steps:
+		 * 1. get all values-* /public.xml
+		 * 2. extract all layout-elements from all public.xml
+		 * 3. get all layout files
+		 * 4. extract all android:onClick elements
+		 */
+		
+		//list all values-like directories in "decoded/res":
+		File folder = new File("decoded/res");
+		File[] listOfFiles = folder.listFiles();
+		ArrayList<File> valueFolders = new ArrayList<File>();
+
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isDirectory() && listOfFiles[i].getName().startsWith("values"))
+				valueFolders.add(listOfFiles[i]);
+		}
+		
+		//now collect all "public.xml" files:
+		ArrayList<File> publicFiles = new ArrayList<File>();
+		for (File f : valueFolders){
+			listOfFiles = f.listFiles();
+			for (File ff : listOfFiles){
+				if (ff.isFile() && ff.getName().equals("public.xml"))
+					publicFiles.add(ff);
+			}
+		}
+		
+		/* 
+		 * Now find all layout files that are referenced in these public files.
+		 * Make sure no duplicates are gathered by using a HashSet.
+		 */
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		
+		XPath xpath = XPathFactory.newInstance().newXPath();
+        XPathExpression expr1 = xpath.compile("//resources/public[@type='layout']/@name");
+		
+		HashSet<String> layoutFiles = new HashSet<String>();
+		for (File pf : publicFiles){
+			Document doc = dBuilder.parse(pf);
+			doc.getDocumentElement().normalize();
+			
+	        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
+	        String layoutName = ((Attr) nodes.item(0)).getValue();
+	        layoutFiles.add(layoutName);
+		}
+		
+		/*
+		 * We now have all layout files of the app. Now find all
+		 * android:onClick elements inside them.
+		 */
+		XPathExpression onClickExpr = xpath.compile("//RelativeLayout/Button[@onClick]/@onClick");
+		/* XPathExpression classExpr = xpath.compile("//RelativeLayout[@context]/@context");
+		XPathExpression packageExpr = xpath.compile("//manifest/@package");*/
+		
+		System.out.println("Found " + layoutFiles.size() + " layout.xml files:");
+		for (String str : layoutFiles)
+			System.out.println("\t" + str);
+		
+		HashSet<String> onClickListeners = new HashSet<String>();
+		for (String layoutFileName : layoutFiles){
+//			Document manifestDoc = dBuilder.parse(new File("decoded/AndroidManifest.xml"));
+//			String packageName = ((Attr) ((NodeList) packageExpr.evaluate(manifestDoc, XPathConstants.NODESET)).item(0)).getValue();			
+			
+			File layoutFile = new File("decoded/res/layout/" + layoutFileName + ".xml");
+			Document doc = dBuilder.parse(layoutFile);
+			
+			NodeList onClickNodes = (NodeList) onClickExpr.evaluate(doc, XPathConstants.NODESET);
+			
+//			NodeList classNodes = (NodeList) classExpr.evaluate(doc, XPathConstants.NODESET);
+//			String className = ((Attr) classNodes.item(0)).getValue();
+			
+			for (int i = 0; i < onClickNodes.getLength(); i++){
+				String onClickMethod = "void " + ((Attr) onClickNodes.item(i)).getValue() + "(android.view.View)";
+				onClickListeners.add(onClickMethod);
+			}
+		}
+		result = onClickListeners;
+		
+		System.out.println("Found " + result.size() + " android:onClickListeners in layout XML file.");
+		
+		return result;
+	}
+	
 	
 	/**
 	 * Inserts calls to all lifecycle methods at the end of the onCreate()
@@ -353,9 +452,6 @@ public class InstrumentationHelper {
 			System.err.println("No onCreate method found in app; this should not happen. Call graph not yet built?");
 			throw new Exception("No onCreate() found!");
 		}
-		
-		//now find all UI element methods to call:
-		List<SootMethod> uiEntryPoints = MethodUtils.findApplicationPseudoEntryPoints();
 				
 		Body body = toInstrument.getActiveBody();
 		PatchingChain<Unit> units = body.getUnits();
@@ -374,7 +470,6 @@ public class InstrumentationHelper {
 				returnstmt = tmp;
 		}
 		System.out.println("Found return statement: " + returnstmt.toString());
-		
 				
 		
 		Set<String> classesToScan = new HashSet<String>();
@@ -401,7 +496,29 @@ public class InstrumentationHelper {
 		
 		System.out.println("Found " + listenerFields.size() + " fields that are references to Objects implementing UI callback methods.");
 		
-		if (listenerFields.size() < 1)
+		HashSet<String> onClickMethods = new HashSet<String>();
+		
+		try {
+			onClickMethods = getOnClickFromLayout();
+		} catch (ParserConfigurationException e) {
+			System.out.println("ParserConfigurationException while gathering onClick elements from layout.xml files.");
+			e.printStackTrace();
+			return;
+		} catch (SAXException e) {
+			System.out.println("SAXException while gathering onClick elements from layout.xml files.");
+			e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			System.out.println("IOException while gathering onClick elements from layout.xml files.");
+			e.printStackTrace();
+			return;
+		} catch (XPathExpressionException e) {
+			System.out.println("XPathExpressionException while gathering onClick elements from layout.xml files.");
+			e.printStackTrace();
+			return;
+		} 
+		
+		if (listenerFields.size() < 1 && onClickMethods.size() < 1)
 			return;
 		
 		///reference to class on which to call findViewById:
@@ -419,7 +536,7 @@ public class InstrumentationHelper {
 	    if (ctxLocal == null){
 	    	ctxLocal = generator.generateLocal(RefType.v("android.content.Context"));
 	    	units.insertBefore(
-	    			Jimple.v().newIdentityStmt(ctxLocal, Jimple.v().newVirtualInvokeExpr(thisRefLocal, toInstrument.getDeclaringClass().getMethod("android.content.Context getApplicationContext()").makeRef()))
+	    			Jimple.v().newAssignStmt(ctxLocal, Jimple.v().newVirtualInvokeExpr(thisRefLocal, Scene.v().getSootClass("android.content.Context").getMethod("android.content.Context getApplicationContext()").makeRef()))
 	    		, returnstmt);
 	    	System.out.println("Generated Ctx Local of type " + ctxLocal.getType().toString());
 	    }
@@ -441,6 +558,26 @@ public class InstrumentationHelper {
 				aep.buildMethodCall(callbackMethod, body, g, generator, returnstmt); //note: this already ADDS the method call to Units
 			}
 		}
+		
+		/* 
+		 * After being done with fields, we now deal with onClick-elements
+		 * defined in layout files.
+		 */
+		
+		//For now, we filter for those which are defined in the main activity ONLY:
+		for (String methodSig : onClickMethods)
+			if (toInstrument.getDeclaringClass().getMethod(methodSig) == null)
+				onClickMethods.remove(methodSig);
+		/*
+		 * Now we only have the methods defined as android:onClickListener
+		 * which are in the MainActivity. Add some clals now.
+		 */
+		for (String methodSig : onClickMethods){
+			SootMethod onClickMethod = toInstrument.getDeclaringClass().getMethod(methodSig);
+			aep.buildMethodCall(onClickMethod, body, thisRefLocal, generator, returnstmt);
+		}
+		
+		
 	}
 
 	/**

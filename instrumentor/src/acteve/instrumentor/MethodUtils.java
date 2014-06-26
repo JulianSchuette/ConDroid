@@ -9,6 +9,7 @@ import java.util.Set;
 
 import soot.MethodOrMethodContext;
 import soot.Scene;
+import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.callgraph.CallGraph;
@@ -74,8 +75,8 @@ public class MethodUtils {
 		"<java.lang.Class: newInstance(java.lang.Object...)>",
 		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
 		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>",
-		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String, boolean)>",
-		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String, boolean)>",
+		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String,boolean)>",
+		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>",
 		"<java.lang.ClassLoader: void <init>()>", //constructors are a bit of a problem because we cannot know the signatures of all Classloaders that might be created by developers, e.g. by inheriting from ClassLoader
 		"<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>",
 		"<java.lang.ClassLoader: java.lang.ClassLoader getSystemClassLoader()>",
@@ -86,18 +87,36 @@ public class MethodUtils {
 		"<java.lang.Class: java.lang.reflect.Constructor<?>[] getDeclaredConstructors()>",
 		"<java.lang.Class: java.lang.reflect.Constructor[] getDeclaredConstructors()>",
 		"<java.net.URLClassLoader: void <init>(java.net.URL[])>",
-		"<java.net.URLClassLoader: void <init>(java.net.URL[], java.lang.ClassLoader)>",
-		"<java.net.URLClassLoader: void <init>(java.net.URL[], java.lang.ClassLoader, java.net.URLStreamHandlerFactory)>",
+		"<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader)>",
+		"<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)>",
 		"<java.security.SecureClassLoader: void <init>()>",
 		"<java.security.SecureClassLoader: void <init>(java.lang.ClassLoader)>",
 		"<java.lang.Class: java.lang.Class<T> forName(java.lang.String)>",
-		"<java.lang.Class: java.lang.Class forName(java.lang.String)>"
+		"<java.lang.Class: java.lang.Class forName(java.lang.String)>",
+		"<dalvik.system.BaseDexClassLoader: void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)>",
+		"<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>",
+		"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,java.lang.ClassLoader)>",
+		"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)>"
 	};
 	
 	public static boolean isReflectiveLoading(SootMethod method){
 		for (String s : REFLECTIVE_LOADING_SIGS)
 			if (method.getSignature().equals(s))
 				return true;
+		return false;
+	}
+	
+	public static boolean isOrExtendsClass(String className, String superClassName){
+		SootClass klass = Scene.v().getSootClass(className);
+		SootClass supperKlass = Scene.v().getSootClass(superClassName);
+		
+		if (klass.getName().equals(supperKlass.getName()))
+			return true;
+		while (klass.hasSuperclass()){
+			if (klass.getSuperclass().getName().equals(superClassName))
+				return true;
+			klass = klass.getSuperclass();
+		}
 		return false;
 	}
 	

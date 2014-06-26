@@ -73,7 +73,7 @@ public class Main extends SceneTransformer {
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	static boolean DEBUG = false;
-	public final static boolean DUMP_JIMPLE = true	; //default: false. Set to true to create Jimple code instead of APK
+	public final static boolean DUMP_JIMPLE = false; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
 	private static boolean LIMIT_TO_CALL_PATH = true; //Limit instrumentation to methods along the CP to reflection use?
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
@@ -97,7 +97,12 @@ public class Main extends SceneTransformer {
 
 		ModelMethodsHandler.readModelMethods(config.modelMethsFile);
 		Instrumentor ci = new Instrumentor(config.rwKind, config.outDir, config.sdkDir, config.fldsWhitelist,
-				config.fldsBlacklist, config.methsWhitelist, config.instrAllFields);
+										   config.outDir,
+										   config.sdkDir, 
+										   config.fldsWhitelist,
+										   config.fldsBlacklist, 
+										   config.methsWhitelist, 
+										   config.instrAllFields);
 		ci.instrument(classes);
 //		InputMethodsHandler.instrument(config.inputMethsFile);
 		ModelMethodsHandler.addInvokerBodies();
@@ -160,7 +165,7 @@ public class Main extends SceneTransformer {
 		
 		Options.v().set_whole_program(true);	//Implicitly "on" when instrumenting Android, AFAIR.
 		Options.v().setPhaseOption("cg", "on");	//"On" by default.
-		Options.v().setPhaseOption("cg", "verbose");
+		Options.v().setPhaseOption("cg", "verbose:true");
 		Options.v().setPhaseOption("cg", "safe-newinstance:true");
 		Options.v().setPhaseOption("cg", "safe-forname:true");
 	    Options.v().set_keep_line_number(true);
@@ -217,8 +222,16 @@ public class Main extends SceneTransformer {
 			clazz.setApplicationClass();
 		}
 		
+		PackManager.v().getPack("cg").apply();
 		
+		try {
+			InstrumentationHelper.insertCallsToLifecycleMethods();
+		} catch (Exception e) {
+			System.out.println("Exception while inserting calls to lifecycle methods:");
+			e.printStackTrace();
+		}
 		
+		//build new call graph now that we have paths to UI-induced method calls:
 		PackManager.v().getPack("cg").apply();
 		
 		//dump all methods for debugging:
@@ -228,14 +241,6 @@ public class Main extends SceneTransformer {
 			System.out.println("\t" + m.getSignature());
 		
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
-		
-		//dump all inner classes for debugging:
-		try {
-			InstrumentationHelper.insertCallsToLifecycleMethods();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
 		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
 		if (LIMIT_TO_CALL_PATH ) {
