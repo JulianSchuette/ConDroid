@@ -95,15 +95,16 @@ public class Main extends SceneTransformer {
 	private static List<SootClass> classes = new ArrayList<SootClass>();
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
-	private static boolean DEBUG = true;
-	public final static boolean DUMP_JIMPLE = false; //default: false. Set to true to create Jimple code instead of APK
+	static boolean DEBUG = true;
+	public final static boolean DUMP_JIMPLE = true; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
+	private static boolean LIMIT_TO_CALL_PATH = false; //Limit instrumentation to methods along the CP to reflection use?
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
 	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
-	private final static String apk = "./de.fhg.aisec.classloadtest.apk"; //Example app USING REFLECTIVE LOADING to instrument
+//	private final static String apk = "./de.fhg.aisec.classloadtest.apk"; //Example app USING REFLECTIVE LOADING to instrument
 //	private final static String apk = "./SkeletonApp/lib/SkeletonApp.apk"; //Example app to instrument
-//	private final static String apk = "/home/julian/workspace/acteve/de.fhg.aisec.concolicexample.apk";
+	private final static String apk = "/home/julian/workspace/acteve/de.fhg.aisec.concolicexample.apk";
 //	private final static String apk = "/home/fedler/android-concolic-execution/android-concolic-execution/de.fhg.aisec.concolicexample.apk";
 	private final static String jimpleFolder = "./acteve-util-jimple/";
 	private final static String acteveSymbolicUtilityJimple = jimpleFolder + "acteve.symbolic.Util.jimple";
@@ -155,15 +156,11 @@ public class Main extends SceneTransformer {
 		Options.v().set_soot_classpath("/home/julian/workspace/acteve/android-concolic-execution/libs/android-19.jar"+":"+libJars+":"+modelClasses);
 //		Options.v().set_soot_classpath("/home/fedler/android-concolic-execution/android-concolic-execution/libs/android-19.jar"+":"+libJars);
 
-		Options.v().set_whole_program(true);
-		Options.v().setPhaseOption("cg", "on");
+		Options.v().set_whole_program(true);	//Implicitly "on" when instrumenting Android, AFAIR.
+		Options.v().setPhaseOption("cg", "on");	//"On" by default.
 		Options.v().setPhaseOption("cg", "verbose");
 	    Options.v().set_keep_line_number(true);
 		Options.v().set_keep_offset(true);
-		
-		//Dynamic classes are not in soot classpath but considered to be available at runtime
-		//Options.v().set_dynamic_class(Arrays.asList(new String[] { "acteve.symbolic.integer.DoubleExpression" }));
-
 
 		// replace Soot's printer with our logger
 		// G.v().out = new PrintStream(new LogStream(Logger.getLogger("SOOT"),
@@ -178,7 +175,7 @@ public class Main extends SceneTransformer {
 		} else {
 			Options.v().set_output_format(Options.output_format_dex);
 		}
-//		Options.v().set_app(true);
+//		Options.v().set_app(true);  //Dunno what this is
 		Options.v().set_process_dir(Collections.singletonList(apk));
 		Options.v().set_force_android_jar(androidJAR);
 		Options.v().set_android_jars(libJars);
@@ -186,73 +183,29 @@ public class Main extends SceneTransformer {
 		Options.v().set_debug(true);
 		// Options.v().set_exclude(Arrays.asList(new String[] {"javax.xml"}));
 
-		// All packages which are not already in the app's transivite hull but
+		// All packages which are not already in the app's transitive hull but
 		// are required by the injected code need to be marked as dynamic.
 		Options.v().set_dynamic_package(
 				Arrays.asList(new String[] { "acteve.symbolic.", "models.","com.android", "org.json", "org.apache", "org.w3c",
 						"org.xml", "junit", "javax", "javax.crypto"}));
-//		Options.v().set_dynamic_class(Arrays.asList(new String[]{"acteve.symbolic.SymbolicOperations", "acteve.symbolic.Util"}));
-		// Make sure all classes to be added to the apk are in Soot classpath
-		// Options.v().set_soot_classpath(androidJAR+":./bin"); //OWN
-//		Options.v().set_soot_classpath(androidJAR + File.pathSeparator + libJars);
 
 		Scene.v().loadNecessaryClasses();
 
-		Chain<SootClass> appclasses = Scene.v().getClasses();
+		//Register all application classes for instrumentation
+		System.out.println("Application classes");
+		Chain<SootClass> appclasses = Scene.v().getApplicationClasses();
 		for (SootClass c:appclasses) {
 			System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
 		}
 
-		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");
-		
+		//Collect additional classes which will be injected into the app
+		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
 		for (String s:libClassesToInject) {
 			Scene.v().addBasicClass(s, SootClass.BODIES);
 			Scene.v().loadClassAndSupport(s);
 			SootClass clazz = Scene.v().forceResolve(s, SootClass.BODIES);
 			clazz.setApplicationClass();
 		}
-		
-		// A better way to resolve dependency classes is to add them to the
-		// library path
-		// Scene.v().addBasicClass("org.simalliance.openmobileapi.Session",SootClass.SIGNATURES);
-//		Scene.v().forceResolve("acteve.symbolic.integer.DoubleExpression",SootClass.BODIES);
-		//Force load Util class which is not present in the app (yet)
-		//TODO The class must be available in soot classpath. Probably it has to be in Jimple format
-//		List<SootClass> clsToLoad = loadFromJimples(jimpleFolder);
-//		for (SootClass cls: clsToLoad) {
-//			System.out.println("Loading from jimple: " + cls.getName());
-//			if (!Scene.v().containsClass(cls.getName()))
-//				Scene.v().addClass(cls);
-//			if (cls.isPhantom())
-//				cls.setPhantom(false);
-////			Scene.v().loadClass(cls.getName(), SootClass.BODIES);
-//			SootClass clazz = Scene.v().forceResolve(cls.getName(), SootClass.BODIES);
-//			SootResolver.v().reResolve(cls, SootClass.BODIES);
-//			cls.setApplicationClass();
-////			appclasses = Scene.v().getClasses();
-////			for (SootClass c:appclasses) {
-////				System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
-////			}
-//		}
-//		
-//		SootClass integerConstant = Scene.v().getSootClass("acteve.symbolic.integer.IntegerConstant");
-//		Scene.v().forceResolve(integerConstant.getName(), SootClass.BODIES);
-//		integerConstant.setApplicationClass();
-//		System.out.println("Printing methods of acteve.symbolic.integer.IntegerConstant");
-//		for (SootMethod m: integerConstant.getMethods() ) {
-//			System.out.println("   DEBUG in MAIN: Method in Util: " + m.getDeclaration());
-//		}
-
-		
-//		loadClassesToInstrument_old(config.inJars); //Android jar
-//		loadClassesToInstrument_old(apk); //target APK
-		classes.add(Main.resolveSootClass("com.devuni.flashlight.MainActivity"));
-		classes.add(Main.resolveSootClass("com.devuni.light.LightActivity"));
-//		classes.add(Main.resolveSootClass("com.devuni.light.LightActivity$1"));
-		classes.add(Main.resolveSootClass("com.devuni.light.LightCamera"));
-//		classes.add(Main.resolveSootClass("com.devuni.light.LightCamera$1"));
-//		classes.add(Main.resolveSootClass("com.devuni.light.LightCamera$2"));
-		classes.add(Main.resolveSootClass("com.devuni.flashlight.BaseActivity"));
 		
 		//loadOtherClasses();
 		
@@ -277,36 +230,37 @@ public class Main extends SceneTransformer {
 		
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
 //		PackManager.v().getPack("jtp").add(new Transform("jtp.acteve", new Main()));
-
-		// Scene.v().forceResolve(TOAST_CLASS, SootClass.BODIES);
-		// Scene.v().forceResolve("instrumentation.Main", SootClass.BODIES);
 		
-		//TODO: get callgraph and extract all classes on the path to any calls for class loading via reflection
-		List<SootMethod> entryPoints = MethodUtils.findApplicationEntryPoints();
-		
-		List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods();
-		System.out.println("Found the following reflective class loading methods:");
-		for (SootMethod m : methodsWithReflectiveClassLoading){
-			System.out.println("Signature: " + m.getSignature());
+		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
+		if (LIMIT_TO_CALL_PATH ) {
+			//TODO: get callgraph and extract all classes on the path to any calls for class loading via reflection
+			List<SootMethod> entryPoints = MethodUtils.findApplicationEntryPoints();
+			
+			List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods();
+			System.out.println("Found the following reflective class loading methods:");
+			for (SootMethod m : methodsWithReflectiveClassLoading){
+				System.out.println("Signature: " + m.getSignature());
+			}
+			
+			//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
+			HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
+			for (SootMethod sm : methodsWithReflectiveClassLoading){
+				//add the declaring class: TODO: do we actually need to instrument that to? probably not.
+				classesAlongTheWay.add(sm.getDeclaringClass());
+				//and all the classes on the way to the call:
+				for (SootMethod caller : MethodUtils.findTransitiveCallersOf(sm))
+					classesAlongTheWay.add(caller.getDeclaringClass());
+			}
+			
+			classes = new ArrayList<SootClass>(classesAlongTheWay);
+			
+			if(DEBUG){
+				System.out.println("Found " + classesAlongTheWay.size() + " classes that declare methods on the path to reflection, i.e. that need to be instrumented.");
+				for (SootClass c : classes)
+					System.out.println("Class: " + c.getName());
+			}
 		}
-		
-		//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
-		HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
-		for (SootMethod sm : methodsWithReflectiveClassLoading){
-			//add the declaring class: TODO: do we actually need to instrument that to? probably not.
-			classesAlongTheWay.add(sm.getDeclaringClass());
-			//and all the classes on the way to the call:
-			for (SootMethod caller : MethodUtils.findTransitiveCallersOf(sm))
-				classesAlongTheWay.add(caller.getDeclaringClass());
-		}
-		
-		classes = new ArrayList<SootClass>(classesAlongTheWay);
-		
-		if(DEBUG){
-			System.out.println("Found " + classesAlongTheWay.size() + " classes that declare methods on the path to reflection, i.e. that need to be instrumented.");
-			for (SootClass c : classes)
-				System.out.println("Class: " + c.getName());
-		}
+		// -------------------------------- END RAFAEL ----------------------------------------------
 
 		PackManager.v().runPacks();
 		PackManager.v().writeOutput();
