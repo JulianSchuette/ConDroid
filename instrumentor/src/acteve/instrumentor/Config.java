@@ -31,6 +31,8 @@
 
 package acteve.instrumentor;
 
+import soot.Scene;
+
 public final class Config {
 	public final String inJars;
 	public final String outJar;
@@ -54,12 +56,13 @@ public final class Config {
 	}
 
 	private Config() {
-		inJars = System.getProperty("a3t.in.jars", null);
-		outJar = System.getProperty("a3t.out.jar", null);
-        libJars = System.getProperty("a3t.lib.jars", null);
+//		inJars = System.getProperty("a3t.in.jars", null);
+		inJars = "libs/android-14.jar";
+		outJar = System.getProperty("a3t.out.jar", "instrumented.jar");
+        libJars = System.getProperty("a3t.lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
 		inputMethsFile = System.getProperty("a3t.inputmeths.file", null);
 		modelMethsFile = System.getProperty("a3t.modelmeths.file", null);
-		outDir = System.getProperty("a3t.out.dir", null);
+		outDir = System.getProperty("a3t.out.dir", "out");
 		sdkDir = System.getProperty("a3t.sdk.dir", null);
 		String s = System.getProperty("a3t.rw.kind", "id_field_write");
 		if (s.equals("none")) 

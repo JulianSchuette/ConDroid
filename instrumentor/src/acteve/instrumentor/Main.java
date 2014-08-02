@@ -27,60 +27,69 @@
   The views and conclusions contained in the software and documentation are those
   of the authors and should not be interpreted as representing official policies, 
   either expressed or implied, of the FreeBSD Project.
-*/
+ */
 package acteve.instrumentor;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
+import java.util.zip.ZipException;
 
-import soot.Scene;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.jf.dexlib.Util.FileUtils;
+import org.xml.sax.SAXException;
+
 import soot.PackManager;
 import soot.Scene;
-import soot.SootClass;
 import soot.SceneTransformer;
+import soot.SootClass;
 import soot.Transform;
+import soot.options.Options;
 
 public class Main extends SceneTransformer {
 	private static Config config;
-    private static List<SootClass> classes = new ArrayList();
-	private static Map<String,List<String>> uninstrumentedClasses = new HashMap();
-    private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
-	private static boolean DEBUG = false;
+	private static List<SootClass> classes = new ArrayList();
+	private static Map<String, List<String>> uninstrumentedClasses = new HashMap();
+	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
+	private static boolean DEBUG = true;
 
-	//private static Pattern includePat = Pattern.compile("(android.view.ViewGroup)|(android.graphics.Rect)");
-	//Pattern.compile("android\\..*|com\\.android\\..*|com\\.google\\.android\\..*");
-	private static Pattern excludePat = Pattern.compile(
-		 "(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
+	// private static Pattern includePat =
+	// Pattern.compile("(android.view.ViewGroup)|(android.graphics.Rect)");
+	// Pattern.compile("android\\..*|com\\.android\\..*|com\\.google\\.android\\..*");
+	private static Pattern excludePat = Pattern
+			.compile("(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
 
-    protected void internalTransform(String phaseName, Map options)
-    {
-		if (DEBUG) printClasses("bef_instr.txt");
+	protected void internalTransform(String phaseName, Map options) {
+		if (DEBUG)
+			printClasses("bef_instr.txt");
 
 		ModelMethodsHandler.readModelMethods(config.modelMethsFile);
-		Instrumentor ci = new Instrumentor(config.rwKind, 
-										   config.outDir, 
-										   config.sdkDir, 
-										   config.fldsWhitelist, 
-										   config.fldsBlacklist, 
-										   config.methsWhitelist, 
-										   config.instrAllFields);
+		Instrumentor ci = new Instrumentor(config.rwKind, config.outDir, config.sdkDir, config.fldsWhitelist,
+				config.fldsBlacklist, config.methsWhitelist, config.instrAllFields);
 		ci.instrument(classes);
 		InputMethodsHandler.instrument(config.inputMethsFile);
 		ModelMethodsHandler.addInvokerBodies();
 		Scene.v().getApplicationClasses().remove(Scene.v().getSootClass(dummyMainClassName));
-		
-		if (DEBUG) printClasses("aft_instr.txt");
-    }
+
+		if (DEBUG)
+			printClasses("aft_instr.txt");
+	}
 
 	private void printClasses(String fileName) {
 		try {
@@ -94,17 +103,192 @@ public class Main extends SceneTransformer {
 			System.exit(1);
 		}
 	}
-	
-    public static void main(String[] args)
-    {
+
+	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		config = Config.g();
-		
+
+		String appToInstrument = "./TestApp2.apk";
+		// System.setProperty("a3t.in.jars", appToInstrument);
 		Scene.v().setSootClassPath(config.inJars + File.pathSeparator + config.libJars);
-		
+		// Scene.v().setSootClassPath(appToInstrument + File.pathSeparator +
+		// "./bin:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar:libs/android-14.jar");
+
+		// StringBuilder builder = new StringBuilder();
+		// builder.append("-w -p cg off -keep-line-number -keep-bytecode-offset ");
+		// Options.v().setPhaseOption("cg", "off");
+		// Options.v().set_keep_line_number(true);
+		// Options.v().set_keep_offset(true);
+		// builder.append("-dynamic-class ");
+		// builder.append("acteve.symbolic.Util ");
+		Options.v().set_dynamic_class(Arrays.asList(new String[] { "acteve.symbolic.Util" }));
+		// builder.append("-soot-classpath ");
+		// builder.append(config.inJars + File.pathSeparator + config.libJars +
+		// " ");
+		// builder.append("-dynamic-package ");
+		// builder.append("acteve.symbolic.integer. ");
+		Options.v().set_dynamic_package(Arrays.asList(new String[] { "acteve.symbolic.integer. ", "models. " }));
+		// builder.append("-dynamic-package ");
+		// builder.append("models. ");
+		// builder.append("-outjar -d ");
+		// builder.append(config.outJar+" ");
+		// builder.append("-O ");
+		// builder.append("-validate ");
+		// builder.append(dummyMainClassName);
+		// String[] sootArgs = builder.toString().split(" ");
+		// soot.Main.main(sootArgs);
+
+		// replace Soot's printer with our logger
+		// G.v().out = new PrintStream(new LogStream(Logger.getLogger("SOOT"),
+		// Level.DEBUG), true);
+
+		Options.v().set_allow_phantom_refs(true);
+		Options.v().set_whole_program(true);
+		Options.v().set_prepend_classpath(true);
+		Options.v().set_validate(true);
+		boolean DUMP_JIMPLE = false;
+
+		if (DUMP_JIMPLE) {
+			Options.v().set_output_format(Options.output_format_jimple);
+		} else {
+			Options.v().set_output_format(Options.output_format_dex);
+		}
+		Options.v().set_app(true);
+		Options.v().set_process_dir(Collections.singletonList(appToInstrument));
+		Options.v().set_force_android_jar(config.inJars);
+		Options.v().set_android_jars(config.libJars);
+		Options.v().set_src_prec(Options.src_prec_apk);
+		Options.v().set_debug(true);
+		// Options.v().set_exclude(Arrays.asList(new String[] {"javax.xml"}));
+
+		// All packages which are not already in the app's transivite hull but
+		// are required by the injected code need to be marked as dynamic.
+		Options.v().set_dynamic_package(
+				Arrays.asList(new String[] { "acteve", "android.", "com.android", "org.json", "org.apache", "org.w3c",
+						"org.xml", "junit", "javax", "java.io", "com.gide.android.crypto", "javax.crypto",
+						"java.security", "org.simalliance.openmobileapi", "org.simalliance.openmobileapi.SEService" }));
+		// Make sure all classes to be added to the apk are in Soot classpath
+		// Options.v().set_soot_classpath(androidJAR+":./bin"); //OWN
+		Options.v().set_soot_classpath(config.inJars + ":" + config.libJars);
+
+		// A better way to resolve dependency classes is to add them to the
+		// library path
+		// Scene.v().addBasicClass("org.simalliance.openmobileapi.Session",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("javax.crypto.Cipher",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("java.security.KeyStore",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("javax.crypto.KeyGenerator",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("javax.crypto.spec.SecretKeySpec",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("com.gide.android.crypto.SecureElementProvider",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("com.gide.android.crypto.SecureElementLoadStoreParameter",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("java.io.PrintStream",SootClass.SIGNATURES);
+		// Scene.v().addBasicClass("org.simalliance.openmobileapi.SEService.CallBack",
+		// SootClass.HIERARCHY); //TODO This class is not automatically resolved
+		// by Soot
+
+		Scene.v().loadNecessaryClasses();
 		loadClassesToInstrument();
 		loadOtherClasses();
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
-		
+
+		// Scene.v().forceResolve(TOAST_CLASS, SootClass.BODIES);
+		// Scene.v().forceResolve("instrumentation.Main", SootClass.BODIES);
+
+		PackManager.v().runPacks();
+		PackManager.v().writeOutput();
+
+		// new AddUninstrClassesToJar(uninstrumentedClasses,
+		// config.outJar).apply();
+
+		String outputClasses = "sootOutput/classes.dex";
+		if (new File(outputClasses).exists()) {
+			// //Adapt Manifest file
+			File f;
+			f = new File(outputClasses);
+			
+			f = Main.pack(new File("TestApp2.apk"));
+
+			// Sign the APK
+			signAPK(f.getAbsolutePath());
+
+			System.out.println("Done. Have fun with " + f.getAbsolutePath());
+		} else {
+			System.out.println("ERROR: " + outputClasses + " does not exist");
+		}
+
+	}
+
+	private static void copyFileUsingChannel(File source, File dest) throws IOException {
+		FileChannel sourceChannel = null;
+		FileChannel destChannel = null;
+		try {
+			sourceChannel = new FileInputStream(source).getChannel();
+			destChannel = new FileOutputStream(dest).getChannel();
+			destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+		} finally {
+			sourceChannel.close();
+			destChannel.close();
+		}
+	}
+
+	private static File pack(File apkFile) throws ZipException, IOException, InterruptedException,
+			ParserConfigurationException, SAXException, XPathExpressionException {
+		// unpack
+		System.out.println("Decoding " + apkFile.getAbsolutePath());
+		Process p = Runtime.getRuntime().exec(
+				"java -jar libs/apktool.jar d -s -f " + apkFile.getAbsolutePath() + " decoded");
+		int processExitCode = p.waitFor();
+		if (processExitCode != 0) {
+			System.out.println("Something went wrong when unpacking " + apkFile.getAbsolutePath());
+			return null;
+		}
+
+		File dex = new File("sootOutput/classes.dex");
+		File newDex = new File("decoded/classes.dex");
+		Main.copyFileUsingChannel(dex, newDex);
+
+		// Now pack again
+		File newFile = new File(apkFile.getAbsolutePath().replace(".apk", "") + "_modified.apk");
+		p = Runtime.getRuntime().exec("java -jar libs/apktool.jar b decoded/ " + newFile.getAbsolutePath());
+		processExitCode = p.waitFor();
+		if (processExitCode != 0) {
+			System.out.println("Something went wrong when packing " + apkFile.getAbsolutePath());
+			return null;
+		}
+
+		return newFile;
+	}
+
+	private static void signAPK(String apk) {
+		try {
+			// jarsigner is part of the Java SDK
+			System.out.println("Signing " + apk + " ...");
+			String cmd = "jarsigner -verbose -digestalg SHA1 -sigalg MD5withRSA -storepass android -keystore /home/julian/.android/debug.keystore "
+					+ apk + " androiddebugkey";
+			System.out.println("Calling " + cmd);
+			Runtime.getRuntime().exec(cmd);
+
+			// zipalign is part of the Android SDK
+			System.out.println("Zipalign " + apk + " ...");
+			cmd = "zipalign -v 4 " + apk + " " + new File(apk).getName() + "_signed.apk";
+			System.out.println(cmd);
+			Runtime.getRuntime().exec(cmd);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void main_org(String[] args) {
+		config = Config.g();
+
+		String appToInstrument = "./SkeletonApp.apk";
+		System.setProperty("a3t.in.jars", appToInstrument);
+		Scene.v().setSootClassPath(config.inJars + File.pathSeparator + config.libJars);
+		// Scene.v().setSootClassPath(appToInstrument + File.pathSeparator +
+		// "./bin:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar:libs/android-14.jar");
+
+		loadClassesToInstrument();
+		loadOtherClasses();
+		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
+
 		StringBuilder builder = new StringBuilder();
 		builder.append("-w -p cg off -keep-line-number -keep-bytecode-offset ");
 		builder.append("-dynamic-class ");
@@ -116,7 +300,7 @@ public class Main extends SceneTransformer {
 		builder.append("-dynamic-package ");
 		builder.append("models. ");
 		builder.append("-outjar -d ");
-		builder.append(config.outJar+" ");
+		builder.append(config.outJar + " ");
 		builder.append("-O ");
 		builder.append("-validate ");
 		builder.append(dummyMainClassName);
@@ -124,17 +308,19 @@ public class Main extends SceneTransformer {
 		soot.Main.main(sootArgs);
 
 		new AddUninstrClassesToJar(uninstrumentedClasses, config.outJar).apply();
-    }
+	}
+
+	private static void loadClassesToInstrument() {
+	}
 	
-	private static void loadClassesToInstrument()
-    {
+	private static void loadClassesToInstrument_old() {
 		for (String pname : config.inJars.split(File.pathSeparator)) {
 			if (pname.endsWith(".jar")) {
-				//System.out.println("pname "+pname);
+				// System.out.println("pname "+pname);
 				JarFile jar = null;
 				try {
 					jar = new JarFile(pname);
-				} catch(IOException e) {
+				} catch (IOException e) {
 					throw new RuntimeException(e.getMessage() + " " + pname);
 				}
 				if (jar == null)
@@ -144,49 +330,42 @@ public class Main extends SceneTransformer {
 					String name = entry.getName();
 					if (name.endsWith(".class")) {
 						name = name.replace(".class", "").replace(File.separatorChar, '.');
-						if(!toBeInstrumented(name)){
+						if (!toBeInstrumented(name)) {
 							System.out.println("Skipped instrumentation of class: " + name);
 							addUninstrumentedClass(pname, name);
 							continue;
 						}
-						try{
+						try {
 							SootClass klass = Scene.v().loadClassAndSupport(name);
 							classes.add(klass);
-						}catch(RuntimeException ex) {
+						} catch (RuntimeException ex) {
 							System.out.println("Failed to load class: " + name);
 							addUninstrumentedClass(pname, name);
 							if (ex.getMessage().startsWith("couldn't find class:")) {
 								System.out.println(ex.getMessage());
-							}
-							else
+							} else
 								throw ex;
 						}
 					}
 				}
 			}
 		}
-    }
+	}
 
-	private static void loadOtherClasses()
-	{
-		String[] classNames = new String[]{
-			"acteve.symbolic.array.BooleanArrayConstant",
-			"acteve.symbolic.array.ShortArrayConstant",
-			"acteve.symbolic.array.ByteArrayConstant",
-			"acteve.symbolic.array.CharArrayConstant",
-			"acteve.symbolic.array.IntegerArrayConstant",
-			"acteve.symbolic.array.LongArrayConstant",
-			"acteve.symbolic.array.FloatArrayConstant",
-			"acteve.symbolic.array.DoubleArrayConstant"
-		};
-		
-		for(String cname : classNames)
+	private static void loadOtherClasses() {
+		String[] classNames = new String[] { "acteve.symbolic.array.BooleanArrayConstant",
+				"acteve.symbolic.array.ShortArrayConstant", "acteve.symbolic.array.ByteArrayConstant",
+				"acteve.symbolic.array.CharArrayConstant", "acteve.symbolic.array.IntegerArrayConstant",
+				"acteve.symbolic.array.LongArrayConstant", "acteve.symbolic.array.FloatArrayConstant",
+				"acteve.symbolic.array.DoubleArrayConstant" };
+
+		for (String cname : classNames)
 			Scene.v().loadClassAndSupport(cname);
-		
-		if(!config.isSDK())
+
+		if (!config.isSDK())
 			Scene.v().loadClassAndSupport(G.SYMOPS_CLASS_NAME);
 	}
-		
+
 	private static void addUninstrumentedClass(String jarName, String className) {
 		List<String> cs = uninstrumentedClasses.get(jarName);
 		if (cs == null) {
@@ -195,15 +374,13 @@ public class Main extends SceneTransformer {
 		}
 		cs.add(className);
 	}
-		
-	static boolean isInstrumented(SootClass klass)
-	{
+
+	static boolean isInstrumented(SootClass klass) {
 		return classes.contains(klass);
 	}
 
-	private static boolean toBeInstrumented(String className)
-	{
-		if (true/*includePat.matcher(className).matches()*/) {
+	private static boolean toBeInstrumented(String className) {
+		if (true/* includePat.matcher(className).matches() */) {
 			return excludePat.matcher(className).matches() ? false : true;
 		}
 		return false;

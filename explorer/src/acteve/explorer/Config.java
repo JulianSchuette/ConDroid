@@ -67,16 +67,16 @@ public final class Config {
 	}
 
 	private Config() {
-        monkeyScript = System.getProperty("a3t.monkey");
-        appPkgName = System.getProperty("a3t.pkg");
-        mainActivity = System.getProperty("a3t.mainact");
+        monkeyScript = System.getProperty("a3t.monkey", "monkey_script.txt");
+        appPkgName = System.getProperty("a3t.pkg", "de.ecspride");
+        mainActivity = System.getProperty("a3t.mainact", "de.ecspride.RV2013");
 		activityArgs = System.getProperty("a3t.actargs");
-        z3Path = System.getProperty("env.Z3_BIN");
+        z3Path = System.getProperty("env.Z3_BIN", "/opt/z3/bin");
         maxExecs = Integer.getInteger("a3t.max.iters", DEFAULT_MAX_EXECS);
         outDir = System.getProperty("a3t.out.dir");
         emulatorPort = System.getProperty("a3t.port", DEFAULT_EMU_PORT);
         userWait = Integer.getInteger("a3t.userwait", 4);
-        K = Integer.getInteger("a3t.K");
+        K = Integer.getInteger("a3t.K",2);
         checkIndep = Boolean.getBoolean("a3t.indep");
 		checkReadOnly = Boolean.getBoolean("a3t.readonly");
         condMapFile = System.getProperty("a3t.condmap.file", "bin/a3t/condmap.txt");

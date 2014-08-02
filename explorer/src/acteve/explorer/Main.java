@@ -71,7 +71,7 @@ public class Main
 
 		explorer.perform(config.K, config.monkeyScript, config.checkReadOnly, config.checkIndep, config.pruneAfterLastStep);
 
-        // CoverageMonitor.printDangBranches(config.condMapFile);
+         CoverageMonitor.printDangBranches(config.condMapFile);
 	}
 
 	public static Properties loadProperties() {

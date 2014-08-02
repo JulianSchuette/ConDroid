@@ -3,7 +3,9 @@
 #ideally you need to set only the following two paths ANDROID_BUILD_DIR and SDK_DIR
 
 #where you downloaded the android sources and built it
-ANDROID_BUILD_DIR=/opt/Android-2.3.5
+#ANDROID_BUILD_DIR=/opt/Android-2.3.5
+ANDROID_BUILD_DIR=/opt/android-sdk
+SDK_DIR=/home/julian/workspace/acteve/adt-bundle/sdk
 
 CUR_DIR=`pwd`
 ACTEVE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
