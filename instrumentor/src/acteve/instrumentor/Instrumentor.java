@@ -340,8 +340,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 			IfStmt ifStmt = conds.get(i);
 			int absCondId = entryCondId + i;
 			ConditionExpr condExp = (ConditionExpr) ifStmt.getCondition();
-			if (condExp.getOp1() instanceof Constant && condExp.getOp2() instanceof Constant)
+			if (condExp.getOp1() instanceof Constant && condExp.getOp2() instanceof Constant) {
+				System.out.println("Only constants are compared. No need for symbolic tracing " + condExp.toString() + ". Skipping");
 				continue;
+			}
 			IntConstant condId = IntConstant.v(absCondId);
 
 			// Assign symbolic value of concrete expr 'condExp' to local var 'symVar'.
@@ -357,13 +359,17 @@ public class Instrumentor extends AbstractStmtSwitch {
 				Arrays.asList(new Immediate[]{symVar, condId, IntConstant.v(1)})));
 
 			Stmt oldTarget = ifStmt.getTarget();
-
+			System.out.println("Inserting before: " + symAsgnStmt.toString());
 			units.insertBefore(symAsgnStmt, ifStmt);
+			System.out.println("Inserting after: " + assumeFlsStmt.toString());
 			units.insertAfter(assumeFlsStmt, ifStmt);
 			Stmt gotoOldTargetStmt1 = G.jimple.newGotoStmt(oldTarget);
 			Stmt gotoOldTargetStmt2 = G.jimple.newGotoStmt(oldTarget);
+			System.out.println("Insert before old target: " + gotoOldTargetStmt2.toString());
 			((PatchingChain) units).insertBeforeNoRedirect(gotoOldTargetStmt2, oldTarget);
+			System.out.println("Insert before old target: " + assumeTruStmt.toString());
 			((PatchingChain) units).insertBeforeNoRedirect(assumeTruStmt, gotoOldTargetStmt2);
+			System.out.println("Insert before old target: " + gotoOldTargetStmt1.toString());
 			((PatchingChain) units).insertBeforeNoRedirect(gotoOldTargetStmt1, assumeTruStmt);
 			ifStmt.setTarget(assumeTruStmt);
 		}
@@ -417,12 +423,16 @@ public class Instrumentor extends AbstractStmtSwitch {
 		symArgs.add(IntConstant.v(subSig));
 		
 		List args = new ArrayList();
+		
+		//Handle symbolic base register (if any)
 		if (ie instanceof InstanceInvokeExpr) {
 			Immediate base = (Immediate) ((InstanceInvokeExpr) ie).getBase();
 			args.add(base);
-			//symArgs.add(symLocalfor(base));
-			symArgs.add(NullConstant.v());
+			symArgs.add(symLocalfor(base));
+			//symArgs.add(NullConstant.v());
 		}
+		
+		//Handle symbolic arguments (if any)
 		for (Iterator it = ie.getArgs().iterator(); it.hasNext();) {
 			Immediate arg = (Immediate) it.next();
 			args.add(arg);
@@ -783,6 +793,11 @@ public class Instrumentor extends AbstractStmtSwitch {
 			G.assign(leftOp_sym, NullConstant.v());
 	}
 
+	/**
+	 * Create symbolic counterparts for (some) registers in a method's body.
+	 * 
+	 * @param body
+	 */
 	private void addSymLocals(Body body)
 	{
 		Chain<Local> locals = body.getLocals();
@@ -796,6 +811,12 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 	}
 	
+	/**
+	 * Returns <code>true</code> if the requested <code>type</code> should be represented by a symbolic counterpart.
+	 *  
+	 * @param type
+	 * @return
+	 */
 	private boolean addSymLocationFor(Type type)
 	{
 		if(type instanceof PrimType)
@@ -815,6 +836,11 @@ public class Instrumentor extends AbstractStmtSwitch {
 		return false; //because arrays are subtypes of object
 	}
 	
+	/**
+	 * Returns the symbolic counterpart of a register.
+	 * @param v
+	 * @return
+	 */
 	private Immediate symLocalfor(Immediate v)
 	{
 		if (v instanceof Constant)

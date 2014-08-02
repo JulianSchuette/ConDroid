@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +72,7 @@ public class Util
         return sb.toString();
     }
 
-	private static boolean readConfTxt;
+	private static boolean readConfTxt = true; //By JULIAN: Switch off reading /sdcard/settings.txt with "numevents=n"
 
 	// Flag used to determine whether we are monitoring (i.e., logging) for this process
 	private static boolean monitor = true;
@@ -121,6 +122,7 @@ public class Util
 		symRet = null;
 		long threadId = Thread.currentThread().getId();
 		symArgs = new SymArgs(subsig, threadId, sa);
+		Mylog.e("PRE_A3T_ARGPUSH", subsig + " " + Arrays.toString(sa));
 	}
 
 	public static void argpush(int subsig)
@@ -508,6 +510,8 @@ public class Util
 	 */
 	public static Expression[] argpop(int subSig, int sig, int argCount)
 	{
+		Mylog.e("PRE_A3T_ARGPOP", subSig + " " + sig + " "+argCount);
+
         if (sig >= 0) { // -1 for models method
 			if(eventId == numEvents)
 				reachedMeths[sig] = true;
@@ -537,12 +541,14 @@ public class Util
 	
 	public static void retpush(int subSig, Expression i)
 	{
-		SymRet sr = new SymRet(subSig, Thread.currentThread().getId(), i);
+		SymRet sr = new SymRet(subSig, Thread.currentThread().getId(), i);		
 		symRet = sr;
+		Mylog.e("PRE_A3T_RETPUSH", "Pushing for subsig " +symRet.subSignatureId);
 	}
 	
 	public static Expression retpop(int subSig)
 	{
+		Mylog.e("PRE_A3T_RETPUSH", "Popping for subsig " + subSig);
 		SymRet sr = symRet;
 		if(sr != null){
 			long ti = sr.threadId;
@@ -551,6 +557,7 @@ public class Util
 				if (ss < 0 || ss == subSig) {
 					//ss is negative for @Symbolic annotated methods 
 					//and model invoker methods
+					Mylog.e("PRE_A3T_RETPUSH", "Pop returns " + sr.symRet);
 					return sr.symRet;
 				}
 			}
@@ -578,8 +585,12 @@ public class Util
 	 */
 	public static void assume(Expression e, int branchId, boolean b) 
 	{
-		if (e == null)
+		if (e == null) {
+			Mylog.e("PRE_A3T_BRANCH", "Assume called with null expression on branch id " + branchId + " and concrete value " + b);
 			return;
+		}
+
+		Mylog.e("PRE_A3T_BRANCH", e.toYicesString() + " " + b);
 
 		if(!readConfTxt())
 			return;
@@ -656,10 +667,13 @@ public class Util
  	}
 	
 	private static boolean readConfTxt() {
+		Mylog.e("PRE_A3T_in_readconf", "starting");
 		if(readConfTxt)
 			return monitor;
 		readConfTxt = true;
 		if(settingsFile.exists()) {
+			Mylog.e("PRE_A3T_in_readconf"," exists");
+
 			android.util.Slog.e("A3T", "FOUND FILE: " + settingsFile + " pid = " + android.os.Process.myPid());
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(settingsFile));
@@ -681,6 +695,7 @@ public class Util
 				throw new Error(e);
 			}
 		} else {
+			
 			//this is a process such as keyboard that we dont want to trace
 			android.util.Slog.e("A3T", "FOUND not FILE: " + settingsFile + " pid = " + android.os.Process.myPid());
 			monitor = false;

@@ -100,8 +100,9 @@ public class Emulator extends Task
 		this.pushMonkeyScript = new AdbTask(port, "push " + scriptFile.getAbsolutePath() + " " + scriptTxt);
 		subtasks.add(pushMonkeyScript);
 		
-
-		String amArgs = "-W -n " + appPkgName + "/" + mainActivity;
+//		Julian: Don't wait for app to finish. This won't happen if app crashes
+//		String amArgs = "-W -n " + appPkgName + "/" + mainActivity;
+		String amArgs = "-n " + appPkgName + "/" + mainActivity;
 		if(activityArgs != null)
 			amArgs +=  " " + activityArgs;
 		this.startActivity = new AdbTask(port, "shell am start " + amArgs); 

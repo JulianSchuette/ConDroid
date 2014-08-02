@@ -61,7 +61,7 @@ public final class Config {
 		outJar = System.getProperty("a3t.out.jar", "instrumented.jar");
         libJars = System.getProperty("a3t.lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
 		inputMethsFile = System.getProperty("a3t.inputmeths.file", null);
-		modelMethsFile = System.getProperty("a3t.modelmeths.file", null);
+		modelMethsFile = System.getProperty("a3t.modelmeths.file", "models.dat");
 		outDir = System.getProperty("a3t.out.dir", "out");
 		sdkDir = System.getProperty("a3t.sdk.dir", null);
 		String s = System.getProperty("a3t.rw.kind", "id_field_write");

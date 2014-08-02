@@ -1,0 +1,3 @@
+# Model definitions
+# By Julian
+java.lang.System long currentTimeMillis()

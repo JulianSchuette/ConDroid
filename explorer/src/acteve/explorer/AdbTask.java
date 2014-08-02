@@ -31,6 +31,8 @@
 
 package acteve.explorer;
 
+import java.util.Arrays;
+
 import org.apache.tools.ant.taskdefs.ExecTask;
 import org.apache.tools.ant.types.Commandline;
 
@@ -54,6 +56,7 @@ public class AdbTask extends ExecTask
 	
 	public void execute()
 	{
+		System.out.println("exec " + Arrays.toString(cmdl.getCommandline()));
 		super.execute();
 	}
 }

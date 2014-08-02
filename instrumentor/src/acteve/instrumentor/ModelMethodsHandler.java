@@ -79,6 +79,7 @@ public class ModelMethodsHandler {
 		if (invokerClass.declaresMethodByName(modelMethodName)) {
 			return invokerClass.getMethodByName(modelMethodName);
 		}
+		System.out.println("Model invoker class does not define method " + modelMethodName + " I will create a stub");
 
 		List paramTypes = new ArrayList();
 		if (!method.isStatic())
@@ -178,6 +179,14 @@ public class ModelMethodsHandler {
 	}
 
 
+	/**
+	 * Retrieves the body (or creates a stub body) of a modeled class.
+	 * 
+	 * @param modelInvokerClass Invoking class of the model class.
+	 * @param modelClass The model class.
+	 * @param modelSubsignature Method subsignature of the modeled method.
+	 * @return False, if no model body exists (= a stub has been created), true if a model body exists.
+	 */
 	private static boolean addInvokerBody(SootClass modelInvokerClass, SootClass modelClass, 
 			String modelSubsignature)
 	{
@@ -191,7 +200,11 @@ public class ModelMethodsHandler {
 		SootMethod invokerMethod = modelInvokerClass.getMethodByName(modelMethodName);
 		G.addBody(invokerMethod);
 
-		Type invokerMethodRetType = invokerMethod.getReturnType();		
+		Type invokerMethodRetType = invokerMethod.getReturnType();
+		System.out.println("Model class: " + modelClass);
+		System.out.println("Model method: " + modelMethod);
+		System.out.println("Model invoker class " + modelInvokerClass);
+		System.out.println("Return type of " + invokerMethod.getDeclaringClass().getName() + "." + invokerMethod.getName() + " is " + invokerMethodRetType.toString());
 		if (invokerMethodRetType.equals(G.EXPRESSION_TYPE)) {
 			//it is the special method that injects symbolic value in methods annotated with @Symbolic
 			if (!invokerMethod.getSubSignature().equals(modelSubsignature))
@@ -217,6 +230,8 @@ public class ModelMethodsHandler {
 		List<Local> paramLocals = G.paramLocals(invokerMethod);
 		int paramCount = paramLocals.size();
 		Local symArgsArray = G.newLocal(ArrayType.v(G.EXPRESSION_TYPE, 1));
+		//subsig=-1  -> Modeled method
+		//sig=-1     -> Modeled class
 		G.assign(symArgsArray, G.staticInvokeExpr(G.argPop, 
 												  IntConstant.v(-1), 
 												  IntConstant.v(-1), 
@@ -264,6 +279,7 @@ public class ModelMethodsHandler {
 			Scene.v().addClass(invoker);
 			invoker.setApplicationClass();
 		}
+		System.out.println("Returning model invoker class " + invoker.getName());
 		return invoker;
 	}
 
@@ -356,6 +372,19 @@ public class ModelMethodsHandler {
 		return sb.toString();
 	}
 
+	/**
+	 * Reads model definitions from a file.
+	 * 
+	 * Models replace an original method implementation during symbolic execution. If neither a 
+	 * method's body nor a respective model is available, the symbolic return value of the method 
+	 * will always be null at it will be disregarded during the symbolic execution. That is, you 
+	 * should ensure that all APIs and native methods which are relevant for the symbolic execution 
+	 * are available as a model. The syntax of the model file is as follows:
+	 * 
+	 * <class name> <method signature>
+	 * 
+	 * @param fileName
+	 */
 	public static void readModelMethods(String fileName)
 	{
 		if(fileName == null)
@@ -371,9 +400,9 @@ public class ModelMethodsHandler {
 			String line = reader.readLine();
 			while (line != null) {
 				int index = line.indexOf(' ');
-				String className = line.substring(0, index);
+				String className = line.substring(0, index);				
 				if (!Scene.v().containsClass(className)) {
-					System.out.println("will not model method: " + line);
+					System.out.println("will not model class: " + line);
 				}
 				else {
 					String methodSig = line.substring(index+1).trim();
@@ -381,7 +410,7 @@ public class ModelMethodsHandler {
 					if (declClass.declaresMethod(methodSig)) {
 						SootMethod method = declClass.getMethod(methodSig);
 						methodsWithModels.add(method);
-						System.out.println("model method exists for: " + method.getSignature());
+						System.out.println("model method requested for: " + declClass.getName() + "." + method.getSignature() + " which is available in scene");
 					}
 					else {
 						System.out.println("will not model method: " + line);

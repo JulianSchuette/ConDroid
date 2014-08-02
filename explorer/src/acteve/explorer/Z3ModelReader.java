@@ -43,6 +43,7 @@ public class Z3ModelReader
 {
 	public static Z3Model read(File file)
 	{
+		System.out.println("Reading from file " + file.getAbsolutePath());
 		try{
 			FileInputStream fis = new FileInputStream(file);
 			SimpleSExprStream p = new SimpleSExprStream(fis);

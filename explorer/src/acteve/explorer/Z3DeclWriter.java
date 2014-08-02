@@ -119,6 +119,9 @@ public class Z3DeclWriter
 	private void addToIntDecl()
 	{
 		pcDeclWriter.println("(define-fun my_to_int ((x Real)) Int (if (>= x 0.0) (to_int x) (- (to_int (- x)))))");
+		pcDeclWriter.println("(define-fun l2i ((x Int)) Int x)");
+		pcDeclWriter.println("(define-fun l2f ((x Int)) Real (to_real x))");
+		pcDeclWriter.println("(define-fun l2d ((x Int)) Real (to_real x))");
 	}
 	
 	void finish()

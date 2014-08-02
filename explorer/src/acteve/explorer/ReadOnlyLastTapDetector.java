@@ -41,7 +41,7 @@ public class ReadOnlyLastTapDetector
 	  if current event writes to field f, then writeSet
 	  contains the id of the field f.
 	 */
-	private Set<Integer> writeSet;
+	private Set<Integer> writeSet = new HashSet();
 
 	ReadOnlyLastTapDetector()
 	{

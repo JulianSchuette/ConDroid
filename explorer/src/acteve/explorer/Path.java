@@ -132,6 +132,7 @@ public class Path
         }
         File pcDeclFile = Main.newOutFile(pcDeclFileNameFor(seedId));
         File smtFile = Main.newOutFile(smtFileNameFor(id));
+        System.out.println("Smt file: " + smtFile.getAbsolutePath());
         copy(pcDeclFile, smtFile);
 
         PrintWriter smtWriter = Main.newWriter(smtFile, true);
@@ -164,6 +165,8 @@ public class Path
         
         File z3OutFile = Main.newOutFile(Z3_OUT+id);
         File z3ErrFile = Main.newOutFile(Z3_ERR+id);
+        System.out.println("Z3 Out file " + z3OutFile.getAbsolutePath());
+        System.out.println("Z3 Err file " + z3ErrFile.getAbsolutePath());
         new Z3Task().exec(z3OutFile, z3ErrFile, smtFile.getAbsolutePath());
         
         Z3Model model = Z3ModelReader.read(z3OutFile);
@@ -224,8 +227,8 @@ public class Path
             }
 			do {
 				line = reader.readLine();
-			} while(line.equals(""));
-			if(extended) {
+			} while(line !=null && line.equals(""));
+			if(extended && line!=null) {
 				pathTxtList.add(line);
 			} else {
 				char c = line.charAt(0);

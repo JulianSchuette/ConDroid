@@ -99,7 +99,7 @@ public class Executor
 				path = PathsRepo.getNextPath();
 				if(path == null) {
 					int n = available.size();
-					System.out.println("available.size() = " + n);
+					System.out.println("remaining free available emus" + n);
 					if(n == numEmus)
 						return true;
 				} else {

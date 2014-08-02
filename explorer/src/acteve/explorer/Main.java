@@ -58,7 +58,8 @@ public class Main
 					   config.activityArgs, 
 					   config.divergenceThreshold,
 					   config.wildEmusThreshold);
-		Z3Task.setup(config.z3Path);
+		System.out.println("Setting up Z3 with " + config.z3Path);
+        Z3Task.setup(config.z3Path);
 		BlackListedFields.setup(config.fieldSigsFile, config.blackListedFieldsFile);
 
 		Explorer explorer = new Explorer();

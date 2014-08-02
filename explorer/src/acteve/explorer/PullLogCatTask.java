@@ -69,7 +69,7 @@ public class PullLogCatTask extends Task
 		if(killedFile.exists() && !killedFile.delete())
 			throw new Error("cannot delete " +killedFile.getAbsolutePath());
 		rmDeviceKilledProcFile.execute();
-		rmDeviceLogCatFile.execute();
+//		rmDeviceLogCatFile.execute();
 	}
 	
 	public void execute()
@@ -88,12 +88,12 @@ public class PullLogCatTask extends Task
 				throw new Error("thread sleep");
 			}
 		}
-		if(!killedFile.exists()) {
-			throw new EmuGoneWildException(port);
-		} else {
+//		if(!killedFile.exists()) {
+//			throw new EmuGoneWildException(port);
+//		} else {
 			System.out.println("");
 			pullLogCatFile.execute();
-		}
+//		}
 		
 	}
 

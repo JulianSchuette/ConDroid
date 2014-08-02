@@ -41,7 +41,7 @@ import java.io.FileReader;
 
 public class Mylog
 {
-	private static final String MYLOG = "/sdcard/mylog.txt";
+	private static final String MYLOG = "/mylog.txt";
 	private static final String LOG_DIR_PREFIX = "/data/data/";
 	private static final String PKG_FILE = "/sdcard/pkg.txt";
 	private static final String KILLED_FILE = "/a3t_killed_proc";

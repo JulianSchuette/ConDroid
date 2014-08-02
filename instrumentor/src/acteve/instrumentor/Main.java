@@ -133,8 +133,8 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		config = Config.g();
 
+//		Options.v().set_soot_classpath("/home/julian/workspace/acteve/android-concolic-execution/libs/android-19.jar"+":"+libJars+":"+modelClasses);
 		Options.v().set_soot_classpath("/home/fedler/android-concolic-execution/android-concolic-execution/libs/android-19.jar"+":"+libJars);
-//		Scene.v().setSootClassPath("/home/fedler/android-concolic-execution/android-concolic-execution/symbolic:/home/fedler/android-concolic-execution/android-concolic-execution/jars:/home/fedler/android-concolic-execution/android-concolic-execution/libs/");
 
 		Options.v().set_whole_program(true);
 //		Options.v().setPhaseOption("cg", "off");

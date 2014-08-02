@@ -107,7 +107,7 @@ public class MonkeyScript
 			writer.write("count = " + (1+1+events.size()) + "\n"); 
 			writer.write("speed = 1000\n");
 			writer.write("start data >>\n");
-			writer.write("DispatchKey(0,0,0,82,0,0,0,0)\n");
+//			writer.write("DispatchKey(0,0,0,82,0,0,0,0)\n");
 
 			for(Event event : events){
 				writer.write("UserWait("+userWait+")\n");

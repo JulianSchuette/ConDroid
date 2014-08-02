@@ -87,7 +87,8 @@ public class Z3Task extends ExecTask
 		File file = new File(z3Path);
 		if(!file.exists())
 			throw new Error("z3Path does not exist. " + z3Path);
-
-		args = "-c \"" + file.getAbsolutePath() + " -m ";		
+		//By JULIAN: Parameter -m is not recognized by current Z3 version
+//		args = "-c \"" + file.getAbsolutePath() + " -m ";		
+		args = "-c \"" + file.getAbsolutePath() + " ";		
 	}
 }

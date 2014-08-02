@@ -57,6 +57,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Jimple;
 import soot.jimple.NullConstant;
 import soot.jimple.Stmt;
+import soot.jimple.StringConstant;
 
 public class SymOpsClassGenerator
 {
@@ -240,8 +241,8 @@ public class SymOpsClassGenerator
 		for(int i = 1; i < numOperands; i++){
 			Local operand = paramLocals.get(i);
 			G.iff(G.neExpr(operand, NullConstant.v()), makeExpr1);
-		}
-
+		}		
+		
 		G.ret(NullConstant.v());
 		G.insertStmt(op1CastAssignment);
 		Stmt nop = G.jimple.newNopStmt();
@@ -267,6 +268,13 @@ public class SymOpsClassGenerator
 			G.jimple.newInterfaceInvokeExpr(op1Cast, opMethod, args) :
 			G.jimple.newVirtualInvokeExpr(op1Cast, opMethod, args);
         G.assign(result, ie);
+		//BY JULIAN
+		Local lString = G.newLocal( RefType.v("java.lang.String"));
+		G.assign(lString, G.virtualInvokeExpr(result, Scene.v().getMethod("<java.lang.Object: java.lang.String toString()>").makeRef()));
+		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " returns")));
+		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),lString));
+		// END BY JULIAN
+
 		G.ret(result);
 		G.debug(method, true);
     }
