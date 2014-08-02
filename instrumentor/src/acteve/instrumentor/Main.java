@@ -54,7 +54,7 @@ public class Main extends SceneTransformer {
 	private static Config config;
     private static List<SootClass> classes = new ArrayList();
 	private static Map<String,List<String>> uninstrumentedClasses = new HashMap();
-    private static final String dummyMainClassName = "edu.gatech.symbolic.DummyMain";
+    private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	private static boolean DEBUG = false;
 
 	//private static Pattern includePat = Pattern.compile("(android.view.ViewGroup)|(android.graphics.Rect)");
@@ -108,11 +108,11 @@ public class Main extends SceneTransformer {
 		StringBuilder builder = new StringBuilder();
 		builder.append("-w -p cg off -keep-line-number -keep-bytecode-offset ");
 		builder.append("-dynamic-class ");
-		builder.append("edu.gatech.symbolic.Util ");
+		builder.append("acteve.symbolic.Util ");
 		builder.append("-soot-classpath ");
 		builder.append(config.inJars + File.pathSeparator + config.libJars + " ");
 		builder.append("-dynamic-package ");
-		builder.append("gov.nasa.jpf.symbolic.integer. ");
+		builder.append("acteve.symbolic.integer. ");
 		builder.append("-dynamic-package ");
 		builder.append("models. ");
 		builder.append("-outjar -d ");
@@ -170,14 +170,14 @@ public class Main extends SceneTransformer {
 	private static void loadOtherClasses()
 	{
 		String[] classNames = new String[]{
-			"gov.nasa.jpf.symbolic.array.BooleanArrayConstant",
-			"gov.nasa.jpf.symbolic.array.ShortArrayConstant",
-			"gov.nasa.jpf.symbolic.array.ByteArrayConstant",
-			"gov.nasa.jpf.symbolic.array.CharArrayConstant",
-			"gov.nasa.jpf.symbolic.array.IntegerArrayConstant",
-			"gov.nasa.jpf.symbolic.array.LongArrayConstant",
-			"gov.nasa.jpf.symbolic.array.FloatArrayConstant",
-			"gov.nasa.jpf.symbolic.array.DoubleArrayConstant"
+			"acteve.symbolic.array.BooleanArrayConstant",
+			"acteve.symbolic.array.ShortArrayConstant",
+			"acteve.symbolic.array.ByteArrayConstant",
+			"acteve.symbolic.array.CharArrayConstant",
+			"acteve.symbolic.array.IntegerArrayConstant",
+			"acteve.symbolic.array.LongArrayConstant",
+			"acteve.symbolic.array.FloatArrayConstant",
+			"acteve.symbolic.array.DoubleArrayConstant"
 		};
 		
 		for(String cname : classNames)
