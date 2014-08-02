@@ -50,22 +50,30 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.zip.ZipException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.tools.ant.taskdefs.Mkdir;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import acteve.explorer.Z3Model.Array;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.JimpleClassSource;
+import soot.MethodOrMethodContext;
 import soot.Modifier;
 import soot.PackManager;
 import soot.Scene;
@@ -76,8 +84,11 @@ import soot.SootResolver;
 import soot.SourceLocator;
 import soot.Transform;
 import soot.javaToJimple.IInitialResolver.Dependencies;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.options.Options;
 import soot.util.Chain;
+import soot.util.queue.QueueReader;
 
 public class Main extends SceneTransformer {
 	private static Config config;
@@ -89,7 +100,11 @@ public class Main extends SceneTransformer {
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
-	private final static String apk = "./com.devuni.flashlight.apk"; //Example app to instrument
+	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
+	private final static String apk = "./de.fhg.aisec.classloadtest.apk"; //Example app USING REFLECTIVE LOADING to instrument
+//	private final static String apk = "./SkeletonApp/lib/SkeletonApp.apk"; //Example app to instrument
+//	private final static String apk = "/home/julian/workspace/acteve/de.fhg.aisec.concolicexample.apk";
+//	private final static String apk = "/home/fedler/android-concolic-execution/android-concolic-execution/de.fhg.aisec.concolicexample.apk";
 	private final static String jimpleFolder = "./acteve-util-jimple/";
 	private final static String acteveSymbolicUtilityJimple = jimpleFolder + "acteve.symbolic.Util.jimple";
 
@@ -137,7 +152,8 @@ public class Main extends SceneTransformer {
 		Options.v().set_soot_classpath("/home/fedler/android-concolic-execution/android-concolic-execution/libs/android-19.jar"+":"+libJars);
 
 		Options.v().set_whole_program(true);
-//		Options.v().setPhaseOption("cg", "off");
+		Options.v().setPhaseOption("cg", "on");
+		Options.v().setPhaseOption("cg", "verbose");
 	    Options.v().set_keep_line_number(true);
 		Options.v().set_keep_offset(true);
 		
@@ -150,7 +166,6 @@ public class Main extends SceneTransformer {
 		// Level.DEBUG), true);
 
 		Options.v().set_allow_phantom_refs(true);
-//		Options.v().set_whole_program(true);
 		Options.v().set_prepend_classpath(true);
 		Options.v().set_validate(VALIDATE);
 
@@ -254,26 +269,53 @@ public class Main extends SceneTransformer {
 //			}
 //		}
 		
+		PackManager.v().getPack("cg").apply();
+		
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
 //		PackManager.v().getPack("jtp").add(new Transform("jtp.acteve", new Main()));
 
 		// Scene.v().forceResolve(TOAST_CLASS, SootClass.BODIES);
 		// Scene.v().forceResolve("instrumentation.Main", SootClass.BODIES);
+		
+		//TODO: get callgraph and extract all classes on the path to any calls for class loading via reflection
+		List<SootMethod> entryPoints = MethodUtils.findApplicationEntryPoints();
+		
+		List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods();
+		System.out.println("Found the following reflective class loading methods:");
+		for (SootMethod m : methodsWithReflectiveClassLoading){
+			System.out.println("Signature: " + m.getSignature());
+		}
+		
+		//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
+		HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
+		for (SootMethod sm : methodsWithReflectiveClassLoading){
+			//add the declaring class: TODO: do we actually need to instrument that to? probably not.
+			classesAlongTheWay.add(sm.getDeclaringClass());
+			//and all the classes on the way to the call:
+			for (SootMethod caller : MethodUtils.findTransitiveCallersOf(sm))
+				classesAlongTheWay.add(caller.getDeclaringClass());
+		}
+		
+		classes = new ArrayList<SootClass>(classesAlongTheWay);
+		
+		if(DEBUG){
+			System.out.println("Found " + classesAlongTheWay.size() + " classes that declare methods on the path to reflection, i.e. that need to be instrumented.");
+			for (SootClass c : classes)
+				System.out.println("Class: " + c.getName());
+		}
 
 		PackManager.v().runPacks();
 		PackManager.v().writeOutput();
 
 		// new AddUninstrClassesToJar(uninstrumentedClasses,
 		// config.outJar).apply();
-		
-		//TODO: add WRITE_EXTERNAL_STORAGE to manifest, cause logs are dropped at /sdcard/sdcard/mylog.txt
 
 		String outputApk = "sootOutput/"+new File(apk).getName();
 		if (new File(outputApk).exists()) {
 			File f = new File(outputApk);
 			
 			//add WRITE_EXTERNAL_STORAGE to manifest:
-			addExternalStoragePermission(f.getAbsolutePath());
+			//addExternalStoragePermission(f.getAbsolutePath());
 			
 			//Sign the APK
 			signAPK(f.getAbsolutePath());
@@ -331,7 +373,7 @@ public class Main extends SceneTransformer {
 		return new String(encoded);
 	}
 	
-	private static void addExternalStoragePermission(String apkpath){
+	private static void addExternalStoragePermission(String apkpath) throws ParserConfigurationException, SAXException{
 		try {
 			//need to unpack APK, overwrite manifest, and write back to APK
 			System.out.println("Replacing " + apkpath + " manifest to contain WRITE_EXTERNAL_STORAGE permission.");
@@ -349,7 +391,7 @@ public class Main extends SceneTransformer {
 			/*
 			ManifestData manifest = AndroidManifestParser.parse(new ByteArrayInputStream(manifestString.getBytes("UTF-8")));
 			manifest.addUsesPermission("android.permission.WRITE_EXTERNAL_STORAGE");
-			*/
+			
 			//do some string action now:
 			boolean hasWriteExtPermission = manifestString.contains("WRITE_EXTERNAL_STORAGE");
 			if (hasWriteExtPermission)
@@ -370,6 +412,17 @@ public class Main extends SceneTransformer {
 			writer.write(outManifestString);
 			writer.close();
 			System.out.println("New manifest file written. Now rebuilding APK with new manifest.");
+			*/
+			
+			
+		    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		    DocumentBuilder builder = factory.newDocumentBuilder();
+		    Document document = builder.parse( new File("unpacked/AndroidManifest.xml") );
+		    
+		    Node entryNode = document.getFirstChild(); //this should be the root node
+		    System.out.println("Entry node: " + entryNode.getNodeName());
+			
+			
 			
 			p = Runtime.getRuntime().exec("java -jar libs/apktool.jar b unpacked/ " + apkpath);
 			processExitCode = p.waitFor();
