@@ -79,7 +79,7 @@ public class Main extends SceneTransformer {
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
 	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
-	private final static String apk = "./de.fhg.aisec.concolicexample.apk";
+	private static String apk = null;
 	private static boolean OMIT_MANIFEST_MODIFICATION = false;
 	
 	/**
@@ -88,8 +88,7 @@ public class Main extends SceneTransformer {
 	//TODO Exclude these classes from instrumentation
 	private static Pattern excludePat = Pattern
 			.compile("dummyMainClass|(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
-	//TODO: do we want to exclude android.support too?
-
+	
 	@Override
 	protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
 		if (DEBUG)
@@ -140,6 +139,12 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		soot.G.reset();
 		config = Config.g();
+		
+		if (args.length<=0 || !new File(args[0]).exists()) {
+			printUsage();
+			System.exit(-1);
+		}
+		apk = args[0];
 
 		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
 //		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
@@ -171,7 +176,7 @@ public class Main extends SceneTransformer {
 	    Options.v().set_keep_line_number(true);
 		Options.v().set_keep_offset(true);
 
-		// replace Soot's printer with our logger
+		// replace Soot's printer with our logger (will be overwritten by G.reset(), though)
 		// G.v().out = new PrintStream(new LogStream(Logger.getLogger("SOOT"),
 		// Level.DEBUG), true);
 
@@ -184,13 +189,11 @@ public class Main extends SceneTransformer {
 		} else {
 			Options.v().set_output_format(Options.output_format_dex);
 		}
-//		Options.v().set_app(true);  //Dunno what this is
 		Options.v().set_process_dir(Collections.singletonList(apk));
 		Options.v().set_force_android_jar(androidJAR);
 		Options.v().set_android_jars(libJars);
 		Options.v().set_src_prec(Options.src_prec_apk);
 		Options.v().set_debug(true);
-		// Options.v().set_exclude(Arrays.asList(new String[] {"javax.xml"}));
 		
 		SootMethod dummyMain = setupApplication.getEntryPointCreator().createDummyMain();
 
@@ -263,10 +266,6 @@ public class Main extends SceneTransformer {
 			entryPoints.addAll(MethodUtils.findApplicationPseudoEntryPoints());
 			
 			//2)
-			/*
-			 * TODO: surprisingly, ClassLoader.loadClass(String) does NOT show
-			 * up in the CG even though everything else does.
-			 */
 			List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods(entryPoints);
 			System.out.println("Found the following reflective class loading methods:");
 			for (SootMethod m : methodsWithReflectiveClassLoading){
@@ -318,6 +317,12 @@ public class Main extends SceneTransformer {
 		} else {
 			System.out.println("ERROR: " + outputApk + " does not exist");
 		}
+	}
+
+
+	private static void printUsage() {
+		System.out.println("Usage: instrumenter <apk>");
+		System.out.println("  apk:    APK file to prepare");
 	}
 
 

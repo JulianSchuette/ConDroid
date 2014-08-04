@@ -31,7 +31,6 @@
 
 package acteve.instrumentor;
 
-import soot.Scene;
 
 public final class Config {
 	public final String inJars;
@@ -56,7 +55,6 @@ public final class Config {
 	}
 
 	private Config() {
-//		inJars = System.getProperty("a3t.in.jars", null);
 		inJars = "libs/android-14.jar";
 		outJar = System.getProperty("a3t.out.jar", "instrumented.jar");
         libJars = System.getProperty("a3t.lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
@@ -81,18 +79,20 @@ public final class Config {
 		methsWhitelist = System.getProperty("a3t.whitemeths.file", null);
 		instrAllFields = Boolean.getBoolean("a3t.instrflds.all");
 
-		System.out.println("a3t.in.jars=" + inJars);
-		System.out.println("a3t.out.jar=" + outJar);
-		System.out.println("a3t.lib.jars=" + libJars);
-		System.out.println("a3t.inputmeths.file=" + inputMethsFile);
-		System.out.println("a3t.modelmeths.file=" + modelMethsFile);
-		System.out.println("a3t.out.dir=" + outDir);
-		System.out.println("a3t.sdk.dir=" + sdkDir + " (SDK if null)");
-		System.out.println("a3t.rw.kind=" + rwKind);
-		System.out.println("a3t.whiteflds.file=" + fldsWhitelist);
-		System.out.println("a3t.blackflds.file=" + fldsBlacklist);
-		System.out.println("a3t.whitemeths.file=" + methsWhitelist);
-		System.out.println("a3t.instrflds.all="+ instrAllFields);
+		if (Main.DEBUG) {
+			System.out.println("a3t.in.jars=" + inJars);
+			System.out.println("a3t.out.jar=" + outJar);
+			System.out.println("a3t.lib.jars=" + libJars);
+			System.out.println("a3t.inputmeths.file=" + inputMethsFile);
+			System.out.println("a3t.modelmeths.file=" + modelMethsFile);
+			System.out.println("a3t.out.dir=" + outDir);
+			System.out.println("a3t.sdk.dir=" + sdkDir + " (SDK if null)");
+			System.out.println("a3t.rw.kind=" + rwKind);
+			System.out.println("a3t.whiteflds.file=" + fldsWhitelist);
+			System.out.println("a3t.blackflds.file=" + fldsBlacklist);
+			System.out.println("a3t.whitemeths.file=" + methsWhitelist);
+			System.out.println("a3t.instrflds.all="+ instrAllFields);
+		}
 	}
 
 	public boolean isSDK() {
