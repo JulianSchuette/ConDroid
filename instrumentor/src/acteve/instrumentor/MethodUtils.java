@@ -1,6 +1,7 @@
 package acteve.instrumentor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -37,8 +38,6 @@ public class MethodUtils {
 	private static final String[] LIFECYCLE_AND_UI_SUBSIGS = {
 		//life cycle:
 		"void onCreate(android.os.Bundle)", //every UI element has its onCreate() called, thus we don't need to explicitly list anything downstream from here
-		MAIN_SIGNATURE,
-		RUN_SIGNATURE,
 		"void onRestart()",
 		"void onStart()",
 		"void onResume()",
@@ -59,6 +58,8 @@ public class MethodUtils {
 		"void onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)",
 		"void onKeyDown(int, android.view.KeyEvent)",
 		"void onKeyUp(int, android.view.KeyEvent)",
+		"boolean onOptionsItemSelected(android.view.MenuItem)", //TODO: there seems to be a lot more...
+		"boolean onCreateOptionsMenu(android.view.Menu)", //TODO: there seems to be a lot more...
 		"void onTrackballEvent(android.view.MotionEvent)",
 		"void onTouchEvent(android.view.MotionEvent)",
 		"void onFocusChanged(boolean, int, android.graphics.Rect)",
@@ -73,8 +74,8 @@ public class MethodUtils {
 		"<java.lang.Class: newInstance(java.lang.Object...)>",
 		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
 		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>",
-		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String, Java.lang.Boolean)>",
-		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String, Java.lang.Boolean)>",
+		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String, boolean)>",
+		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String, boolean)>",
 		"<java.lang.ClassLoader: void <init>()>", //constructors are a bit of a problem because we cannot know the signatures of all Classloaders that might be created by developers, e.g. by inheriting from ClassLoader
 		"<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>",
 		"<java.lang.ClassLoader: java.lang.ClassLoader getSystemClassLoader()>",
@@ -107,21 +108,41 @@ public class MethodUtils {
 		return false;
 	}
 	
-	public static List<SootMethod> findReflectiveLoadingMethods(){
+	public static List<SootMethod> findReflectiveLoadingMethods(Collection<SootMethod> startingPoints){
 		List<SootMethod> list = new ArrayList<SootMethod>(); 
-		
+		for (SootMethod sm : findTransitiveCalleesOf(startingPoints)){
+			if (isReflectiveLoading(sm)) {
+				list.add(sm);
+			}
+		}
+		return list;
+	}
+	
+	public static List<SootMethod> getAllReachableMethods(){
+		List<SootMethod> result = new ArrayList<SootMethod>();
 		ReachableMethods reachableMethods = Scene.v().getReachableMethods();
 		QueueReader<MethodOrMethodContext> listener = reachableMethods.listener();
 		while (listener.hasNext()) {
 			MethodOrMethodContext next = listener.next();
 			SootMethod method = next.method();
-			System.out.println("Signature: " + method.getSignature());
-			if (isReflectiveLoading(method)) {
-					list.add(method);
+			result.add(method);
+		}
+		return result;
+	}
+	
+	public static SootMethod findMethodWithSignature(String signature){
+		SootMethod result = null;
+		ReachableMethods reachableMethods = Scene.v().getReachableMethods();
+		QueueReader<MethodOrMethodContext> listener = reachableMethods.listener();
+		while (listener.hasNext()) {
+			MethodOrMethodContext next = listener.next();
+			SootMethod method = next.method();
+			if (method.getSignature().equals(signature)) {
+				result = method;
 			}
 		}
-		
-		return list;
+
+		return result;
 	}
 
 	public static boolean methodIsCtor(SootMethod method) {
@@ -377,7 +398,7 @@ public class MethodUtils {
 		return transitiveSources;
 	}
 
-	public static Set<SootMethod> findTransitiveCalleesOf(List<SootMethod> sootMethods) {
+	public static Set<SootMethod> findTransitiveCalleesOf(Collection<SootMethod> sootMethods) {
 		Set<SootMethod> transitiveTargets = new LinkedHashSet<SootMethod>();
 		for (SootMethod sootMethod : sootMethods) {
 			Set<SootMethod> transitiveCallees = findTransitiveCalleesOf(sootMethod);

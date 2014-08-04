@@ -144,10 +144,10 @@ public class G
 		EXPRESSION_TYPE = RefType.v(EXPRESSION_CLASS_NAME);
 		OBJECT_TYPE = RefType.v(OBJECT_CLASS_NAME);
 		symUtilClass = Scene.v().getSootClass(SYMUTIL_CLASS_NAME);
-		System.out.println("Printing methods of UTILS");
+		/* System.out.println("Printing methods of UTILS");
 		for (SootMethod m: symUtilClass.getMethods() ) {
 			System.out.println("   DEBUG: Method in Util: " + m.getDeclaration());
-		}
+		}*/
 
 		Map map = binopSymbolToMethodName;
 		map.put("+",   "_plus");

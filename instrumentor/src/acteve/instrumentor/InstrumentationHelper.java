@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -46,15 +47,16 @@ import org.xml.sax.SAXException;
 import soot.ArrayType;
 import soot.Body;
 import soot.CharType;
-import soot.Immediate;
 import soot.JimpleClassSource;
 import soot.Local;
 import soot.Modifier;
+import soot.PatchingChain;
 import soot.Printer;
 import soot.RefLikeType;
 import soot.RefType;
 import soot.Scene;
 import soot.SootClass;
+import soot.SootField;
 import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Type;
@@ -67,13 +69,12 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
 import soot.jimple.StringConstant;
-import soot.jimple.internal.ImmediateBox;
+import soot.jimple.infoflow.entryPointCreators.CAndroidEntryPointCreator;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JIdentityStmt;
 import soot.jimple.internal.JInvokeStmt;
 import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JSpecialInvokeExpr;
-import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
 import soot.jimple.parser.lexer.LexerException;
 import soot.jimple.parser.parser.ParserException;
@@ -81,12 +82,49 @@ import soot.options.Options;
 import soot.util.Chain;
 
 /**
- * Helper class for insturmenting bytecode artifacts.
+ * Helper class for instrumenting bytecode artifacts.
  * 
  * @author Julian Schuette (julian.schuette@aisec.fraunhofer.de)
  * 
  */
 public class InstrumentationHelper {
+	
+	/**
+	 * All listener classes defined inside Android.view. We need those to
+	 * determine which fields of activity classes are listeners to invoke them
+	 * during instrumentation.
+	 */
+	private static final HashSet<String> uiListeners = new HashSet<String>(Arrays.asList( new String[] {
+		"android.view.ActionProvider$VisibilityListener",
+		"android.view.GestureDetector$OnDoubleTapListener",
+		"android.view.GestureDetector$OnGestureListener",
+		"android.view.MenuItem$OnActionExpandListener",
+		"android.view.MenuItem$OnMenuItemClickListener",
+		"android.view.ScaleGestureDetector$OnScaleGestureListener",
+		"android.view.TextureView$SurfaceTextureListener",
+		"android.view.View$OnAttachStateChangeListener",
+		"android.view.View$OnClickListener",
+		"android.view.View$OnCreateContextMenuListener",
+		"android.view.View$OnDragListener",
+		"android.view.View$OnFocusChangeListener",
+		"android.view.View$OnGenericMotionListener",
+		"android.view.View$OnHoverListener",
+		"android.view.View$OnKeyListener",
+		"android.view.View$OnLayoutChangeListener",
+		"android.view.View$OnLongClickListener",
+		"android.view.View$OnSystemUiVisibilityChangeListener",
+		"android.view.View$OnTouchListener",
+		"android.view.ViewGroup$OnHierarchyChangeListener",
+		"android.view.ViewStub$OnInflateListener",
+		"android.view.ViewTreeObserver$OnDrawListener",
+		"android.view.ViewTreeObserver$OnGlobalFocusChangeListener",
+		"android.view.ViewTreeObserver$OnGlobalLayoutListener",
+		"android.view.ViewTreeObserver$OnPreDrawListener", //TODO: do we really need ViewTreeObserver?
+		"android.view.ViewTreeObserver$OnScrollChangedListener",
+		"android.view.ViewTreeObserver$OnTouchModeChangeListener",
+		"android.view.ViewTreeObserver$OnWindowAttachListener",
+		"android.view.ViewTreeObserver$OnWindowFocusChangeListener"
+	}));
 
 	/**
 	 * Clear up stuff after use
@@ -278,6 +316,237 @@ public class InstrumentationHelper {
 			}
 		}
 		
+	}
+	
+	
+	/**
+	 * Inserts calls to all lifecycle methods at the end of the onCreate()
+	 * method.
+	 * @throws Exception if no onCreate(android.os.Bundle) method is found
+	 */
+	public static void insertCallsToLifecycleMethods() throws Exception{
+		List<SootMethod> entrypoints = Scene.v().getEntryPoints();
+		/* we now need to find the main activity among a) the entry points or,
+		 * b) if its a dummy entry point among the callees
+		 */
+		SootMethod toInstrument = null;
+		for (SootMethod m : entrypoints){
+			if (m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
+			{
+				toInstrument = m;
+				break;
+			}
+		}
+		if (toInstrument == null){ //we found no real entry point, now look at callees
+			List<SootMethod> callees = MethodUtils.getCalleesOf(entrypoints.get(0));
+			for (SootMethod m : callees){
+				if (m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
+				{
+					toInstrument = m;
+					break;
+				}
+			}
+		}
+		if (toInstrument == null){
+			System.err.println("No onCreate method found in app; this should not happen. Call graph not yet built?");
+			throw new Exception("No onCreate() found!");
+		}
+		
+		//now find all UI element methods to call:
+		List<SootMethod> uiEntryPoints = MethodUtils.findApplicationPseudoEntryPoints();
+		
+		////-------------- first try ------------
+		
+		/*
+		// now insert invocation statements to call all UI lifecycle methods (s.a. onClick):
+		PatchingChain<Unit> units = toInstrument.getActiveBody().getUnits();
+		
+		// Argument List for invoking UI elements, consisting of a View element. Need to get a valid view
+		// from Manifest first
+		
+		/// find the findViewById method to invoke it:
+		SootMethod findViewByIdMethod = Scene.v().getMethod("<android.app.Activity: android.view.View findViewById(int)>");
+		
+		/// get view ID
+		int viewId = 0; //TODO: better get the correct view in case the Listener operates on it
+		
+		///reference to class on which to call findViewById:
+		Local activityRef = Jimple.v().newLocal("activityRef", RefType.v(toInstrument.getDeclaringClass().getName()));
+		toInstrument.getActiveBody().getLocals().add(activityRef);
+		//activityRef = this
+		units.add(Jimple.v().newAssignStmt(activityRef, Jimple.v().newThisRef(RefType.v(toInstrument.getDeclaringClass().getName()))));
+		
+		//local View:
+		Local viewRef = Jimple.v().newLocal("viewRef", RefType.v("android.view.View"));
+		toInstrument.getActiveBody().getLocals().add(viewRef);
+		
+		//viewRef = getViewById(0). we assume that 0 always exists.
+		units.add(Jimple.v().newAssignStmt(viewRef, 
+				Jimple.v().newInvokeStmt(
+				Jimple.v().newVirtualInvokeExpr(activityRef, findViewByIdMethod.makeRef(), IntConstant.v(viewId))
+				).getInvokeExprBox().getValue()));
+		
+		//find all Listener elements:
+		toInstrument.getDeclaringClass().getFields();
+		
+		//for each UI element listener, add an invoke:
+		int i = 0;
+		for (SootMethod m : uiEntryPoints){
+			//make reference to declaring class:
+			Local tmpRef = Jimple.v().newLocal("tmpRef" + i++, RefType.v(m.getDeclaringClass().getName()));
+			toInstrument.getActiveBody().getLocals().add(tmpRef);
+			//assign reference:
+			units.add(Jimple.v().newAssignStmt(tmpRef, m.get))
+					
+			units.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(m.get, m, 
+					)
+			//TODO: continue here
+		}
+		*/
+		
+		///// --------- second try --------------
+		//// this does not work because we cannot instantiate interface classes
+		/*
+		//now working with soot-infoflow:
+		Set<String> classesToScan = new HashSet<String>();
+		classesToScan.add(toInstrument.getDeclaringClass().getName());
+		
+		//we need this one to have classes instantiated for us
+		AndroidEntryPointCreator aep = new AndroidEntryPointCreator(classesToScan);
+		
+		LocalGenerator generator = new LocalGenerator(toInstrument.getActiveBody());
+		int i = 0;
+		for (SootMethod m : uiEntryPoints){
+			Local localClass = Jimple.v().newLocal("localClass"+i++, m.getDeclaringClass().getType());
+			toInstrument.getActiveBody().getLocals().add(localClass);
+			
+			//instantiate so we can call on the object:
+			toInstrument.getActiveBody().getUnits().add(
+					Jimple.v().newAssignStmt(localClass, 
+							aep.generateClassConstructor(m.getDeclaringClass(), toInstrument.getActiveBody())
+							)
+					);
+			
+			aep.buildMethodCall(m, toInstrument.getActiveBody(), localClass, generator);
+		}*/
+		
+		////// ----------- third try -----------
+		/*
+		 * battle plan:
+		 * 1. get all fields inside main activity
+		 * 2. for each field, check if it implements an interface for UI callbacks
+		 * 3. if so, get reference to field (or instantiate inner class?)
+		 */
+		LocalGenerator generator = new LocalGenerator(toInstrument.getActiveBody());
+		
+		Body body = toInstrument.getActiveBody();
+		PatchingChain<Unit> units = body.getUnits();
+		
+		Set<String> classesToScan = new HashSet<String>();
+		classesToScan.add(toInstrument.getDeclaringClass().getName());
+		
+		//we need this one to have classes instantiated for us
+		CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(classesToScan);
+		
+		/*
+		///reference to class on which to call findViewById:
+		Local activityRef = generator.generateLocal(RefType.v(toInstrument.getDeclaringClass().getName()));
+		//activityRef = this
+		units.add(Jimple.v().newAssignStmt(activityRef, Jimple.v().newThisRef(RefType.v(toInstrument.getDeclaringClass().getName()))));
+		
+		//local View:
+		Local viewRef = generator.generateLocal(RefType.v("android.view.View"));
+		
+		/// find the findViewById method to invoke it:
+		SootMethod findViewByIdMethod = Scene.v().getMethod("<android.app.Activity: android.view.View findViewById(int)>");
+		
+		//viewRef = getViewById(0). we assume that 0 always exists.
+		units.add(Jimple.v().newAssignStmt(viewRef, 
+				Jimple.v().newInvokeStmt(
+				Jimple.v().newVirtualInvokeExpr(activityRef, findViewByIdMethod.makeRef(), IntConstant.v(0))
+				).getInvokeExprBox().getValue()));
+		
+		
+		for (SootField field : toInstrument.getDeclaringClass().getFields()){
+			if (uiListeners.contains(field.getType().toString())){
+				// this is an implementor of an UI callback method interface.
+				// get a reference now so we can call:
+				Local fieldRef = generator.generateLocal(RefType.v(field.getType().toString()));
+				body.getLocals().add(fieldRef);
+				units.add(
+						Jimple.v().newAssignStmt(fieldRef, Jimple.v().newInstanceFieldRef(fieldRef, field.makeRef()))
+				);
+				//state:
+				//fieldRef = refToField;
+				
+				//now invoke the Listener and pass the View (viewRef)
+				aep.buildMethodCall(Scene.v().getMethod("insert correct method here"), body, fieldRef, generator);
+				
+			}
+		}*/
+		
+		
+		///////// ---------- Fourth try --------
+		
+		//get all inner classes of the MainActivity:
+		/* ArrayList<SootClass> innerClasses = new ArrayList<SootClass>();
+		
+		for (SootClass sc : Scene.v().getClasses())
+			if (sc.getName().contains(toInstrument.getDeclaringClass().getName())
+					&& sc.getName().contains("$")
+					&& !sc.getName().equals(toInstrument.getDeclaringClass().getName())){
+				innerClasses.add(sc);
+				System.out.println("Found inner class " + sc.getName() + ", implementing :");
+				for (SootClass iface: sc.getInterfaces())
+					System.out.println(iface.getName());
+			}
+		
+		for (SootClass sc : innerClasses){
+			for (String iface : uiListeners){
+				if (sc.implementsInterface(iface)){
+					System.out.println(sc.getName() + " implements " + iface);
+				}
+			}
+			
+		}*/
+		
+		/* 
+		 * new battle plan:
+		 * 1. find all fields
+		 * 2. check if they are references to UI interface implementing classes
+		 * 3. get their references
+		 * 4. call their interface method
+		 */
+		ArrayList<SootField> listenerFields = new ArrayList<SootField>();
+		for (SootField f : toInstrument.getDeclaringClass().getFields()){
+			//test if field is a reference to an object implementing a UI interface class
+			for (String iface : uiListeners){
+				if (f.getType().toString().equals(iface))
+					listenerFields.add(f);
+			}
+		}
+		
+		///reference to class on which to call findViewById:
+		Local thisRef = generator.generateLocal(toInstrument.getDeclaringClass().getType());
+		//thisRef = this
+		units.add(Jimple.v().newAssignStmt(thisRef, Jimple.v().newThisRef(RefType.v(toInstrument.getDeclaringClass().getName()))));
+		
+		
+		// add references to the fields to call on them:
+		for (SootField f : listenerFields){
+			Local g = generator.generateLocal(f.getType());
+			units.add(
+					Jimple.v().newAssignStmt(g, Jimple.v().newInstanceFieldRef(thisRef, f.makeRef()))
+			);
+			/*
+			 *  we have a reference (g) to the field (f), now 1) find the
+			 *  interface's predefined method and 2) call it on the reference (g)
+			 */
+			SootMethod callbackMethod = Scene.v().getSootClass(f.getType().toString()).getMethod("void onClick(android.view.View)");
+			units.add(
+					aep.buildMethodCall(callbackMethod, body, g, generator)
+			);
+		}
 	}
 
 	/**

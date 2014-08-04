@@ -61,7 +61,6 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Transform;
-import soot.JastAddJ.Opt;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.android.data.AndroidMethod;
@@ -74,7 +73,7 @@ public class Main extends SceneTransformer {
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	static boolean DEBUG = true;
-	public final static boolean DUMP_JIMPLE = false	; //default: false. Set to true to create Jimple code instead of APK
+	public final static boolean DUMP_JIMPLE = true	; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
 	private static boolean LIMIT_TO_CALL_PATH = true; //Limit instrumentation to methods along the CP to reflection use?
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
@@ -89,7 +88,8 @@ public class Main extends SceneTransformer {
 	 */
 	//TODO Exclude these classes from instrumentation
 	private static Pattern excludePat = Pattern
-			.compile("(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
+			.compile("dummyMainClass|(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
+	//TODO: do we want to exclude android.support too?
 
 	@Override
 	protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
@@ -162,6 +162,8 @@ public class Main extends SceneTransformer {
 		Options.v().set_whole_program(true);	//Implicitly "on" when instrumenting Android, AFAIR.
 		Options.v().setPhaseOption("cg", "on");	//"On" by default.
 		Options.v().setPhaseOption("cg", "verbose");
+		Options.v().setPhaseOption("cg", "safe-newinstance:true");
+		Options.v().setPhaseOption("cg", "safe-forname:true");
 	    Options.v().set_keep_line_number(true);
 		Options.v().set_keep_offset(true);
 
@@ -185,6 +187,11 @@ public class Main extends SceneTransformer {
 		Options.v().set_src_prec(Options.src_prec_apk);
 		Options.v().set_debug(true);
 		// Options.v().set_exclude(Arrays.asList(new String[] {"javax.xml"}));
+		
+		SootMethod dummyMain = setupApplication.getEntryPointCreator().createDummyMain();
+
+		Scene.v().setEntryPoints(Collections.singletonList(dummyMain));
+		Scene.v().addBasicClass(dummyMain.getDeclaringClass().getName(), SootClass.BODIES);
 
 		// All packages which are not already in the app's transitive hull but
 		// are required by the injected code need to be marked as dynamic.
@@ -195,10 +202,11 @@ public class Main extends SceneTransformer {
 		Scene.v().loadNecessaryClasses();
 		
 		//Register all application classes for instrumentation
-		System.out.println("Application classes");
+		//System.out.println("Application classes");
 		Chain<SootClass> appclasses = Scene.v().getApplicationClasses();
 		for (SootClass c:appclasses) {
-			System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
+			//System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
+			classes.add(c);
 		}
 		
 		//Collect additional classes which will be injected into the app
@@ -210,21 +218,52 @@ public class Main extends SceneTransformer {
 			clazz.setApplicationClass();
 		}
 		
-		SootMethod dummyMain = setupApplication.getEntryPointCreator().createDummyMain();
-
-		Scene.v().setEntryPoints(Collections.singletonList(dummyMain));
-		Scene.v().addBasicClass(dummyMain.getDeclaringClass().getName(), SootClass.BODIES);
+		
 		
 		PackManager.v().getPack("cg").apply();
 		
+		//dump all methods for debugging:
+		List<SootMethod> allMethods = MethodUtils.getAllReachableMethods();
+		System.out.println("All methods in the scene:");
+		for (SootMethod m : allMethods)
+			System.out.println("\t" + m.getSignature());
+		
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
+		
+		//dump all inner classes for debugging:
+		try {
+			InstrumentationHelper.insertCallsToLifecycleMethods();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
 		if (LIMIT_TO_CALL_PATH ) {
-			//TODO: get callgraph and extract all classes on the path to any calls for class loading via reflection
-			List<SootMethod> entryPoints = MethodUtils.findApplicationEntryPoints();
+			/* 
+			 * Battle plan:
+			 * 1.a) Find all entry points (i.e. "real" entry points according to
+			 *      Android life cycle model that get automatically called by OS)
+			 * 1.b) AND user interaction entry points like onClick() etc
+			 * 2)   Find all reachable methods in which dynamic loading takes
+			 *      place
+			 * 3)   Determine all paths from methods in 1) to methods in 2)
+			 * 4)   Instrument only on those paths 
+			 */
 			
-			List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods();
+			
+			//1.a)
+			HashSet<SootMethod> entryPoints = new HashSet<SootMethod>(MethodUtils.getCalleesOf(dummyMain));
+			
+			//1.b)
+			entryPoints.addAll(MethodUtils.findApplicationPseudoEntryPoints());
+			
+			//2)
+			/*
+			 * TODO: surprisingly, ClassLoader.loadClass(String) does NOT show
+			 * up in the CG even though everything else does.
+			 */
+			List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods(entryPoints);
 			System.out.println("Found the following reflective class loading methods:");
 			for (SootMethod m : methodsWithReflectiveClassLoading){
 				System.out.println("Signature: " + m.getSignature());
@@ -233,14 +272,18 @@ public class Main extends SceneTransformer {
 			//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
 			HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
 			for (SootMethod sm : methodsWithReflectiveClassLoading){
-				//add the declaring class: TODO: do we actually need to instrument that to? probably not.
-				classesAlongTheWay.add(sm.getDeclaringClass());
+				//add the declaring class because developers might inherit & extend from base class loaders
+				if(!excludePat.matcher(sm.getDeclaringClass().getName()).matches())
+					classesAlongTheWay.add(sm.getDeclaringClass());
 				//and all the classes on the way to the call:
-				for (SootMethod caller : MethodUtils.findTransitiveCallersOf(sm))
-					classesAlongTheWay.add(caller.getDeclaringClass());
+				for (SootMethod caller : MethodUtils.findTransitiveCallersOf(sm)){
+					if(!excludePat.matcher(caller.getDeclaringClass().getName()).matches()){
+						classesAlongTheWay.add(caller.getDeclaringClass());
+					}
+				}
 			}
 			
-			classes = new ArrayList<SootClass>(classesAlongTheWay);
+			classes = new ArrayList<SootClass>(classesAlongTheWay);			
 			
 			if(DEBUG){
 				System.out.println("Found " + classesAlongTheWay.size() + " classes that declare methods on the path to reflection, i.e. that need to be instrumented.");
@@ -249,7 +292,7 @@ public class Main extends SceneTransformer {
 			}
 		}
 		// -------------------------------- END RAFAEL ----------------------------------------------
-
+		
 		PackManager.v().runPacks();
 		PackManager.v().writeOutput();
 		
