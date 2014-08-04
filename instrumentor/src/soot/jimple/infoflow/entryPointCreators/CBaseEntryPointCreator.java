@@ -131,6 +131,89 @@ public abstract class CBaseEntryPointCreator implements CIEntryPointCreator {
 	public Stmt buildMethodCall(SootMethod currentMethod, Body body, Local classLocal, LocalGenerator gen){
 		return buildMethodCall(currentMethod, body, classLocal, gen, Collections.<SootClass>emptySet());
 	}
+	
+	public Stmt buildMethodCall(SootMethod currentMethod, Body body, Local classLocal, LocalGenerator gen, Unit before){
+		return buildMethodCall(currentMethod, body, classLocal, gen, Collections.<SootClass>emptySet(), before);
+	}
+	
+	protected Stmt buildMethodCall(SootMethod currentMethod, Body body, Local classLocal, LocalGenerator gen,
+			Set<SootClass> parentClasses, Unit before){
+		assert currentMethod != null : "Current method was null";
+		assert body != null : "Body was null";
+		assert gen != null : "Local generator was null";
+		
+		InvokeExpr invokeExpr;
+		List<Value> args = new LinkedList<Value>();
+		if(currentMethod.getParameterCount()>0){
+			for(Type tp :currentMethod.getParameterTypes()){
+				//catch special case Context:
+				if (!tp.toString().equals("android.content.Context")){
+					System.out.println("Constructing argument of type " + tp.toString());
+					args.add(getValueForType(body, gen, tp, new HashSet<SootClass>(), parentClasses, before));
+				}
+				else {
+					//let's see if we can get the Context from locals
+					
+					// a)
+					Local suitableParameter = null;
+					for (Local parameter : body.getParameterLocals())
+						if (parameter.getType().toString().equals("android.content.Context"))
+							suitableParameter = parameter;
+					if (suitableParameter != null)
+						args.add(suitableParameter);
+					else {
+						// b)
+						// no Context found among parameters, let's try to get it from other locals
+						for (Local parameter : body.getLocals())
+							if (parameter.getType().toString().equals("android.content.Context"))
+								suitableParameter = parameter;
+						if (suitableParameter != null)
+							args.add(suitableParameter);
+					}
+				}
+			}
+			if(currentMethod.isStatic()){
+				invokeExpr = Jimple.v().newStaticInvokeExpr(currentMethod.makeRef(), args);
+			}else{
+				assert classLocal != null : "Class local method was null for non-static method call";
+				if (currentMethod.isConstructor())
+					invokeExpr = Jimple.v().newSpecialInvokeExpr(classLocal, currentMethod.makeRef(),args);
+				else if (currentMethod.isAbstract())
+					invokeExpr = Jimple.v().newInterfaceInvokeExpr(classLocal, currentMethod.makeRef(), args);
+				else
+					invokeExpr = Jimple.v().newVirtualInvokeExpr(classLocal, currentMethod.makeRef(),args);
+			}
+		}else{
+			if(currentMethod.isStatic()){
+				invokeExpr = Jimple.v().newStaticInvokeExpr(currentMethod.makeRef());
+			}else{
+				assert classLocal != null : "Class local method was null for non-static method call";
+				if (currentMethod.isConstructor())
+					invokeExpr = Jimple.v().newSpecialInvokeExpr(classLocal, currentMethod.makeRef());
+				else if (currentMethod.isAbstract())
+					invokeExpr = Jimple.v().newInterfaceInvokeExpr(classLocal, currentMethod.makeRef());
+				else
+					invokeExpr = Jimple.v().newVirtualInvokeExpr(classLocal, currentMethod.makeRef());
+			}
+		}
+		 
+		Stmt stmt;
+		if (!(currentMethod.getReturnType() instanceof VoidType)) {
+			Local returnLocal = gen.generateLocal(currentMethod.getReturnType());
+			stmt = Jimple.v().newAssignStmt(returnLocal, invokeExpr);
+			
+		} else {
+			stmt = Jimple.v().newInvokeStmt(invokeExpr);
+		}
+		body.getUnits().insertBefore(stmt, before);
+		
+		// Clean up
+		for (Object val : args)
+			if (val instanceof Local && ((Value) val).getType() instanceof RefType)
+				body.getUnits().insertBefore(Jimple.v().newAssignStmt((Value) val, NullConstant.v()), before);
+		
+		return stmt;
+	}
 
 	protected Stmt buildMethodCall(SootMethod currentMethod, Body body, Local classLocal, LocalGenerator gen,
 			Set<SootClass> parentClasses){
@@ -142,7 +225,31 @@ public abstract class CBaseEntryPointCreator implements CIEntryPointCreator {
 		List<Value> args = new LinkedList<Value>();
 		if(currentMethod.getParameterCount()>0){
 			for(Type tp :currentMethod.getParameterTypes()){
-				args.add(getValueForType(body, gen, tp, new HashSet<SootClass>(), parentClasses));
+				//catch special case Context:
+				if (!tp.toString().equals("android.content.Context")){
+					System.out.println("Constructing argument of type " + tp.toString());
+					args.add(getValueForType(body, gen, tp, new HashSet<SootClass>(), parentClasses));
+				}
+				else {
+					//let's see if we can get the Context from locals
+					
+					// a)
+					Local suitableParameter = null;
+					for (Local parameter : body.getParameterLocals())
+						if (parameter.getType().toString().equals("android.content.Context"))
+							suitableParameter = parameter;
+					if (suitableParameter != null)
+						args.add(suitableParameter);
+					else {
+						// b)
+						// no Context found among parameters, let's try to get it from other locals
+						for (Local parameter : body.getLocals())
+							if (parameter.getType().toString().equals("android.content.Context"))
+								suitableParameter = parameter;
+						if (suitableParameter != null)
+							args.add(suitableParameter);
+					}
+				}
 			}
 			if(currentMethod.isStatic()){
 				invokeExpr = Jimple.v().newStaticInvokeExpr(currentMethod.makeRef(), args);
@@ -217,17 +324,101 @@ public abstract class CBaseEntryPointCreator implements CIEntryPointCreator {
 							return val;
 					}
 
-				// Create a new instance to plug in here
-				Value val = generateClassConstructor(classToType, body, constructionStack, parentClasses);
+				if (!tp.toString().equals("android.content.Context")){
+					// Create a new instance to plug in here
+					Value val = generateClassConstructor(classToType, body, constructionStack, parentClasses);
+					
+					// If we cannot create a parameter, we try a null reference.
+					// Better than not creating the whole invocation...
+					if(val == null)
+						return NullConstant.v();
+					return val;
+				} else {
+						
+						//get us the context local
+					    Local ctxLocal = null;
+					    for (Local l : body.getLocals())
+					    	if (l.getType().equals(RefType.v("android.content.Context"))){
+					    		ctxLocal = l;
+					    		System.out.println("Found Ctx local: " + ctxLocal.getName() + " of type " + ctxLocal.getType().toString());
+					    	}
+					    
+					    if (ctxLocal == null)
+					    	return NullConstant.v();
+					    else
+					    	return ctxLocal;
+						
+					}
+					
+				}
 				
-				// If we cannot create a parameter, we try a null reference.
-				// Better than not creating the whole invocation...
-				if(val == null)
-					return NullConstant.v();
-				
-				return val;
 			}
+		
+		else if (tp instanceof ArrayType) {
+			Value arrVal = buildArrayOfType(body, gen, (ArrayType) tp, constructionStack, parentClasses);
+			if (arrVal == null){
+				logger.warn("Array parameter substituted by null");
+				return NullConstant.v();
+			}
+			return arrVal;
 		}
+		else {
+			logger.warn("Unsupported parameter type: {}", tp.toString());
+			return null;
+		}
+		throw new RuntimeException("Should never see me");
+    }
+	
+	
+	private Value getValueForType(Body body, LocalGenerator gen,
+			Type tp, Set<SootClass> constructionStack, Set<SootClass> parentClasses, Unit before) {
+		// Depending on the parameter type, we try to find a suitable
+		// concrete substitution
+		if (isSimpleType(tp.toString()))
+			return getSimpleDefaultValue(tp.toString());
+		else if (tp instanceof RefType) {
+			SootClass classToType = ((RefType) tp).getSootClass();
+			
+			if(classToType != null){
+				// If we have a parent class compatible with this type, we use
+				// it before we check any other option
+				for (SootClass parent : parentClasses)
+					if (isCompatible(parent, classToType)) {
+						Value val = this.localVarsForClasses.get(parent.getName());
+						if (val != null)
+							return val;
+					}
+
+				if (!tp.toString().equals("android.content.Context")){
+					// Create a new instance to plug in here
+					Value val = generateClassConstructor(classToType, body, constructionStack, parentClasses, before);
+					
+					// If we cannot create a parameter, we try a null reference.
+					// Better than not creating the whole invocation...
+					if(val == null)
+						return NullConstant.v();
+					return val;
+				} else {
+						
+						//get us the context local
+					    Local ctxLocal = null;
+					    for (Local l : body.getLocals())
+					    	if (l.getType().equals(RefType.v("android.content.Context"))){
+					    		ctxLocal = l;
+					    		System.out.println("Found Ctx local: " + ctxLocal.getName() + " of type " + ctxLocal.getType().toString());
+					    	}
+					    
+					    if (ctxLocal == null)
+					    	return NullConstant.v();
+					    else
+					    	return ctxLocal;
+						
+					}
+					
+				}
+				
+			}
+		
 		else if (tp instanceof ArrayType) {
 			Value arrVal = buildArrayOfType(body, gen, (ArrayType) tp, constructionStack, parentClasses);
 			if (arrVal == null){
@@ -430,6 +621,127 @@ public abstract class CBaseEntryPointCreator implements CIEntryPointCreator {
 				}
 				else
 					body.getUnits().add(Jimple.v().newInvokeStmt(vInvokeExpr));
+					
+				return tempLocal;
+			}
+
+			logger.warn("Could not find a suitable constructor for class {}", createdClass.getName());
+			this.failedClasses.add(createdClass);
+			return null;
+		}
+	}
+	
+	
+	protected Local generateClassConstructor(SootClass createdClass, Body body,
+			Set<SootClass> constructionStack, Set<SootClass> parentClasses, Unit before) {
+		if (createdClass == null || this.failedClasses.contains(createdClass))
+			return null;
+		
+		// We cannot create instances of phantom classes as we do not have any
+		// constructor information for them
+		if (createdClass.isPhantom() || createdClass.isPhantomClass()) {
+			logger.warn("Cannot generate constructor for phantom class {}", createdClass.getName());
+			return null;
+		}
+
+		LocalGenerator generator = new LocalGenerator(body);
+
+		// if sootClass is simpleClass:
+		if (isSimpleType(createdClass.toString())) {
+			Local varLocal =  generator.generateLocal(getSimpleTypeFromType(createdClass.getType()));
+			
+			AssignStmt aStmt = Jimple.v().newAssignStmt(varLocal, getSimpleDefaultValue(createdClass.toString()));
+			body.getUnits().insertBefore(aStmt, before);
+			return varLocal;
+		}
+		
+		boolean isInnerClass = createdClass.getName().contains("$");
+		String outerClass = isInnerClass ? createdClass.getName().substring
+				(0, createdClass.getName().lastIndexOf("$")) : "";
+		
+		// Make sure that we don't run into loops
+		if (!constructionStack.add(createdClass)) {
+			logger.warn("Ran into a constructor generation loop for class " + createdClass
+					+ ", substituting with null...");
+			Local tempLocal = generator.generateLocal(RefType.v(createdClass));			
+			AssignStmt assignStmt = Jimple.v().newAssignStmt(tempLocal, NullConstant.v());
+			body.getUnits().insertBefore(assignStmt, before);
+			return tempLocal;
+		}
+		if(createdClass.isInterface() || createdClass.isAbstract()){
+			if(substituteCallParams) {
+				// Find a matching implementor of the interface
+				List<SootClass> classes;
+				if (createdClass.isInterface())
+					classes = Scene.v().getActiveHierarchy().getImplementersOf(createdClass);
+				else
+					classes = Scene.v().getActiveHierarchy().getSubclassesOf(createdClass);
+				
+				// Generate an instance of the substitution class. If we fail,
+				// try the next substitution. If we don't find any possible
+				// substitution, we're in trouble
+				for(SootClass sClass : classes)
+					if(substituteClasses.contains(sClass.toString())) {
+						Local cons = generateClassConstructor(sClass, body, constructionStack, parentClasses);
+						if (cons == null)
+							continue;
+						return cons;
+					}
+				logger.warn("Cannot create valid constructor for {}, because it is {} and cannot substitute with subclass", createdClass,
+                        (createdClass.isInterface() ? "an interface" :(createdClass.isAbstract() ? "abstract" : "")));
+				this.failedClasses.add(createdClass);
+				return null;
+			}
+			else{
+                logger.warn("Cannot create valid constructor for {}, because it is {} and cannot substitute with subclass", createdClass,
+                        (createdClass.isInterface() ? "an interface" :(createdClass.isAbstract() ? "abstract" : "")));
+				this.failedClasses.add(createdClass);
+				return null;
+			}
+		}
+		else{			
+			// Find a constructor we can invoke. We do this first as we don't want
+			// to change anything in our method body if we cannot create a class
+			// instance anyway.
+			for (SootMethod currentMethod : createdClass.getMethods()) {
+				if (currentMethod.isPrivate() || !currentMethod.isConstructor())
+					continue;
+				
+				List<Value> params = new LinkedList<Value>();
+				for (Type type : currentMethod.getParameterTypes()) {
+					// We need to check whether we have a reference to the
+					// outer class. In this case, we do not generate a new
+					// instance, but use the one we already have.
+					String typeName = type.toString().replaceAll("\\[\\]]", "");
+					if (type instanceof RefType
+							&& isInnerClass && typeName.equals(outerClass)
+							&& this.localVarsForClasses.containsKey(typeName))
+						params.add(this.localVarsForClasses.get(typeName));
+					else
+						params.add(getValueForType(body, generator, type, constructionStack, parentClasses, before));
+				}
+
+				// Build the "new" expression
+				NewExpr newExpr = Jimple.v().newNewExpr(RefType.v(createdClass));
+				Local tempLocal = generator.generateLocal(RefType.v(createdClass));			
+				AssignStmt assignStmt = Jimple.v().newAssignStmt(tempLocal, newExpr);
+				body.getUnits().insertBefore(assignStmt, before);		
+
+				// Create the constructor invocation
+				InvokeExpr vInvokeExpr;
+				if (params.isEmpty() || params.contains(null))
+					vInvokeExpr = Jimple.v().newSpecialInvokeExpr(tempLocal, currentMethod.makeRef());
+				else
+					vInvokeExpr = Jimple.v().newSpecialInvokeExpr(tempLocal, currentMethod.makeRef(), params);
+
+				// Make sure to store return values
+				if (!(currentMethod.getReturnType() instanceof VoidType)) { 
+					Local possibleReturn = generator.generateLocal(currentMethod.getReturnType());
+					AssignStmt assignStmt2 = Jimple.v().newAssignStmt(possibleReturn, vInvokeExpr);
+					body.getUnits().insertBefore(assignStmt2, before);
+				}
+				else
+					body.getUnits().insertBefore(Jimple.v().newInvokeStmt(vInvokeExpr), before);
 					
 				return tempLocal;
 			}
