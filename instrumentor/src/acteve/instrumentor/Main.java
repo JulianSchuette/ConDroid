@@ -156,7 +156,7 @@ public class Main extends SceneTransformer {
 			e.printStackTrace();
 		}
 		
-		//restore the class path because those Deppen delete it in calculateSourcesSinksEntrypoints by calling soot.G.reset():
+		//restore the class path because of soot.G.reset() in calculateSourcesSinksEntrypoints:
 		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
 		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
 		
