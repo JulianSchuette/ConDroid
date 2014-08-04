@@ -6,11 +6,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -39,14 +37,12 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-
+import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import com.google.common.base.Objects.ToStringHelper;
 
 import soot.ArrayType;
 import soot.Body;
@@ -98,44 +94,47 @@ public class InstrumentationHelper {
 	 * determine which fields of activity classes are listeners to invoke them
 	 * during instrumentation.
 	 */
-	private static final HashSet<String> uiListeners = new HashSet<String>(Arrays.asList( new String[] {
-		"android.view.ActionProvider$VisibilityListener",
-		"android.view.GestureDetector$OnDoubleTapListener",
-		"android.view.GestureDetector$OnGestureListener",
-		"android.view.MenuItem$OnActionExpandListener",
-		"android.view.MenuItem$OnMenuItemClickListener",
-		"android.view.ScaleGestureDetector$OnScaleGestureListener",
-		"android.view.TextureView$SurfaceTextureListener",
-		"android.view.View$OnAttachStateChangeListener",
-		"android.view.View$OnClickListener",
-		"android.view.View$OnCreateContextMenuListener",
-		"android.view.View$OnDragListener",
-		"android.view.View$OnFocusChangeListener",
-		"android.view.View$OnGenericMotionListener",
-		"android.view.View$OnHoverListener",
-		"android.view.View$OnKeyListener",
-		"android.view.View$OnLayoutChangeListener",
-		"android.view.View$OnLongClickListener",
-		"android.view.View$OnSystemUiVisibilityChangeListener",
-		"android.view.View$OnTouchListener",
-		"android.view.ViewGroup$OnHierarchyChangeListener",
-		"android.view.ViewStub$OnInflateListener",
-		"android.view.ViewTreeObserver$OnDrawListener",
-		"android.view.ViewTreeObserver$OnGlobalFocusChangeListener",
-		"android.view.ViewTreeObserver$OnGlobalLayoutListener",
-		"android.view.ViewTreeObserver$OnPreDrawListener", //TODO: do we really need ViewTreeObserver?
-		"android.view.ViewTreeObserver$OnScrollChangedListener",
-		"android.view.ViewTreeObserver$OnTouchModeChangeListener",
-		"android.view.ViewTreeObserver$OnWindowAttachListener",
-		"android.view.ViewTreeObserver$OnWindowFocusChangeListener"
-	}));
+	private static HashMap<String, String[]> uiListeners = new HashMap<String, String[]>();
+	static {
+		HashMap<String, String[]> aMap = new HashMap<String, String[]>();
+		aMap.put("android.view.ActionProvider$VisibilityListener", new String[] {"void onActionProviderVisibilityChanged(boolean)"});
+		aMap.put("android.view.GestureDetector$OnDoubleTapListener", new String[] {"boolean onDoubleTap(android.view.MotionEvent)", "boolean onDoubleTapEvent(android.view.MotionEvent)", "boolean onSingleTapConfirmed(android.view.MotionEvent)" });
+		aMap.put("android.view.GestureDetector$OnGestureListener", new String[]{"boolean onDown(MotionEvent)", "boolean onFling(android.view.MotionEvent, android.view.MotionEvent, float, float)", "void onLongPress(android.view.MotionEvent)", "boolean onScroll(android.view.MotionEvent, android.view.MotionEvent, float, float)", "void onShowPress(android.view.MotionEvent)", "boolean onSingleTapUp(android.view.MotionEvent)"});
+		aMap.put("android.view.MenuItem$OnActionExpandListener", new String[]{"boolean onMenuItemActionCollapse(android.view.MenuItem)", "boolean onMenuItemActionExpand(android.view.MenuItem)"}) ;
+		aMap.put("android.view.MenuItem$OnMenuItemClickListener", new String[]{"boolean onMenuItemClick(android.view.MenuItem)"});
+		aMap.put("android.view.ScaleGestureDetector$OnScaleGestureListener", new String[]{"boolean onScale(android.view.ScaleGestureDetector)", "boolean onScaleBegin(android.view.ScaleGestureDetector)", "void onScaleEnd(android.view.ScaleGestureDetector)"});
+		aMap.put("android.view.TextureView$SurfaceTextureListener", new String[]{"void onSurfaceTextureAvailable(android.graphics.SurfaceTexture, int, int)", "boolean onSurfaceTextureDestroyed(android.graphics.SurfaceTexture)", "void onSurfaceTextureSizeChanged(android.graphics.SurfaceTexture, int, int)", "void onSurfaceTextureUpdated(android.graphics.SurfaceTexture)"});
+		aMap.put("android.view.View$OnAttachStateChangeListener", new String[]{"void onViewAttachedToWindow(android.view.View)", "void onViewDetachedFromWindow(android.view.View)"});
+		aMap.put("android.view.View$OnClickListener", new String[]{"void onClick(android.view.View)"});
+		aMap.put("android.view.View$OnCreateContextMenuListener", new String[]{"void onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)"});
+		aMap.put("android.view.View$OnDragListener", new String[]{"boolean onDrag(android.view.View, android.view.DragEvent)"});
+		aMap.put("android.view.View$OnFocusChangeListener", new String[]{"void onFocusChange(android.view.View, boolean)"});
+		aMap.put("android.view.View$OnGenericMotionListener", new String[]{"boolean onGenericMotion(android.view.View, MotionEvent)"});
+		aMap.put("android.view.View$OnHoverListener", new String[]{"boolean onHover(android.view.View, MotionEvent)"});
+		aMap.put("android.view.View$OnKeyListener", new String[]{"boolean onKey(android.view.View, int, KeyEvent)"});
+		aMap.put("android.view.View$OnLayoutChangeListener", new String[]{"void onLayoutChange(android.view.View, int, int, int, int, int, int, int, int)"});
+		aMap.put("android.view.View$OnLongClickListener", new String[]{"boolean onLongClick(android.view.View)"});
+		aMap.put("android.view.View$OnSystemUiVisibilityChangeListener", new String[]{"void onSystemUiVisibilityChange(int)"});
+		aMap.put("android.view.View$OnTouchListener", new String[]{"boolean onTouch(android.view.View, android.view.MotionEvent)"});
+		aMap.put("android.view.ViewGroup$OnHierarchyChangeListener", new String[]{"void onChildViewAdded(android.view.View, android.view.View)", "void onChildViewRemoved(android.view.View, android.view.View)"});
+		aMap.put("android.view.ViewStub$OnInflateListener", new String[]{"void onInflate(android.view.ViewStub, android.view.View)"});
+		aMap.put("android.view.ViewTreeObserver$OnDrawListener", new String[]{"void onDraw()"});
+		aMap.put("android.view.ViewTreeObserver$OnGlobalFocusChangeListener", new String[]{"void onGlobalFocusChanged(android.view.View, android.view.View)"});
+		aMap.put("android.view.ViewTreeObserver$OnGlobalLayoutListener", new String[]{"void onGlobalLayout()"});
+		aMap.put("android.view.ViewTreeObserver$OnPreDrawListener", new String[]{"boolean onPreDraw()"}); //TODO: do we really need ViewTreeObserver?
+		aMap.put("android.view.ViewTreeObserver$OnScrollChangedListener", new String[]{"void onScrollChanged()"});
+		aMap.put("android.view.ViewTreeObserver$OnTouchModeChangeListener", new String[]{"void onTouchModeChanged(boolean)"});
+		aMap.put("android.view.ViewTreeObserver$OnWindowAttachListener", new String[]{"void onWindowAttached()", "void onWindowDetached()"});
+		aMap.put("android.view.ViewTreeObserver$OnWindowFocusChangeListener", new String[]{"void onWindowFocusChanged(boolean)"});
+		uiListeners = aMap;
+	};
 
 	/**
 	 * Clear up stuff after use
 	 */
 	private static final boolean CLEAR_AFTER_USER = true;
 	private String manifest;
-	private HashSet<String> mainActivities = new HashSet<String>();
+	private static HashSet<String> mainActivities = new HashSet<String>();
 
 	private InstrumentationHelper() {
 		// Don't call me, I'm private
@@ -432,7 +431,7 @@ public class InstrumentationHelper {
 		 */
 		SootMethod toInstrument = null;
 		for (SootMethod m : entrypoints){
-			if (m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
+			if (isMainActivity(m.getDeclaringClass().getName()) && m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
 			{
 				toInstrument = m;
 				break;
@@ -441,7 +440,7 @@ public class InstrumentationHelper {
 		if (toInstrument == null){ //we found no real entry point, now look at callees
 			List<SootMethod> callees = MethodUtils.getCalleesOf(entrypoints.get(0));
 			for (SootMethod m : callees){
-				if (m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
+				if (isMainActivity(m.getDeclaringClass().getName()) && m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
 				{
 					toInstrument = m;
 					break;
@@ -451,6 +450,8 @@ public class InstrumentationHelper {
 		if (toInstrument == null){
 			System.err.println("No onCreate method found in app; this should not happen. Call graph not yet built?");
 			throw new Exception("No onCreate() found!");
+		} else {
+			System.out.println("Injecting calls to Android lifecycle methods into " + toInstrument.getSignature());
 		}
 				
 		Body body = toInstrument.getActiveBody();
@@ -488,7 +489,7 @@ public class InstrumentationHelper {
 		ArrayList<SootField> listenerFields = new ArrayList<SootField>();
 		for (SootField f : toInstrument.getDeclaringClass().getFields()){
 			//test if field is a reference to an object implementing a UI interface class
-			for (String iface : uiListeners){
+			for (String iface : uiListeners.keySet()){
 				if (f.getType().toString().equals(iface))
 					listenerFields.add(f);
 			}
@@ -550,7 +551,7 @@ public class InstrumentationHelper {
 			, returnstmt);
 			/*
 			 *  we have a reference (g) to the field (f), now 1) find the
-			 *  interface's predefined method and 2) call it on the reference (g)
+			 *  interface's predefined methods and 2) call them on the reference (g)
 			 */
 			System.out.println("Number of callback methods for field " + f.getName() + ": " + uiListeners.get(f.getType().toString()).length);
 			for (String callbackSubsig : uiListeners.get(f.getType().toString())){
@@ -618,7 +619,7 @@ public class InstrumentationHelper {
 	}
 
 
-	public boolean isMainActivity(String cls) {
+	public static boolean isMainActivity(String cls) {
 		return mainActivities.contains(cls);
 	}
 
@@ -716,6 +717,11 @@ public class InstrumentationHelper {
 		if (Main.DEBUG) {
 			System.out.println("Decoding " + apkFile.getAbsolutePath());
 		}
+		File decodedDir = new File ("decoded");
+		if (decodedDir.exists() && decodedDir.isDirectory()) {
+			FileUtils.deleteDirectory(decodedDir);
+		}
+		
 		Process p = Runtime.getRuntime().exec(
 				"java -jar libs/apktool.jar d -s -f " + apkFile.getAbsolutePath() + " decoded");
 		int processExitCode = p.waitFor();

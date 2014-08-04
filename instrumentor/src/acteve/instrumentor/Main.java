@@ -96,7 +96,7 @@ public class Main extends SceneTransformer {
 			printClasses("bef_instr.txt");
 
 		ModelMethodsHandler.readModelMethods(config.modelMethsFile);
-		Instrumentor ci = new Instrumentor(config.rwKind, config.outDir, config.sdkDir, config.fldsWhitelist,
+		Instrumentor ci = new Instrumentor(config.rwKind,
 										   config.outDir,
 										   config.sdkDir, 
 										   config.fldsWhitelist,
