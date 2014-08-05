@@ -81,6 +81,7 @@ public class Main extends SceneTransformer {
 	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
 	private static String apk = null;
 	private static boolean OMIT_MANIFEST_MODIFICATION = false;
+	private static boolean SKIP_ALL_INSTRUMENTATION = false;	//For debugging
 	
 	/**
 	 * Classes to exclude from instrumentation (all acteve, dalvik classes, plus some android SDK classes which are used by the instrumentation itself).
@@ -227,23 +228,30 @@ public class Main extends SceneTransformer {
 		
 		PackManager.v().getPack("cg").apply();
 		
-		try {
-			InstrumentationHelper.insertCallsToLifecycleMethods();
-		} catch (Exception e) {
-			System.out.println("Exception while inserting calls to lifecycle methods:");
-			e.printStackTrace();
+		if (!SKIP_ALL_INSTRUMENTATION) {
+			try {
+				InstrumentationHelper ih = new InstrumentationHelper(new File(apk));
+				ih.insertCallsToLifecycleMethods();
+			} catch (Exception e) {
+				System.out.println("Exception while inserting calls to lifecycle methods:");
+				e.printStackTrace();
+			}
+			
+			//build new call graph now that we have paths to UI-induced method calls:
+			PackManager.v().getPack("cg").apply();
 		}
 		
-		//build new call graph now that we have paths to UI-induced method calls:
-		PackManager.v().getPack("cg").apply();
-		
 		//dump all methods for debugging:
-		List<SootMethod> allMethods = MethodUtils.getAllReachableMethods();
-		System.out.println("All methods in the scene:");
-		for (SootMethod m : allMethods)
-			System.out.println("\t" + m.getSignature());
+		if (DEBUG) {
+			List<SootMethod> allMethods = MethodUtils.getAllReachableMethods();
+			System.out.println("All methods in the scene:");
+			for (SootMethod m : allMethods)
+				System.out.println("\t" + m.getSignature());
+		}
 		
-		PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
+		if (!SKIP_ALL_INSTRUMENTATION) {
+			PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
+		}
 		
 		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
 		if (LIMIT_TO_CALL_PATH ) {
@@ -312,8 +320,11 @@ public class Main extends SceneTransformer {
 			
 			//Sign the APK
 			signAPK(f.getAbsolutePath());
-
+			
 			System.out.println("Done. Have fun with " + f.getAbsolutePath());
+			
+			//Handover to explorer
+			acteve.explorer.Main.main(new String[] {f.getAbsolutePath()});
 		} else {
 			System.out.println("ERROR: " + outputApk + " does not exist");
 		}

@@ -56,13 +56,14 @@ public class Executor
 	private List<Integer> currentRoundRunIds;
 
 	static void setup(String emuPorts, 
+					  String fileName,
 					  String appPkgName, 
 					  String mainActivity, 
 					  String activityArgs, 
 					  int divergenceThreshold,
 					  int wildEmusThreshold)
 	{
-		v = new Executor(emuPorts, appPkgName, mainActivity, activityArgs, divergenceThreshold, wildEmusThreshold);
+		v = new Executor(emuPorts, fileName, appPkgName, mainActivity, activityArgs, divergenceThreshold, wildEmusThreshold);
 	}
 
 	static Executor v()
@@ -71,6 +72,7 @@ public class Executor
 	}
 	
 	private Executor(String emuPorts, 
+					  String fileName,
 					 String appPkgName, 
 					 String mainActivity, 
 					 String activityArgs, 
@@ -81,7 +83,7 @@ public class Executor
 		numEmus = ports.length;
 		for(String p : ports) {
 			System.out.println("using emulator running on port " + p);
-			Emulator emu = new Emulator(Integer.parseInt(p), appPkgName, mainActivity, activityArgs);
+			Emulator emu = new Emulator(Integer.parseInt(p), fileName, appPkgName, mainActivity, activityArgs);
 			available.add(emu);
 		}
 		Emulator.writeToFile(Main.newOutFile(Emulator.PKG_TXT), appPkgName);

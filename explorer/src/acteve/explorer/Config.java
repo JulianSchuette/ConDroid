@@ -38,7 +38,7 @@ public final class Config {
     private static final String DEFAULT_EMU_PORT = "5554";
 
 	public final String monkeyScript;
-	public final String appPkgName;
+	public String appPkgName;
 	public final String mainActivity;
 	public final String activityArgs;
 	public final String z3Path;
@@ -57,6 +57,7 @@ public final class Config {
 	public final boolean pruneAfterLastStep;
 	public final int divergenceThreshold;
 	public final int wildEmusThreshold;
+	public String fileName;
 
 	private static Config config;
 
@@ -67,6 +68,7 @@ public final class Config {
 	}
 
 	private Config() {
+        fileName = System.getProperty("a3t.filename", null);
         monkeyScript = System.getProperty("a3t.monkey", "monkey_script.txt");
         appPkgName = System.getProperty("a3t.pkg", "com.example.de.fhg.aisec.concolicexample");
 //        appPkgName = System.getProperty("a3t.pkg", "com.devuni.flashlight");

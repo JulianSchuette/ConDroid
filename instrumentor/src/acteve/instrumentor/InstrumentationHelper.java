@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -418,35 +419,43 @@ public class InstrumentationHelper {
 		return result;
 	}
 	
+
+	private SootMethod getMainOnCreate() {
+		List<SootMethod> entrypoints = Scene.v().getEntryPoints();
+		SootMethod result = null;
+		List<SootMethod> realEntryPoints = new ArrayList<SootMethod>();
+		realEntryPoints.addAll(entrypoints);
+		ListIterator<SootMethod> entryIt = realEntryPoints.listIterator();
+		while (entryIt.hasNext()){
+			SootMethod m = entryIt.next();
+			if (m.getSignature().equals("<dummyMainClass: void dummyMainMethod()>")) {
+				//When in dummyMain, add "real" entrypoints
+				for (SootMethod more:MethodUtils.getCalleesOf(m)) {
+					entryIt.add(more);
+					entryIt.previous();
+				}
+			}
+			if (isMainActivity(m.getDeclaringClass().getName()) && m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
+			{
+				result = m;
+				break;
+			}
+		}
+		
+		return result;
+	}
 	
 	/**
 	 * Inserts calls to all lifecycle methods at the end of the onCreate()
 	 * method.
 	 * @throws Exception if no onCreate(android.os.Bundle) method is found
 	 */
-	public static void insertCallsToLifecycleMethods() throws Exception{
-		List<SootMethod> entrypoints = Scene.v().getEntryPoints();
+	public void insertCallsToLifecycleMethods() throws Exception{
 		/* we now need to find the main activity among a) the entry points or,
 		 * b) if its a dummy entry point among the callees
 		 */
-		SootMethod toInstrument = null;
-		for (SootMethod m : entrypoints){
-			if (isMainActivity(m.getDeclaringClass().getName()) && m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
-			{
-				toInstrument = m;
-				break;
-			}
-		}
-		if (toInstrument == null){ //we found no real entry point, now look at callees
-			List<SootMethod> callees = MethodUtils.getCalleesOf(entrypoints.get(0));
-			for (SootMethod m : callees){
-				if (isMainActivity(m.getDeclaringClass().getName()) && m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
-				{
-					toInstrument = m;
-					break;
-				}
-			}
-		}
+		SootMethod toInstrument = getMainOnCreate();
+		
 		if (toInstrument == null){
 			System.err.println("No onCreate method found in app; this should not happen. Call graph not yet built?");
 			throw new Exception("No onCreate() found!");
@@ -619,7 +628,7 @@ public class InstrumentationHelper {
 	}
 
 
-	public static boolean isMainActivity(String cls) {
+	public boolean isMainActivity(String cls) {
 		return mainActivities.contains(cls);
 	}
 

@@ -50,9 +50,17 @@ public class Main
 	public static void main(String[] args)
 	{
 		Config config = Config.g();
+		
+		if (args.length>0 && new File(args[0]).exists()) {
+			config.fileName = args[0];
+		} else {
+			System.out.println("Usage: explorer <apk file>");
+			System.exit(-1);
+		}
 
         MonkeyScript.setup(config.userWait);
         Executor.setup(config.emulatorPort, 
+        			   config.fileName,
 					   config.appPkgName, 
 					   config.mainActivity, 
 					   config.activityArgs, 

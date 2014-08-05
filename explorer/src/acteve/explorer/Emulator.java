@@ -63,6 +63,7 @@ public class Emulator extends Task
 	private AdbTask logcatBegin;
 	private AdbTask logcatEnd;
 	private AdbTask runMonkey;
+	private AdbTask installApk;
 	private AdbTask pushPkgNameFile;
 	private AdbTask pushMonkeyScript;
 	private AdbTask startActivity;
@@ -81,8 +82,11 @@ public class Emulator extends Task
 
 	private final int port;
 
-	private void createTasks(String appPkgName, String mainActivity, String activityArgs)
+	private void createTasks(String fileName, String appPkgName, String mainActivity, String activityArgs)
 	{
+		this.installApk = new AdbTask(port, "install -r " + fileName);
+		subtasks.add(installApk);
+
 		this.pushPkgNameFile = new AdbTask(port, "push " + Main.newOutFile(PKG_TXT).getAbsolutePath() + " " + DEVICE_DIR + "/" + PKG_TXT);
 		subtasks.add(pushPkgNameFile);
 
@@ -136,6 +140,7 @@ public class Emulator extends Task
 		if (isFirst) {
 			execute(unlockPhone);
 			execute(initialKillActivity);
+			execute(installApk);
 			execute(pushPkgNameFile);
 			isFirst = false;
 		}
@@ -199,11 +204,11 @@ public class Emulator extends Task
 		//}
 	}
 	
-	public Emulator(int port, String appPkgName, String mainActivity, String activityArgs)
+	public Emulator(int port, String fileName, String appPkgName, String mainActivity, String activityArgs)
 	{
 		this.port = port;
 
-		createTasks(appPkgName, mainActivity, activityArgs);
+		createTasks(fileName, appPkgName, mainActivity, activityArgs);
 
 		this.project = new Project();
 		this.setProject(project);
