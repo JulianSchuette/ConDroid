@@ -31,6 +31,10 @@
 
 package acteve.instrumentor;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 
 public final class Config {
 	public final String inJars;
@@ -55,14 +59,20 @@ public final class Config {
 	}
 
 	private Config() {
-		inJars = "libs/android-14.jar";
-		outJar = System.getProperty("a3t.out.jar", "instrumented.jar");
-        libJars = System.getProperty("a3t.lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
-		inputMethsFile = System.getProperty("a3t.inputmeths.file", "inputs.dat");
-		modelMethsFile = System.getProperty("a3t.modelmeths.file", "models.dat");
-		outDir = System.getProperty("a3t.out.dir", "out");
-		sdkDir = System.getProperty("a3t.sdk.dir", null);
-		String s = System.getProperty("a3t.rw.kind", "id_field_write");
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream("config.properties"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		inJars = props.getProperty("a3t.android.jar", "libs/android-14.jar");
+		outJar = props.getProperty("a3t.out.jar", "instrumented.jar");
+        libJars = props.getProperty("a3t.lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
+		inputMethsFile = props.getProperty("a3t.inputmeths.file", "inputs.dat");
+		modelMethsFile = props.getProperty("a3t.modelmeths.file", "models.dat");
+		outDir = props.getProperty("a3t.out.dir", "out");
+		sdkDir = props.getProperty("a3t.sdk.dir", "out");
+		String s = props.getProperty("a3t.rw.kind", "id_field_write");
 		if (s.equals("none")) 
 			rwKind = RWKind.NONE;
 		else if (s.equals("id_field_write"))
@@ -74,10 +84,10 @@ public final class Config {
 		else
 			throw new RuntimeException("Unknown value for a3t.rw.kind: " + s);
 		
-		fldsWhitelist = System.getProperty("a3t.whiteflds.file", null);
-		fldsBlacklist = System.getProperty("a3t.blackflds.file", null);
-		methsWhitelist = System.getProperty("a3t.whitemeths.file", null);
-		instrAllFields = Boolean.getBoolean("a3t.instrflds.all");
+		fldsWhitelist = props.getProperty("a3t.whiteflds.file", null);
+		fldsBlacklist = props.getProperty("a3t.blackflds.file", null);
+		methsWhitelist = props.getProperty("a3t.whitemeths.file", null);
+		instrAllFields = Boolean.getBoolean(props.getProperty("a3t.instrflds.all"));
 
 		if (Main.DEBUG) {
 			System.out.println("a3t.in.jars=" + inJars);
