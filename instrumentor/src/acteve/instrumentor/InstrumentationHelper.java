@@ -358,35 +358,10 @@ public class InstrumentationHelper {
 		HashSet<SootMethod> result = new HashSet<SootMethod>();
 		
 		/*
-		 * Steps:
-		 * 1. get all values-* /public.xml
-		 * 2. extract all layout-elements from all public.xml
-		 * 3. get all layout files
-		 * 4. extract all android:onClick elements
+		 * Get layout names (activity_main) and the referencing activities (x.y.z.MainActivity)
 		 */
-		
 		HashMap<String, List<SootClass>> layoutsToActivity = getLayoutToActivityAssociation();
-		
-		//list all values-like directories in "decoded/res":
-		File folder = new File("decoded/res");
-		File[] listOfFiles = folder.listFiles();
-		ArrayList<File> valueFolders = new ArrayList<File>();
 
-		for (int i = 0; i < listOfFiles.length; i++) {
-			if (listOfFiles[i].isDirectory() && listOfFiles[i].getName().startsWith("values"))
-				valueFolders.add(listOfFiles[i]);
-		}
-		
-		//now collect all "public.xml" files:
-		ArrayList<File> publicFiles = new ArrayList<File>();
-		for (File f : valueFolders){
-			listOfFiles = f.listFiles();
-			for (File ff : listOfFiles){
-				if (ff.isFile() && ff.getName().equals("public.xml"))
-					publicFiles.add(ff);
-			}
-		}
-		
 		/* 
 		 * Now find all layout files that are referenced in these public files.
 		 * Make sure no duplicates are gathered by using a HashSet.
@@ -394,22 +369,7 @@ public class InstrumentationHelper {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		
-		//Xpath with some hardcoded Android ns
 		XPath xpath = XPathFactory.newInstance().newXPath();	
-        XPathExpression expr1 = xpath.compile("//resources/public[@type='layout']/@name");
-		
-		HashSet<String> layoutFiles = new HashSet<String>();
-		for (File pf : publicFiles){
-			Document doc = dBuilder.parse(pf);
-			doc.getDocumentElement().normalize();
-			
-	        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
-	        
-	        for (int i=0;i<nodes.getLength();i++) {
-	        	String layoutName = ((Attr) nodes.item(i)).getValue();
-	        	layoutFiles.add(layoutName);
-	        }
-		}
 		
 		/*
 		 * We now have all layout files of the app. Now find all
@@ -417,12 +377,8 @@ public class InstrumentationHelper {
 		 */
 		XPathExpression onClickExpr = xpath.compile("//RelativeLayout/Button[@onClick]/@onClick");
 		
-		System.out.println("Found " + layoutFiles.size() + " layout.xml files:");
-		for (String str : layoutFiles)
-			System.out.println("\t" + str);
-		
 		HashSet<SootMethod> onClickListeners = new HashSet<SootMethod>();
-		for (String layoutFileName : layoutFiles){
+		for (String layoutFileName : layoutsToActivity.keySet()){
 			System.out.println("Checking layout file " + layoutFileName);
 			
 			File layoutFile = new File("decoded/res/layout/" + layoutFileName + ".xml");
