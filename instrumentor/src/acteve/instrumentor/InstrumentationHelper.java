@@ -50,6 +50,7 @@ import soot.Body;
 import soot.CharType;
 import soot.JimpleClassSource;
 import soot.Local;
+import soot.MethodOrMethodContext;
 import soot.Modifier;
 import soot.PatchingChain;
 import soot.Printer;
@@ -66,6 +67,7 @@ import soot.Value;
 import soot.VoidType;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.javaToJimple.LocalGenerator;
+import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
@@ -79,6 +81,7 @@ import soot.jimple.internal.JSpecialInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
 import soot.jimple.parser.lexer.LexerException;
 import soot.jimple.parser.parser.ParserException;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.util.Chain;
 
@@ -323,6 +326,26 @@ public class InstrumentationHelper {
 	}
 	
 	/**
+	 * Returns a (filtered) list of entrypoint methods.
+	 * 
+	 * @param filter
+	 * @return
+	 */
+	public HashSet<SootMethod> getEntryMethods(Pattern filter)  {
+		HashSet<SootMethod> result = new HashSet<SootMethod>();
+		List<SootMethod> eps = Scene.v().getEntryPoints();
+		if (eps.size()==1 && eps.get(0).getSignature().equals("<dummyMainClass: void dummyMainMethod()>")) {
+			eps = MethodUtils.getCalleesOf(eps.get(0));
+		}
+		for (SootMethod m:eps) {			
+			if (filter==null || filter.matcher(m.getSignature()).matches()) {
+				result.add(m);
+			}
+		}
+		return result;
+	}
+	
+	/**
 	 * Please not that this method assumes the decoded APK to be in the
 	 * directory "decoded".
 	 * @return
@@ -331,8 +354,8 @@ public class InstrumentationHelper {
 	 * @throws SAXException 
 	 * @throws XPathExpressionException 
 	 */
-	public static HashSet<String> getOnClickFromLayout() throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
-		HashSet<String> result = new HashSet<String>();
+	public static HashSet<SootMethod> getOnClickFromLayout(Pattern filter) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
+		HashSet<SootMethod> result = new HashSet<SootMethod>();
 		
 		/*
 		 * Steps:
@@ -341,6 +364,8 @@ public class InstrumentationHelper {
 		 * 3. get all layout files
 		 * 4. extract all android:onClick elements
 		 */
+		
+		HashMap<String, List<SootClass>> layoutsToActivity = getLayoutToActivityAssociation();
 		
 		//list all values-like directories in "decoded/res":
 		File folder = new File("decoded/res");
@@ -369,7 +394,8 @@ public class InstrumentationHelper {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		
-		XPath xpath = XPathFactory.newInstance().newXPath();
+		//Xpath with some hardcoded Android ns
+		XPath xpath = XPathFactory.newInstance().newXPath();	
         XPathExpression expr1 = xpath.compile("//resources/public[@type='layout']/@name");
 		
 		HashSet<String> layoutFiles = new HashSet<String>();
@@ -378,8 +404,11 @@ public class InstrumentationHelper {
 			doc.getDocumentElement().normalize();
 			
 	        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
-	        String layoutName = ((Attr) nodes.item(0)).getValue();
-	        layoutFiles.add(layoutName);
+	        
+	        for (int i=0;i<nodes.getLength();i++) {
+	        	String layoutName = ((Attr) nodes.item(i)).getValue();
+	        	layoutFiles.add(layoutName);
+	        }
 		}
 		
 		/*
@@ -387,29 +416,30 @@ public class InstrumentationHelper {
 		 * android:onClick elements inside them.
 		 */
 		XPathExpression onClickExpr = xpath.compile("//RelativeLayout/Button[@onClick]/@onClick");
-		/* XPathExpression classExpr = xpath.compile("//RelativeLayout[@context]/@context");
-		XPathExpression packageExpr = xpath.compile("//manifest/@package");*/
 		
 		System.out.println("Found " + layoutFiles.size() + " layout.xml files:");
 		for (String str : layoutFiles)
 			System.out.println("\t" + str);
 		
-		HashSet<String> onClickListeners = new HashSet<String>();
+		HashSet<SootMethod> onClickListeners = new HashSet<SootMethod>();
 		for (String layoutFileName : layoutFiles){
-//			Document manifestDoc = dBuilder.parse(new File("decoded/AndroidManifest.xml"));
-//			String packageName = ((Attr) ((NodeList) packageExpr.evaluate(manifestDoc, XPathConstants.NODESET)).item(0)).getValue();			
+			System.out.println("Checking layout file " + layoutFileName);
 			
 			File layoutFile = new File("decoded/res/layout/" + layoutFileName + ".xml");
 			Document doc = dBuilder.parse(layoutFile);
 			
 			NodeList onClickNodes = (NodeList) onClickExpr.evaluate(doc, XPathConstants.NODESET);
-			
-//			NodeList classNodes = (NodeList) classExpr.evaluate(doc, XPathConstants.NODESET);
-//			String className = ((Attr) classNodes.item(0)).getValue();
-			
+						
 			for (int i = 0; i < onClickNodes.getLength(); i++){
 				String onClickMethod = "void " + ((Attr) onClickNodes.item(i)).getValue() + "(android.view.View)";
-				onClickListeners.add(onClickMethod);
+				String className = layoutsToActivity.get(layoutFileName).get(0).getName(); 
+				SootMethod oncmeth = Scene.v().getMethod("<"+className+": " + onClickMethod + ">");
+				if (filter.matcher(oncmeth.getSignature()).matches()) {
+					onClickListeners.add(oncmeth);
+					System.out.println("XML-defined onclick handler: " + oncmeth.getSignature());
+				} else {
+					System.out.println("Does not match filter: " + oncmeth.getSignature() + " :: " + filter.pattern());
+				}
 			}
 		}
 		result = onClickListeners;
@@ -419,6 +449,113 @@ public class InstrumentationHelper {
 		return result;
 	}
 	
+	/**
+	 * Returns a mapping from layout strings ("activity_main") to SootClasses using the respective layout.
+	 * @return
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws XPathExpressionException
+	 * @throws ParserConfigurationException
+	 */
+	private static HashMap<String, List<SootClass>> getLayoutToActivityAssociation() throws SAXException, IOException, XPathExpressionException, ParserConfigurationException {
+		HashMap<String, List<SootClass>> layoutNameToClass = new HashMap<String, List<SootClass>>();
+
+		HashMap<SootClass, List<String>> classesToLayoutIDs= new HashMap<SootClass, List<String>>();
+		
+		//Collect all layout ids which are used in setContentView
+		SootMethod setContentView = Scene.v().getMethod("<android.app.Activity: void setContentView(int)>");
+		Iterator<Edge> callers = Scene.v().getCallGraph().edgesInto(setContentView);
+		while (callers.hasNext()) {
+			Edge e = callers.next();
+			MethodOrMethodContext caller = e.getSrc();
+			Body callerBody = caller.method().getActiveBody();
+			PatchingChain<Unit> callerUnits = callerBody.getUnits();
+			for (Unit u:callerUnits) {
+				if (u instanceof JInvokeStmt) {
+					SootMethod calledMethod = ((JInvokeStmt) u).getInvokeExpr().getMethod();;
+					if (((JInvokeStmt) u).getInvokeExpr().getMethod().equals(setContentView)) {
+						Value arg = ((JInvokeStmt) u).getInvokeExpr().getArg(0);
+						if (arg instanceof IntConstant) {
+							int id = ((IntConstant) arg).value;
+							System.out.println("ID: "+Integer.toHexString(id));
+							if (!classesToLayoutIDs.containsKey(caller.method().getDeclaringClass())) {
+								classesToLayoutIDs.put(caller.method().getDeclaringClass(), new ArrayList<String>());
+							}
+							classesToLayoutIDs.get(caller.method().getDeclaringClass()).add("0x"+Integer.toHexString(id));
+						} else {
+							System.err.println("Sorry, could not resolve references layout: " + u.toString());
+						}
+					}
+				}
+			}
+		}
+		
+		//Resolve layout ids to file names
+		HashMap<String, String> idsToLayoutNames = new HashMap<String, String>();	//Hex ids to names
+		File folder = new File("decoded/res");
+		File[] listOfFiles = folder.listFiles();
+		ArrayList<File> valueFolders = new ArrayList<File>();
+
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isDirectory() && listOfFiles[i].getName().startsWith("values"))
+				valueFolders.add(listOfFiles[i]);
+		}
+		
+		//now collect all "public.xml" files:
+		ArrayList<File> publicFiles = new ArrayList<File>();
+		for (File f : valueFolders){
+			listOfFiles = f.listFiles();
+			for (File ff : listOfFiles){
+				if (ff.isFile() && ff.getName().equals("public.xml"))
+					publicFiles.add(ff);
+			}
+		}
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+		HashSet<String> layoutFiles = new HashSet<String>();
+		for (File pf : publicFiles){
+			Document doc = dBuilder.parse(pf);
+			doc.getDocumentElement().normalize();
+			
+			XPath xpath = XPathFactory.newInstance().newXPath();
+	        XPathExpression expr1 = xpath.compile("//*/@id|//*/@name");
+	        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
+	        
+	        String id=null, name=null;
+	        for (int i=0;i<nodes.getLength();i++) {
+	        	Node n = nodes.item(i);
+	        	if (((Attr) nodes.item(i)).getName().equals("id")) {
+	        		id = ((Attr) nodes.item(i)).getValue();
+	        	}
+	        	if (((Attr) nodes.item(i)).getName().equals("name")) {
+	        		name= ((Attr) nodes.item(i)).getValue();
+	        	}
+	        	if (id!=null && name!=null) {
+	        		idsToLayoutNames.put(id,name);
+	        		id = null;
+	        		name = null;
+	        	}
+	        }
+		}
+		
+		
+		//Now map layout to activities
+		for (String layoutId:idsToLayoutNames.keySet()) {
+			for (SootClass c:classesToLayoutIDs.keySet()) {
+				for (String id:classesToLayoutIDs.get(c)) {
+					if (id.equals(layoutId)) {
+						if (!layoutNameToClass.containsKey(idsToLayoutNames.get(layoutId))) {
+							layoutNameToClass.put(idsToLayoutNames.get(layoutId), new ArrayList<SootClass>());
+						}
+						layoutNameToClass.get(idsToLayoutNames.get(layoutId)).add(c);
+					}
+				}
+			}
+		}
+
+		return layoutNameToClass;
+	}
 
 	private SootMethod getMainOnCreate() {
 		List<SootMethod> entrypoints = Scene.v().getEntryPoints();
@@ -506,27 +643,16 @@ public class InstrumentationHelper {
 		
 		System.out.println("Found " + listenerFields.size() + " fields that are references to Objects implementing UI callback methods.");
 		
-		HashSet<String> onClickMethods = new HashSet<String>();
+		HashSet<SootMethod> onClickMethods = new HashSet<SootMethod>();
 		
-		try {
-			onClickMethods = getOnClickFromLayout();
-		} catch (ParserConfigurationException e) {
-			System.out.println("ParserConfigurationException while gathering onClick elements from layout.xml files.");
-			e.printStackTrace();
-			return;
-		} catch (SAXException e) {
-			System.out.println("SAXException while gathering onClick elements from layout.xml files.");
-			e.printStackTrace();
-			return;
-		} catch (IOException e) {
-			System.out.println("IOException while gathering onClick elements from layout.xml files.");
-			e.printStackTrace();
-			return;
-		} catch (XPathExpressionException e) {
-			System.out.println("XPathExpressionException while gathering onClick elements from layout.xml files.");
-			e.printStackTrace();
-			return;
-		} 
+		//Limit injection to default main
+		Pattern defaultMain = Pattern.compile("<"+Pattern.quote(toInstrument.getDeclaringClass().getName())+": .*");
+		
+		//Get onclick handlers registered via XML
+		onClickMethods = getOnClickFromLayout(defaultMain);
+				
+		//Get entry methods of default main
+		onClickMethods.addAll(getEntryMethods(defaultMain));
 		
 		if (listenerFields.size() < 1 && onClickMethods.size() < 1)
 			return;
@@ -574,21 +700,22 @@ public class InstrumentationHelper {
 		 * defined in layout files.
 		 */
 		
+		//TODO 76428610 can be removed, once we use all onclickhandlers
 		//For now, we filter for those which are defined in the main activity ONLY:
-		for (String methodSig : onClickMethods)
-			if (toInstrument.getDeclaringClass().getMethod(methodSig) == null)
-				onClickMethods.remove(methodSig);
+		for (SootMethod m : onClickMethods)
+			if (!toInstrument.getDeclaringClass().equals(m.getDeclaringClass()))
+				onClickMethods.remove(m);
 		/*
 		 * Now we only have the methods defined as android:onClickListener
 		 * which are in the MainActivity. Add some clals now.
 		 */
-		for (String methodSig : onClickMethods){
-			SootMethod onClickMethod = toInstrument.getDeclaringClass().getMethod(methodSig);
+		for (SootMethod onClickMethod : onClickMethods){
 			aep.buildMethodCall(onClickMethod, body, thisRefLocal, generator, returnstmt);
 		}
 		
 		
 	}
+
 
 	/**
 	 * Inserts statements at the end of a method, but ensures that thrown
