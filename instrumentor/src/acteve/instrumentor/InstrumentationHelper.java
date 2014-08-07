@@ -72,6 +72,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.ClassConstant;
 import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
+import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
 import soot.jimple.SpecialInvokeExpr;
@@ -562,12 +563,8 @@ public class InstrumentationHelper {
 		PatchingChain<Unit> units = body.getUnits();
 		LocalGenerator generator = new LocalGenerator(body);
 		
-		//TODO: find the return statement and insert our stuff before that:
+		//find the return statement and insert our stuff before that:
 		Iterator<Unit> it = units.iterator();
-		
-		/**
-		 * We need to insert all statements right before the return
-		 */
 		Unit returnstmt = null;
 		while (it.hasNext()){
 			Unit tmp = it.next();
@@ -575,7 +572,6 @@ public class InstrumentationHelper {
 				returnstmt = tmp;
 		}
 		System.out.println("Found return statement: " + returnstmt.toString());
-				
 		
 		Set<String> classesToScan = new HashSet<String>();
 		classesToScan.add(toInstrument.getDeclaringClass().getName());
@@ -584,7 +580,6 @@ public class InstrumentationHelper {
 		CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(classesToScan);
 		
 		/* 
-		 * new battle plan:
 		 * 1. find all fields
 		 * 2. check if they are references to UI interface implementing classes
 		 * 3. get their references
@@ -676,15 +671,11 @@ public class InstrumentationHelper {
 				otherActivities.add(m.getDeclaringClass());				
 			}
 		
-		for (SootClass activity:otherActivities) {
-				System.out.println("Injecting call to " + activity);
-				//Start other activities
-				
+		for (SootClass activity:otherActivities) {				
 				//Intent i = new Intent(this, bla.Blubb.class)
 				String classToInvoke = activity.getName().replace('.', '/');
 				Local intentLocal = generator.generateLocal(RefType.v("android.content.Intent"));			
 				AssignStmt assignStmt = Jimple.v().newAssignStmt(intentLocal,Jimple.v().newNewExpr(RefType.v("android.content.Intent")));
-				
 				
 				SootMethodRef initRef = Scene.v().makeMethodRef(
 						Scene.v().getSootClass("android.content.Intent"),
@@ -696,43 +687,24 @@ public class InstrumentationHelper {
 						intentLocal, 
 						initRef, 
 						Arrays.asList(thisRefLocal,ClassConstant.v(classToInvoke)));
-
+				InvokeStmt invokStmt = Jimple.v().newInvokeStmt(invok);
 				
-//				// startActivity(i)
+				// startActivity(i)
 				InvokeExpr expr = Jimple.v().newVirtualInvokeExpr(thisRefLocal, Scene.v().getMethod("<android.app.Activity: void startActivity(android.content.Intent)>").makeRef(), intentLocal);
 
-				//Reverse order
+				//Reversed order
 				body.getUnits().insertBefore(assignStmt, returnstmt);
-				body.getUnits().insertBefore(Jimple.v().newInvokeStmt(invok), returnstmt);
+				body.getUnits().insertBefore(invokStmt, returnstmt);
 				body.getUnits().insertBefore(new JInvokeStmt(expr), returnstmt);
-				
-//				aep.buildMethodCall(m, body, thisRefLocal, generator, returnstmt);				
 		}
-				
-		/*
-		 * Now we only have the methods defined as android:onClickListener
-		 * which are in the MainActivity. Add some clals now.
-		 */
-		
-		//TODO In default main, inject startActivity to invoke all other activities
 		
 		//TODO in each activity, inject calls to their onclickhandlers at the end of oncreate
-//		for (SootMethod m : onClickHandlerMethods) {
-//			Body b = m.getDeclaringClass().getMethod("void onCreate(android.os.Bundle)").getActiveBody();
-//			for (Unit u:b.getUnits()) {
-//				System.out.println(u);
-//			}
-//		}
-		
-		
 	}
 
 
 	/**
 	 * Inserts statements at the end of a method, but ensures that thrown
 	 * exceptions are still handled properly.
-	 * 
-	 * TODO UNTESTED
 	 * 
 	 * @param body
 	 * @param stmts
