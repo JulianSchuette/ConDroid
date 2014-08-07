@@ -231,7 +231,8 @@ public class Main extends SceneTransformer {
 		if (!SKIP_ALL_INSTRUMENTATION) {
 			try {
 				InstrumentationHelper ih = new InstrumentationHelper(new File(apk));
-				ih.insertCallsToLifecycleMethods();
+				SootMethod defaultOnCreateMeth = ih.getDefaultOnCreate();
+				ih.insertCallsToLifecycleMethods(defaultOnCreateMeth);
 			} catch (Exception e) {
 				System.out.println("Exception while inserting calls to lifecycle methods:");
 				e.printStackTrace();
@@ -306,6 +307,12 @@ public class Main extends SceneTransformer {
 		
 		PackManager.v().runPacks();
 		PackManager.v().writeOutput();
+		
+		//Just nice to have: Print Callgraph to a .dot file
+		if (DEBUG) {
+			System.out.println("Printing call graph to .dot file");
+			MethodUtils.printCGtoDOT(Scene.v().getCallGraph());
+		}
 		
 		String outputApk = "sootOutput/"+new File(apk).getName();
 		if (new File(outputApk).exists()) {

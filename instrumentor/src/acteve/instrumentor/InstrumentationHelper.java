@@ -60,6 +60,7 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
+import soot.SootMethodRef;
 import soot.SourceLocator;
 import soot.Type;
 import soot.Unit;
@@ -67,10 +68,13 @@ import soot.Value;
 import soot.VoidType;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.javaToJimple.LocalGenerator;
+import soot.jimple.AssignStmt;
+import soot.jimple.ClassConstant;
 import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
+import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StringConstant;
 import soot.jimple.infoflow.entryPointCreators.CAndroidEntryPointCreator;
 import soot.jimple.internal.JAssignStmt;
@@ -354,7 +358,7 @@ public class InstrumentationHelper {
 	 * @throws SAXException 
 	 * @throws XPathExpressionException 
 	 */
-	public static HashSet<SootMethod> getOnClickFromLayout(Pattern filter) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
+	public static HashSet<SootMethod> getOnClickFromLayouts(Pattern filter) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
 		HashSet<SootMethod> result = new HashSet<SootMethod>();
 		
 		/*
@@ -469,7 +473,7 @@ public class InstrumentationHelper {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-		HashSet<String> layoutFiles = new HashSet<String>();
+		//Read layout ids and names from public xml
 		for (File pf : publicFiles){
 			Document doc = dBuilder.parse(pf);
 			doc.getDocumentElement().normalize();
@@ -513,7 +517,7 @@ public class InstrumentationHelper {
 		return layoutNameToClass;
 	}
 
-	private SootMethod getMainOnCreate() {
+	public SootMethod getDefaultOnCreate() {
 		List<SootMethod> entrypoints = Scene.v().getEntryPoints();
 		SootMethod result = null;
 		List<SootMethod> realEntryPoints = new ArrayList<SootMethod>();
@@ -543,12 +547,10 @@ public class InstrumentationHelper {
 	 * method.
 	 * @throws Exception if no onCreate(android.os.Bundle) method is found
 	 */
-	public void insertCallsToLifecycleMethods() throws Exception{
+	public void insertCallsToLifecycleMethods(SootMethod toInstrument) throws Exception{
 		/* we now need to find the main activity among a) the entry points or,
 		 * b) if its a dummy entry point among the callees
-		 */
-		SootMethod toInstrument = getMainOnCreate();
-		
+		 */	
 		if (toInstrument == null){
 			System.err.println("No onCreate method found in app; this should not happen. Call graph not yet built?");
 			throw new Exception("No onCreate() found!");
@@ -599,18 +601,18 @@ public class InstrumentationHelper {
 		
 		System.out.println("Found " + listenerFields.size() + " fields that are references to Objects implementing UI callback methods.");
 		
-		HashSet<SootMethod> onClickMethods = new HashSet<SootMethod>();
+		HashSet<SootMethod> onClickHandlerMethods = new HashSet<SootMethod>();
 		
 		//Limit injection to default main
 		Pattern defaultMain = Pattern.compile("<"+Pattern.quote(toInstrument.getDeclaringClass().getName())+": .*");
 		
 		//Get onclick handlers registered via XML
-		onClickMethods = getOnClickFromLayout(defaultMain);
+		onClickHandlerMethods = getOnClickFromLayouts(defaultMain);
 				
 		//Get entry methods of default main
-		onClickMethods.addAll(getEntryMethods(defaultMain));
+		onClickHandlerMethods.addAll(getEntryMethods(null));
 		
-		if (listenerFields.size() < 1 && onClickMethods.size() < 1)
+		if (listenerFields.size() < 1 && onClickHandlerMethods.size() < 1)
 			return;
 		
 		///reference to class on which to call findViewById:
@@ -656,18 +658,71 @@ public class InstrumentationHelper {
 		 * defined in layout files.
 		 */
 		
-		//TODO 76428610 can be removed, once we use all onclickhandlers
+		
 		//For now, we filter for those which are defined in the main activity ONLY:
-		for (SootMethod m : onClickMethods)
-			if (!toInstrument.getDeclaringClass().equals(m.getDeclaringClass()))
-				onClickMethods.remove(m);
+		Set<SootClass> otherActivities = new HashSet<SootClass>();
+		for (SootMethod m : onClickHandlerMethods)
+			if (toInstrument.getDeclaringClass().equals(m.getDeclaringClass()) && !m.getName().contains("init>")) {
+				//Check if method requires parameters we cannot just make up
+				boolean canSetParameter = true;
+				List<Type> argTypes = m.getParameterTypes();
+				for (Type argType:argTypes) {
+					if (!argType.equals(RefType.v("android.content.Context")) && !argType.equals(RefType.v("android.view.View")))
+						canSetParameter=false;						
+				}
+				if (canSetParameter)
+					aep.buildMethodCall(m, body, thisRefLocal, generator, returnstmt);
+			} else if (!m.getName().contains("init>") && !m.getDeclaringClass().getName().contains("$")) {
+				otherActivities.add(m.getDeclaringClass());				
+			}
+		
+		for (SootClass activity:otherActivities) {
+				System.out.println("Injecting call to " + activity);
+				//Start other activities
+				
+				//Intent i = new Intent(this, bla.Blubb.class)
+				String classToInvoke = activity.getName().replace('.', '/');
+				Local intentLocal = generator.generateLocal(RefType.v("android.content.Intent"));			
+				AssignStmt assignStmt = Jimple.v().newAssignStmt(intentLocal,Jimple.v().newNewExpr(RefType.v("android.content.Intent")));
+				
+				
+				SootMethodRef initRef = Scene.v().makeMethodRef(
+						Scene.v().getSootClass("android.content.Intent"),
+						"<init>", 
+						Arrays.asList(new Type[] { RefType.v("android.content.Context"), RefType.v("java.lang.Class") }), 
+						VoidType.v(),
+						false);
+				SpecialInvokeExpr invok = Jimple.v().newSpecialInvokeExpr(
+						intentLocal, 
+						initRef, 
+						Arrays.asList(thisRefLocal,ClassConstant.v(classToInvoke)));
+
+				
+//				// startActivity(i)
+				InvokeExpr expr = Jimple.v().newVirtualInvokeExpr(thisRefLocal, Scene.v().getMethod("<android.app.Activity: void startActivity(android.content.Intent)>").makeRef(), intentLocal);
+
+				//Reverse order
+				body.getUnits().insertBefore(assignStmt, returnstmt);
+				body.getUnits().insertBefore(Jimple.v().newInvokeStmt(invok), returnstmt);
+				body.getUnits().insertBefore(new JInvokeStmt(expr), returnstmt);
+				
+//				aep.buildMethodCall(m, body, thisRefLocal, generator, returnstmt);				
+		}
+				
 		/*
 		 * Now we only have the methods defined as android:onClickListener
 		 * which are in the MainActivity. Add some clals now.
 		 */
-		for (SootMethod onClickMethod : onClickMethods){
-			aep.buildMethodCall(onClickMethod, body, thisRefLocal, generator, returnstmt);
-		}
+		
+		//TODO In default main, inject startActivity to invoke all other activities
+		
+		//TODO in each activity, inject calls to their onclickhandlers at the end of oncreate
+//		for (SootMethod m : onClickHandlerMethods) {
+//			Body b = m.getDeclaringClass().getMethod("void onCreate(android.os.Bundle)").getActiveBody();
+//			for (Unit u:b.getUnits()) {
+//				System.out.println(u);
+//			}
+//		}
 		
 		
 	}

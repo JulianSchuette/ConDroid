@@ -22,6 +22,7 @@ import soot.tagkit.AnnotationTag;
 import soot.tagkit.Tag;
 import soot.tagkit.VisibilityAnnotationTag;
 import soot.util.HashChain;
+import soot.util.dot.DotGraph;
 import soot.util.queue.QueueReader;
 
 /**
@@ -506,4 +507,16 @@ public class MethodUtils {
 		return transitiveTargets;
 	}
 
+	public static void printCGtoDOT(CallGraph cg) {
+		DotGraph dg = new DotGraph("Call Graph");
+		QueueReader<Edge> edges = cg.listener();
+		while (edges.hasNext()) {
+			Edge e = edges.next();
+			SootMethod src = e.getSrc().method();
+			SootMethod tgt = e.getTgt().method();
+		
+			dg.drawEdge(src.getSignature(), tgt.getSignature());
+		}
+		dg.plot("cg.dot");
+	}
 }
