@@ -75,6 +75,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
+import soot.jimple.ReturnStmt;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StringConstant;
 import soot.jimple.infoflow.entryPointCreators.CAndroidEntryPointCreator;
@@ -433,7 +434,6 @@ public class InstrumentationHelper {
 			PatchingChain<Unit> callerUnits = callerBody.getUnits();
 			for (Unit u:callerUnits) {
 				if (u instanceof JInvokeStmt) {
-					SootMethod calledMethod = ((JInvokeStmt) u).getInvokeExpr().getMethod();;
 					if (((JInvokeStmt) u).getInvokeExpr().getMethod().equals(setContentView)) {
 						Value arg = ((JInvokeStmt) u).getInvokeExpr().getArg(0);
 						if (arg instanceof IntConstant) {
@@ -485,7 +485,6 @@ public class InstrumentationHelper {
 	        
 	        String id=null, name=null;
 	        for (int i=0;i<nodes.getLength();i++) {
-	        	Node n = nodes.item(i);
 	        	if (((Attr) nodes.item(i)).getName().equals("id")) {
 	        		id = ((Attr) nodes.item(i)).getValue();
 	        	}
@@ -544,6 +543,22 @@ public class InstrumentationHelper {
 	}
 	
 	/**
+	 * Returns a list of units representing all return stmts in a method body.
+	 * 
+	 * @param b
+	 * @return
+	 */
+	private List<Unit> getReturnUnits(Body b) {
+		List<Unit> returns = new ArrayList<Unit>();
+		for (Unit u:b.getUnits()) {
+			if (u instanceof ReturnStmt) {
+				returns.add(u);
+			}
+		}
+		return returns;
+	}
+	
+	/**
 	 * Inserts calls to all lifecycle methods at the end of the onCreate()
 	 * method.
 	 * @throws Exception if no onCreate(android.os.Bundle) method is found
@@ -564,13 +579,11 @@ public class InstrumentationHelper {
 		LocalGenerator generator = new LocalGenerator(body);
 		
 		//find the return statement and insert our stuff before that:
-		Iterator<Unit> it = units.iterator();
-		Unit returnstmt = null;
-		while (it.hasNext()){
-			Unit tmp = it.next();
-			if (tmp.toString().equals(Jimple.v().newReturnVoidStmt().toString()))
-				returnstmt = tmp;
+		List<Unit> returns = getReturnUnits(body);
+		if (returns.size()<=0) {
+			throw new RuntimeException("Unexpected: Body does not contain return stmt: " + body.toString());
 		}
+		Unit returnstmt = returns.get(0); //TODO Consider (inject before) all return stmts, not just the first one
 		System.out.println("Found return statement: " + returnstmt.toString());
 		
 		Set<String> classesToScan = new HashSet<String>();
@@ -1001,7 +1014,6 @@ public class InstrumentationHelper {
 		if (Main.DEBUG) {
 			System.out.println("Replacing class " + clazz + " by child " + child);
 		}
-		SootClass parent = Scene.v().getSootClass(clazz);
 		SootClass newClass = Scene.v().getSootClass(child);
 
 		if (newClass.isAbstract())
