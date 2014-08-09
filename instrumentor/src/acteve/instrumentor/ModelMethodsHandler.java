@@ -231,7 +231,7 @@ public class ModelMethodsHandler {
 				G.ret(NullConstant.v());
 			}
 
-			G.debug(invokerMethod, G.DEBUG);
+			G.debug(invokerMethod, Main.DEBUG);
 			return modelMethod != null;
 		}
 

@@ -69,7 +69,7 @@ import soot.util.Chain;
 
 public class Main extends SceneTransformer {
 	private static Config config;
-	private static List<SootClass> classes = new ArrayList<SootClass>();
+	private static List<SootClass> classesToInstrument = new ArrayList<SootClass>();
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	static boolean DEBUG = false;
@@ -103,7 +103,7 @@ public class Main extends SceneTransformer {
 										   config.fldsBlacklist, 
 										   config.methsWhitelist, 
 										   config.instrAllFields);
-		ci.instrument(classes);
+		ci.instrument(classesToInstrument);
 //		InputMethodsHandler.instrument(config.inputMethsFile);
 		ModelMethodsHandler.addInvokerBodies();
 		Scene.v().getApplicationClasses().remove(Scene.v().getSootClass(dummyMainClassName));
@@ -116,7 +116,7 @@ public class Main extends SceneTransformer {
 	private void printClasses(String fileName) {
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter(fileName));
-			for (SootClass klass : classes) {
+			for (SootClass klass : classesToInstrument) {
 				Printer.v().printTo(klass, out);
 			}
 			out.close();
@@ -148,7 +148,6 @@ public class Main extends SceneTransformer {
 		apk = args[0];
 
 		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
-//		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk + ":" + Scene.v().getAndroidJarPath(androidPlatforms, apk));
 		
 		// inject correct dummy main:
 		SetupApplication setupApplication = new SetupApplication(androidJAR, apk);
@@ -214,7 +213,7 @@ public class Main extends SceneTransformer {
 		Chain<SootClass> appclasses = Scene.v().getApplicationClasses();
 		for (SootClass c:appclasses) {
 			//System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
-			classes.add(c);
+			classesToInstrument.add(c);
 		}
 		
 		//Collect additional classes which will be injected into the app
@@ -228,10 +227,13 @@ public class Main extends SceneTransformer {
 		
 		PackManager.v().getPack("cg").apply();
 		
+		InstrumentationHelper ih = new InstrumentationHelper(new File(apk));
+		SootMethod defaultOnCreateMeth = ih.getDefaultOnCreate();
+		
+		assert defaultOnCreateMeth!=null:"No default activity found";
+		
 		if (!SKIP_ALL_INSTRUMENTATION) {
 			try {
-				InstrumentationHelper ih = new InstrumentationHelper(new File(apk));
-				SootMethod defaultOnCreateMeth = ih.getDefaultOnCreate();
 				ih.insertCallsToLifecycleMethods(defaultOnCreateMeth);
 			} catch (Exception e) {
 				System.out.println("Exception while inserting calls to lifecycle methods:");
@@ -267,12 +269,16 @@ public class Main extends SceneTransformer {
 			 * 4)   Instrument only on those paths 
 			 */
 			
+			HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
 			
 			//1.a)
 			HashSet<SootMethod> entryPoints = new HashSet<SootMethod>(MethodUtils.getCalleesOf(dummyMain));
 			
 			//1.b)
-			entryPoints.addAll(MethodUtils.findApplicationPseudoEntryPoints());
+			entryPoints.addAll(MethodUtils.findApplicationPseudoEntryPoints());  //TODO Should be the same as 1a
+			
+			//Make sure default Activity is considered, even if not on call path 
+			classesAlongTheWay.add(defaultOnCreateMeth.getDeclaringClass());
 			
 			//2)
 			List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods(entryPoints);
@@ -282,7 +288,6 @@ public class Main extends SceneTransformer {
 			}
 			
 			//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
-			HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
 			for (SootMethod sm : methodsWithReflectiveClassLoading){
 				//add the declaring class because developers might inherit & extend from base class loaders
 				if(!excludePat.matcher(sm.getDeclaringClass().getName()).matches())
@@ -295,11 +300,11 @@ public class Main extends SceneTransformer {
 				}
 			}
 			
-			classes = new ArrayList<SootClass>(classesAlongTheWay);			
+			classesToInstrument = new ArrayList<SootClass>(classesAlongTheWay);			
 			
 			if(DEBUG){
 				System.out.println("Found " + classesAlongTheWay.size() + " classes that declare methods on the path to reflection, i.e. that need to be instrumented.");
-				for (SootClass c : classes)
+				for (SootClass c : classesToInstrument)
 					System.out.println("Class: " + c.getName());
 			}
 		}
@@ -381,7 +386,7 @@ public class Main extends SceneTransformer {
 	}
 
 	static boolean isInstrumented(SootClass klass) {
-		return classes.contains(klass);
+		return classesToInstrument.contains(klass);
 	}
 
 	

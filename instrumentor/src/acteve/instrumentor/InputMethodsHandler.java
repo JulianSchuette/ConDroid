@@ -199,7 +199,7 @@ public class InputMethodsHandler
 		}
 		G.invoke(G.staticInvokeExpr(G.argPush[symArgs.size()-1], symArgs));
 		G.retVoid();
-		G.debug(injector, G.DEBUG);
+		G.debug(injector, Main.DEBUG);
 		return injector;
 	}
 }

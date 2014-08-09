@@ -242,8 +242,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			// XXX: idField for tracking writes
             if(rwKind == RWKind.ID_FIELD_WRITE && doRW(origField)){
 				SootField idField = new SootField(origField.getName()+"$a3tid", IntType.v(), origField.getModifiers());
-				System.out.println("Adding field " + origField + " for "+c.getName());
-				Thread.dumpStack();
+				System.out.println("Adding field " + idField.getName() + " for " + origField.getName() + " in " + c.getName());
 				c.addField(idField);
 				idFieldsMap.put(origField, idField);
             }
@@ -265,7 +264,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		//currentWriteSet = new HashSet<Integer>();
 		//writeMap.put(sigIdOfCurrentMethod, currentWriteSet);
 
-		System.out.println("Instrumenting " + method);
+		System.out.println("Instrumenting " + method.getSignature());
 
 		Body body = method.retrieveActiveBody();		
 		G.editor.newBody(body, method);
@@ -291,7 +290,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		
 		instrumentConds(body);
 		
-		G.debug(method, G.DEBUG);
+		G.debug(method, Main.DEBUG);
 	}
 
     private static String getStr(Unit h, String methodSigAndFileStr) {
@@ -557,7 +556,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 		if (leftOp instanceof Local && localsMap.containsKey(leftOp)) {
 			Type t = leftOp.getType();
 			if (t instanceof IntType) {
-				System.out.println("BLABLABLA! " + leftOp.toString().toUpperCase() );
 				G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
 					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()))));
 			} else if (t instanceof FloatType) {

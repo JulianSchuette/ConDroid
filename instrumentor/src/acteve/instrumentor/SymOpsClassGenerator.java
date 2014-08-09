@@ -209,7 +209,7 @@ public class SymOpsClassGenerator
 			G.jimple.newVirtualInvokeExpr(op1Cast, opMethod, paramLocals);
 		G.assign(result, ie);
 		G.ret(result);
-		G.debug(method, true);		
+		G.debug(method, Main.DEBUG);		
 	}
 
 	static void addMethod(String opMethodName, Type[] paramTypes, SootClass operatorClass)
@@ -276,7 +276,7 @@ public class SymOpsClassGenerator
 		// END BY JULIAN
 
 		G.ret(result);
-		G.debug(method, true);
+		G.debug(method, Main.DEBUG);
     }
 	
     private static SootClass exprConstClassFor(Type type)

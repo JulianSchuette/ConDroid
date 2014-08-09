@@ -93,7 +93,7 @@ import acteve.symbolic.integer.Types;
 */
 public class G
 {
-    public static final boolean DEBUG = true;//System.getProperty("a3t.debug","false").equals("true");
+    public static final boolean DEBUG = false;//System.getProperty("a3t.debug","false").equals("true");
 
     public static final Jimple jimple = Jimple.v();
 
