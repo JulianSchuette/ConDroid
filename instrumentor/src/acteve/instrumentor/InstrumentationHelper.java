@@ -76,6 +76,7 @@ import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
 import soot.jimple.ReturnStmt;
+import soot.jimple.ReturnVoidStmt;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StringConstant;
 import soot.jimple.infoflow.entryPointCreators.CAndroidEntryPointCreator;
@@ -551,7 +552,7 @@ public class InstrumentationHelper {
 	private List<Unit> getReturnUnits(Body b) {
 		List<Unit> returns = new ArrayList<Unit>();
 		for (Unit u:b.getUnits()) {
-			if (u instanceof ReturnStmt) {
+			if (u instanceof ReturnStmt || u instanceof ReturnVoidStmt) {
 				returns.add(u);
 			}
 		}
