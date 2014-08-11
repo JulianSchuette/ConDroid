@@ -42,7 +42,7 @@ public final class Config {
 
 	public final String monkeyScript;
 	public String appPkgName;
-	public final String mainActivity;
+	public String mainActivity;
 	public final String activityArgs;
 	public final String z3Path;
 	public final int maxExecs;
@@ -81,7 +81,7 @@ public final class Config {
         fileName = props.getProperty("a3t.filename", null);
         monkeyScript = props.getProperty("a3t.monkey", "monkey_script.txt");
         appPkgName = props.getProperty("a3t.pkg", null);
-        mainActivity = props.getProperty("a3t.mainact", "com.example.de.fhg.aisec.concolicexample.MainActivity");
+        mainActivity = props.getProperty("a3t.mainact", null);
 		activityArgs = props.getProperty("a3t.actargs");
         z3Path = props.getProperty("env.Z3_BIN", "/opt/z3/bin/z3");
         maxExecs = Integer.valueOf(props.getProperty("a3t.max.iters", String.valueOf(DEFAULT_MAX_EXECS)));

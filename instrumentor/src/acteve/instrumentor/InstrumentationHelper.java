@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -39,6 +40,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FileUtils;
+import org.jf.baksmali.main;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -145,7 +147,9 @@ public class InstrumentationHelper {
 	 */
 	private static final boolean CLEAR_AFTER_USER = true;
 	private String manifest;
-	private static HashSet<String> mainActivities = new HashSet<String>();
+	private String packagename;
+	private String defaultActivity;
+	private static LinkedHashSet<String> mainActivities = new LinkedHashSet<String>();
 
 	private InstrumentationHelper() {
 		// Don't call me, I'm private
@@ -192,9 +196,9 @@ public class InstrumentationHelper {
 		XPath xpath = XPathFactory.newInstance().newXPath();
         XPathExpression expr1 = xpath.compile("//manifest/@package");
         NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
-        String packagename = ((Attr) nodes.item(0)).getValue();
-        
-		xpath = XPathFactory.newInstance().newXPath();
+        packagename = ((Attr) nodes.item(0)).getValue();
+
+        xpath = XPathFactory.newInstance().newXPath();
         expr1 = xpath.compile("//manifest/application/activity[intent-filter/action[@name='android.intent.action.MAIN']]/@name");
         nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
         for (int i=0;i<nodes.getLength();i++) {
@@ -206,6 +210,24 @@ public class InstrumentationHelper {
         }
 	}
 
+	/**
+	 * Returns the package name of the app.
+	 * @return
+	 */
+	public String getPackagename() {
+		return packagename;
+	}
+	
+	/**
+	 * Returns a LinkedHashSet of main activities.
+	 * 
+	 * Usually, there will be only one main Activity, but Android still allows to register several activities as the default one.
+	 * @return
+	 */
+	public Iterable<String> getDefaultActivities() {
+		return mainActivities;
+	}
+ 	
 	/**
 	 * Example of creating a new class from scratch.
 	 * 
@@ -619,7 +641,7 @@ public class InstrumentationHelper {
 		onClickHandlerMethods = getOnClickFromLayouts(defaultMain);
 				
 		//Get entry methods of default main
-		onClickHandlerMethods.addAll(getEntryMethods(null));
+		onClickHandlerMethods.addAll(getEntryMethods(Pattern.compile(".*onClick.*")));
 		
 		if (listenerFields.size() < 1 && onClickHandlerMethods.size() < 1)
 			return;
@@ -670,7 +692,7 @@ public class InstrumentationHelper {
 		
 		//For now, we filter for those which are defined in the main activity ONLY:
 		Set<SootClass> otherActivities = new HashSet<SootClass>();
-		for (SootMethod m : onClickHandlerMethods)
+		for (SootMethod m : onClickHandlerMethods) {
 			if (toInstrument.getDeclaringClass().equals(m.getDeclaringClass()) && !m.getName().contains("init>")) {
 				//Check if method requires parameters we cannot just make up
 				boolean canSetParameter = true;
@@ -684,6 +706,7 @@ public class InstrumentationHelper {
 			} else if (!m.getName().contains("init>") && !m.getDeclaringClass().getName().contains("$")) {
 				otherActivities.add(m.getDeclaringClass());				
 			}
+		}
 		
 		for (SootClass activity:otherActivities) {				
 				//Intent i = new Intent(this, bla.Blubb.class)

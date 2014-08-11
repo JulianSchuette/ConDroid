@@ -31,25 +31,30 @@
 
 package acteve.explorer;
 
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.Set;
-import java.util.HashSet;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Properties;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.xml.sax.SAXException;
+
+import acteve.instrumentor.InstrumentationHelper;
 
 public class Main
 {
 	public static final boolean DEBUG = true;
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException
 	{
 		Config config = Config.g();
 		
@@ -59,6 +64,9 @@ public class Main
 			System.out.println("Usage: explorer <apk file>");
 			System.exit(-1);
 		}
+		InstrumentationHelper ih = new InstrumentationHelper(new File(config.fileName));
+		config.appPkgName = ih.getPackagename();
+		config.mainActivity = ih.getDefaultActivities().iterator().next();
 
         MonkeyScript.setup(config.userWait);
         Executor.setup(config.emulatorPort, 
@@ -71,7 +79,7 @@ public class Main
 		System.out.println("Setting up Z3 with " + config.z3Path);
         Z3Task.setup(config.z3Path);
 		BlackListedFields.setup(config.fieldSigsFile, config.blackListedFieldsFile);
-
+		
 		Explorer explorer = new Explorer();
 		if(config.restart) {
 			//Properties props = loadProperties();

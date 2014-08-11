@@ -1,2 +1,11 @@
 *~
 /bin
+/cg.dot
+/cg.pdf
+/cg.png
+/download_relevant_apps.sh
+/z3out_err.log
+/z3out_test.log
+/smtFile.smt2
+/solution.txt
+/config.properties
