@@ -52,6 +52,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
+import soot.Hierarchy;
 import soot.JimpleClassSource;
 import soot.Modifier;
 import soot.PackManager;
@@ -72,16 +73,17 @@ public class Main extends SceneTransformer {
 	private static List<SootClass> classesToInstrument = new ArrayList<SootClass>();
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
-	static boolean DEBUG = false;
+	static boolean DEBUG = true;
 	public final static boolean DUMP_JIMPLE = false; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
-	private static boolean LIMIT_TO_CALL_PATH = true; //Limit instrumentation to methods along the CP to reflection use?
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
 	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
 	private static String apk = null;
 	private static boolean OMIT_MANIFEST_MODIFICATION = false;
-	private static boolean SKIP_ALL_INSTRUMENTATION = false;	//For debugging
+	private static boolean LIMIT_TO_CALL_PATH = true; //Limit instrumentation to methods along the CP to reflection use?
+	private static boolean SKIP_CONCOLIC_INSTRUMENTATION = false;
+	private static boolean SKIP_ALL_INSTRUMENTATION = true;	//For debugging
 	
 	/**
 	 * Classes to exclude from instrumentation (all acteve, dalvik classes, plus some android SDK classes which are used by the instrumentation itself).
@@ -215,6 +217,8 @@ public class Main extends SceneTransformer {
 			//System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
 			classesToInstrument.add(c);
 		}
+				
+		PackManager.v().getPack("cg").apply();
 		
 		//Collect additional classes which will be injected into the app
 		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
@@ -224,35 +228,14 @@ public class Main extends SceneTransformer {
 			SootClass clazz = Scene.v().forceResolve(s, SootClass.BODIES);
 			clazz.setApplicationClass();
 		}
-		
-		PackManager.v().getPack("cg").apply();
-		
+
+		//Get the lifecycle method to instrument
 		InstrumentationHelper ih = new InstrumentationHelper(new File(apk));
-		SootMethod defaultOnCreateMeth = ih.getDefaultOnCreate();
+		SootMethod lcMethodToExtend = ih.getDefaultOnResume();
 		
-		assert defaultOnCreateMeth!=null:"No default activity found";
-		
-		if (!SKIP_ALL_INSTRUMENTATION) {
-			try {
-				ih.insertCallsToLifecycleMethods(defaultOnCreateMeth);
-			} catch (Exception e) {
-				System.out.println("Exception while inserting calls to lifecycle methods:");
-				e.printStackTrace();
-			}
-			
-			//build new call graph now that we have paths to UI-induced method calls:
-			PackManager.v().getPack("cg").apply();
-		}
-		
-		//dump all methods for debugging:
-		if (DEBUG) {
-			List<SootMethod> allMethods = MethodUtils.getAllReachableMethods();
-			System.out.println("All methods in the scene:");
-			for (SootMethod m : allMethods)
-				System.out.println("\t" + m.getSignature());
-		}
-		
-		if (!SKIP_ALL_INSTRUMENTATION) {
+		assert lcMethodToExtend!=null:"No default activity found";
+				
+		if (!SKIP_CONCOLIC_INSTRUMENTATION && !SKIP_ALL_INSTRUMENTATION) {
 			PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
 		}
 		
@@ -260,40 +243,52 @@ public class Main extends SceneTransformer {
 		if (LIMIT_TO_CALL_PATH ) {
 			/* 
 			 * Battle plan:
-			 * 1.a) Find all entry points (i.e. "real" entry points according to
+			 * 1.	Find all entry points (i.e. "real" entry points according to
 			 *      Android life cycle model that get automatically called by OS)
-			 * 1.b) AND user interaction entry points like onClick() etc
+			 * 1a.	Add all constructors from View lifecycles (are not provided by EntryPointAnalysis)
 			 * 2)   Find all reachable methods in which dynamic loading takes
-			 *      place
+			 *      place (= goal methods)
 			 * 3)   Determine all paths from methods in 1) to methods in 2)
 			 * 4)   Instrument only on those paths 
 			 */
 			
 			HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
 			
-			//1.a)
-			HashSet<SootMethod> entryPoints = new HashSet<SootMethod>(MethodUtils.getCalleesOf(dummyMain));
+			//1)
+			HashSet<SootMethod> entryPoints = new HashSet<SootMethod>(MethodUtils.getCalleesOf(dummyMain));	
 			
-			//1.b)
-			entryPoints.addAll(MethodUtils.findApplicationPseudoEntryPoints());  //TODO Should be the same as 1a
-			
-			//Make sure default Activity is considered, even if not on call path 
-			classesAlongTheWay.add(defaultOnCreateMeth.getDeclaringClass());
-			
+			//1a)
+			SootClass viewClass = Scene.v().getSootClass("android.view.View");
+			List<SootClass> views = Scene.v().getActiveHierarchy().getSubclassesOf(viewClass);
+			for (SootClass v:views) {
+				if (!excludePat.matcher(v.getJavaPackageName()).matches()) {
+					try { 	SootMethod immediateConstructor = v.getMethod("void <init>(android.content.Context)"); 
+						  	entryPoints.add(immediateConstructor); } catch (RuntimeException rte) {}
+					try {	SootMethod inflatingConstructor = v.getMethod("void <init>(android.content.Context,android.util.AttributeSet)");
+							entryPoints.add(inflatingConstructor);} catch (RuntimeException rte) {}
+					try {	SootMethod inflatingConstructorWStyle = v.getMethod("void <init>(android.content.Context,android.util.AttributeSet,int)");
+							entryPoints.add(inflatingConstructorWStyle);} catch (RuntimeException rte) {}
+				}
+			}
+
+			for (SootMethod m : entryPoints){
+				System.out.println("Entrypoint: " + m.getSignature());
+			}
+
 			//2)
-			List<SootMethod> methodsWithReflectiveClassLoading = MethodUtils.findReflectiveLoadingMethods(entryPoints);
+			List<SootMethod> goalMethods = MethodUtils.findReflectiveLoadingMethods(entryPoints);
 			System.out.println("Found the following reflective class loading methods:");
-			for (SootMethod m : methodsWithReflectiveClassLoading){
+			for (SootMethod m : goalMethods){
 				System.out.println("Signature: " + m.getSignature());
 			}
 			
 			//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
-			for (SootMethod sm : methodsWithReflectiveClassLoading){
+			for (SootMethod goalMeth : goalMethods){
 				//add the declaring class because developers might inherit & extend from base class loaders
-				if(!excludePat.matcher(sm.getDeclaringClass().getName()).matches())
-					classesAlongTheWay.add(sm.getDeclaringClass());
+				if(!excludePat.matcher(goalMeth.getDeclaringClass().getName()).matches())
+					classesAlongTheWay.add(goalMeth.getDeclaringClass());
 				//and all the classes on the way to the call:
-				for (SootMethod caller : MethodUtils.findTransitiveCallersOf(sm)){
+				for (SootMethod caller : MethodUtils.findTransitiveCallersOf(goalMeth)){
 					if(!excludePat.matcher(caller.getDeclaringClass().getName()).matches()){
 						classesAlongTheWay.add(caller.getDeclaringClass());
 					}
@@ -310,13 +305,33 @@ public class Main extends SceneTransformer {
 		}
 		// -------------------------------- END RAFAEL ----------------------------------------------
 		
+		if (!SKIP_ALL_INSTRUMENTATION) {
+			try {
+				ih.insertCallsToLifecycleMethods(lcMethodToExtend);
+			} catch (Exception e) {
+				System.out.println("Exception while inserting calls to lifecycle methods:");
+				e.printStackTrace();
+			}
+			
+			//build new call graph now that we have paths to UI-induced method calls:
+			PackManager.v().getPack("cg").apply();
+		}
+		
+		//dump all methods for debugging:
+		if (DEBUG) {
+			List<SootMethod> allMethods = MethodUtils.getAllReachableMethods();
+			System.out.println("All methods in the scene:");
+			for (SootMethod m : allMethods)
+				System.out.println("\t" + m.getSignature());
+		}
+
 		PackManager.v().runPacks();
 		PackManager.v().writeOutput();
 		
 		//Just nice to have: Print Callgraph to a .dot file
 		if (DEBUG) {
 			System.out.println("Printing call graph to .dot file");
-			MethodUtils.printCGtoDOT(Scene.v().getCallGraph());
+			MethodUtils.printCGtoDOT(Scene.v().getCallGraph(), "main");
 		}
 		
 		String outputApk = "sootOutput/"+new File(apk).getName();

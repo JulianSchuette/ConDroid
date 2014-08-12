@@ -1,10 +1,8 @@
 package acteve.instrumentor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,10 +17,12 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.tagkit.AnnotationTag;
+import soot.tagkit.GenericAttribute;
 import soot.tagkit.Tag;
 import soot.tagkit.VisibilityAnnotationTag;
 import soot.util.HashChain;
 import soot.util.dot.DotGraph;
+import soot.util.dot.DotGraphNode;
 import soot.util.queue.QueueReader;
 
 /**
@@ -476,7 +476,10 @@ public class MethodUtils {
 	 * @return
 	 */
 	public static Set<SootMethod> findTransitiveCallersOf(SootMethod sootMethod) {
+		System.out.println("Finding transitive callers of " + sootMethod.getSignature());
+		String dotFile = "goals_"+sootMethod.getDeclaringClass().getName() + sootMethod.getName();
 		CallGraph callGraph = Scene.v().getCallGraph();
+		CallGraph subGraph = new CallGraph();
 		Set<SootMethod> transitiveSources = new LinkedHashSet<SootMethod>();
 		HashChain<SootMethod> unprocessedSources = new HashChain<SootMethod>();
 		unprocessedSources.add(sootMethod);
@@ -486,15 +489,32 @@ public class MethodUtils {
 			Iterator<Edge> edgesInto = callGraph.edgesInto(sootMethod);
 			while (edgesInto.hasNext()) {
 				Edge edge = edgesInto.next();
-				if (edge.isExplicit()) {
-					SootMethod source = edge.getSrc().method();
-					if (!transitiveSources.contains(source)) {
-						transitiveSources.add(source);
-						unprocessedSources.add(source);
-					}
+				if (!edge.getSrc().method().equals(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>")))
+					subGraph.addEdge(edge);
+				SootMethod source = edge.getSrc().method();
+				
+				if (MethodUtils.getCalleesOf(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>")).contains(source)
+						&& !source.getName().equals("<init>")) {
+					source.addTag(new GenericAttribute("entrymethod", new byte[0]));
+					System.out.println("This is an entrypoint: " + source);
+				} else if (Scene.v().getActiveHierarchy().isClassSubclassOf(source.getDeclaringClass(), Scene.v().getSootClass("android.view.View"))
+						&& (source.getSubSignature().equals("void <init>(android.content.Context)")
+								|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet)")
+								|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet,int)"))) { 
+					source.addTag(new GenericAttribute("entrymethod", new byte[0]));					
+					System.out.println("This is a view constructor and a potential entrypoint: " + source);
+				}else {
+					System.out.println("Not an entrypoint: " + source.getSignature());
+				}
+				if (!transitiveSources.contains(source)) {
+					transitiveSources.add(source);
+					unprocessedSources.add(source);
 				}
 			}
 		}
+		
+		if (Main.DEBUG)
+			printCGtoDOT(subGraph, dotFile);
 		return transitiveSources;
 	}
 
@@ -507,16 +527,20 @@ public class MethodUtils {
 		return transitiveTargets;
 	}
 
-	public static void printCGtoDOT(CallGraph cg) {
+	public static void printCGtoDOT(CallGraph cg, String prefix) {
 		DotGraph dg = new DotGraph("Call Graph");
 		QueueReader<Edge> edges = cg.listener();
 		while (edges.hasNext()) {
 			Edge e = edges.next();
 			SootMethod src = e.getSrc().method();
 			SootMethod tgt = e.getTgt().method();
-		
+			DotGraphNode srcNode = dg.getNode(src.getSignature());
+			if (src.hasTag("entrymethod")) {
+				srcNode.setAttribute("color", "deeppink");
+				srcNode.setAttribute("shape", "box");
+			}
 			dg.drawEdge(src.getSignature(), tgt.getSignature());
 		}
-		dg.plot("cg.dot");
+		dg.plot(prefix + "_cg.dot");
 	}
 }

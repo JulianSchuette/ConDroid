@@ -540,6 +540,15 @@ public class InstrumentationHelper {
 		return layoutNameToClass;
 	}
 
+	
+	public SootMethod getDefaultOnResume() {
+		assert mainActivities.size()>0:"No default activities in AndroidManifest.xml";
+			
+		SootClass mainAct = Scene.v().getSootClass(mainActivities.iterator().next());
+		SootMethod onResume = mainAct.getMethod("void onResume()");
+		return onResume;
+	}
+	
 	public SootMethod getDefaultOnCreate() {
 		List<SootMethod> entrypoints = Scene.v().getEntryPoints();
 		SootMethod result = null;
