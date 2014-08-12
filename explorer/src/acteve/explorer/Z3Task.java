@@ -58,7 +58,7 @@ public class Z3Task extends ExecTask
 	}
 	
 	public void exec(File outFile, File errFile, String file)
-	{
+	{		
 		Commandline.Argument cmdLineArgs = createArg();
 		String args2 = args + file;
 
@@ -71,6 +71,7 @@ public class Z3Task extends ExecTask
 
 		//setError(errFile);
 		//setOutput(outFile);
+		System.out.println("Running Z3 " + args2);
 
 		target.execute();
 	}

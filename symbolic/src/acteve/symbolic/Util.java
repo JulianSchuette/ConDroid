@@ -116,7 +116,7 @@ public class Util
 		symRet = null;
 		long threadId = Thread.currentThread().getId();
 		symArgs = new SymArgs(subsig, threadId, sa);
-		Mylog.e("PRE_A3T_ARGPUSH", subsig + " " + Arrays.toString(sa));
+//		Mylog.e("PRE_A3T_ARGPUSH", subsig + " " + Arrays.toString(sa));
 	}
 
 	public static void argpush(int subsig)
@@ -537,12 +537,12 @@ public class Util
 	{
 		SymRet sr = new SymRet(subSig, Thread.currentThread().getId(), i);		
 		symRet = sr;
-		Mylog.e("PRE_A3T_RETPUSH", "Pushing for subsig " +symRet.subSignatureId);
+//		Mylog.e("PRE_A3T_RETPUSH", "Pushing for subsig " +symRet.subSignatureId);
 	}
 	
 	public static Expression retpop(int subSig)
 	{
-		Mylog.e("PRE_A3T_RETPUSH", "Popping for subsig " + subSig);
+//		Mylog.e("PRE_A3T_RETPUSH", "Popping for subsig " + subSig);
 		SymRet sr = symRet;
 		if(sr != null){
 			long ti = sr.threadId;
@@ -551,7 +551,7 @@ public class Util
 				if (ss < 0 || ss == subSig) {
 					//ss is negative for @Symbolic annotated methods 
 					//and model invoker methods
-					Mylog.e("PRE_A3T_RETPUSH", "Pop returns " + sr.symRet);
+//					Mylog.e("PRE_A3T_RETPUSH", "Pop returns " + sr.symRet);
 					return sr.symRet;
 				}
 			}
@@ -580,7 +580,7 @@ public class Util
 	public static void assume(Expression e, int branchId, boolean b) 
 	{
 		if (e == null) {
-			Mylog.e("PRE_A3T_BRANCH", "Assume called with null expression on branch id " + branchId + " and concrete value " + b);
+			Mylog.e("PRE_A3T_BRANCH", "Assume called with null symbolic expression on branch id " + branchId + " and concrete value " + b);
 			return;
 		}
 

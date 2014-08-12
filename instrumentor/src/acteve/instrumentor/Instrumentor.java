@@ -560,12 +560,15 @@ public class Instrumentor extends AbstractStmtSwitch {
 					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()))));
 			} else if (t instanceof FloatType) {
 				//TODO support floats
+				System.out.println("Not yet implemented: Enforcing a solution value for float " + as.toString());
 			} else if (t instanceof BooleanType) {
 				//TODO support booleans
+				System.out.println("Not yet implemented: Enforcing a solution value for boolean " + as.toString());
+
 			} // ...
 		} else {
 			//TODO Handle assignment to array entries and fields
-			System.out.println("Not yet implemented: Enforcing a solution value for  " + as.toString());
+			System.out.println("Not yet implemented: Enforcing a solution value for field/array " + as.toString());
 		
 		}
 	}

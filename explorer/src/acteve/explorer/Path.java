@@ -228,7 +228,9 @@ public class Path
             assert depth > 0;
             String line;
             // trace file of seed execution must have at least "depth" number of lines
-            BufferedReader reader = Main.newReader(traceFileNameFor(seedId));
+            String traceFile = traceFileNameFor(seedId);
+            System.out.println("Reading from tracefile " + traceFile);
+            BufferedReader reader = Main.newReader(traceFile);
             for (int i = 0; i < depth - 1;) {
                 line = reader.readLine();
                 if(!line.equals("")){
