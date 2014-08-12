@@ -475,12 +475,12 @@ public class MethodUtils {
 	 * @param sootMethod
 	 * @return
 	 */
-	public static Set<SootMethod> findTransitiveCallersOf(SootMethod sootMethod) {
+	public static CallGraph findTransitiveCallersOf(SootMethod sootMethod) {
 		System.out.println("Finding transitive callers of " + sootMethod.getSignature());
 		String dotFile = "goals_"+sootMethod.getDeclaringClass().getName() + sootMethod.getName();
 		CallGraph callGraph = Scene.v().getCallGraph();
 		CallGraph subGraph = new CallGraph();
-		Set<SootMethod> transitiveSources = new LinkedHashSet<SootMethod>();
+		Set<SootMethod> transitiveSources = new LinkedHashSet<SootMethod>();	//TODO not needed anymore. Remove
 		HashChain<SootMethod> unprocessedSources = new HashChain<SootMethod>();
 		unprocessedSources.add(sootMethod);
 		while (!unprocessedSources.isEmpty()) {
@@ -515,7 +515,7 @@ public class MethodUtils {
 		
 		if (Main.DEBUG)
 			printCGtoDOT(subGraph, dotFile);
-		return transitiveSources;
+		return subGraph;
 	}
 
 	public static Set<SootMethod> findTransitiveCalleesOf(Collection<SootMethod> sootMethods) {

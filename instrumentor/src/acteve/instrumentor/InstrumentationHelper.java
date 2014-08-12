@@ -383,7 +383,7 @@ public class InstrumentationHelper {
 	 * @throws SAXException 
 	 * @throws XPathExpressionException 
 	 */
-	public static HashSet<SootMethod> getOnClickFromLayouts(Pattern filter) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
+	public HashSet<SootMethod> getOnClickFromLayouts(Pattern filter) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
 		HashSet<SootMethod> result = new HashSet<SootMethod>();
 		
 		/*
@@ -442,7 +442,7 @@ public class InstrumentationHelper {
 	 * @throws XPathExpressionException
 	 * @throws ParserConfigurationException
 	 */
-	private static HashMap<String, List<SootClass>> getLayoutToActivityAssociation() throws SAXException, IOException, XPathExpressionException, ParserConfigurationException {
+	public HashMap<String, List<SootClass>> getLayoutToActivityAssociation() throws SAXException, IOException, XPathExpressionException, ParserConfigurationException {
 		HashMap<String, List<SootClass>> layoutNameToClass = new HashMap<String, List<SootClass>>();
 
 		HashMap<SootClass, List<String>> classesToLayoutIDs= new HashMap<SootClass, List<String>>();
@@ -450,6 +450,12 @@ public class InstrumentationHelper {
 		//Collect all layout ids which are used in setContentView
 		SootMethod setContentView = Scene.v().getMethod("<android.app.Activity: void setContentView(int)>");
 		Iterator<Edge> callers = Scene.v().getCallGraph().edgesInto(setContentView);
+		System.out.println("Size of cg is " + Scene.v().getCallGraph().size());
+		Iterator<MethodOrMethodContext> it = Scene.v().getCallGraph().sourceMethods();
+		while (it.hasNext()) {
+			SootMethod sm = it.next().method();
+			System.out.println("Source method: " + sm.getSignature());
+		}
 		while (callers.hasNext()) {
 			Edge e = callers.next();
 			MethodOrMethodContext caller = e.getSrc();
@@ -540,6 +546,96 @@ public class InstrumentationHelper {
 		return layoutNameToClass;
 	}
 
+	public HashMap<Integer,SootClass> getClassOfViewId() throws SAXException, IOException, XPathExpressionException, ParserConfigurationException {
+		HashMap<Integer, SootClass> layoutIdToClass = new HashMap<Integer, SootClass>();		
+		HashMap<String, String> layoutNamesToClass= new HashMap<String, String>();
+		
+		
+		//Resolve layout ids to file names
+		HashMap<String,Integer> layoutNamesToIds = new HashMap<String,Integer>();	//Hex ids to names
+		File folder = new File("decoded/res");
+		File[] listOfFiles = folder.listFiles();
+		ArrayList<File> valueFolders = new ArrayList<File>();
+
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isDirectory() && listOfFiles[i].getName().startsWith("values"))
+				valueFolders.add(listOfFiles[i]);
+		}
+		
+		//now collect all "public.xml" files:
+		ArrayList<File> publicFiles = new ArrayList<File>();
+		for (File f : valueFolders){
+			listOfFiles = f.listFiles();
+			for (File ff : listOfFiles){
+				if (ff.isFile() && ff.getName().equals("public.xml"))
+					publicFiles.add(ff);
+			}
+		}
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+		//Read layout ids and names from public xml
+		for (File pf : publicFiles){
+			Document doc = dBuilder.parse(pf);
+			doc.getDocumentElement().normalize();
+			
+			XPath xpath = XPathFactory.newInstance().newXPath();
+	        XPathExpression expr1 = xpath.compile("//*/@id|//*/@name");
+	        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
+	        
+	        String name=null;
+	        int id=-1;
+	        for (int i=0;i<nodes.getLength();i++) {
+	        	if (((Attr) nodes.item(i)).getName().equals("id")) {
+	        		id = Integer.parseInt(((Attr) nodes.item(i)).getValue().replace("0x", ""), 16);
+	        	}
+	        	if (((Attr) nodes.item(i)).getName().equals("name")) {
+	        		name= ((Attr) nodes.item(i)).getValue();
+	        	}
+	        	if (name!=null && id!=-1) {
+	        		layoutNamesToIds.put(name, new Integer(id));
+	        		name = null;
+	        	}
+	        }
+		}
+		
+		
+		//Resolve layout ids to file names
+		folder = new File("decoded/res/layout");
+		listOfFiles = folder.listFiles();
+		dbFactory = DocumentBuilderFactory.newInstance();
+		dBuilder = dbFactory.newDocumentBuilder();
+
+		//Read layout ids and names from public xml
+		for (File pf : listOfFiles){
+			Document doc = dBuilder.parse(pf);
+			doc.getDocumentElement().normalize();
+			
+			XPath xpath = XPathFactory.newInstance().newXPath();
+	        XPathExpression expr1 = xpath.compile("//*[@id]");
+	        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
+	        
+	        String name=null;
+	        for (int i=0;i<nodes.getLength();i++) {
+	        	Node node = nodes.item(i);
+	        	Attr attr = (Attr) node.getAttributes().getNamedItem("android:id");
+	        	String layoutName = attr.getValue().replace("@id/", "");
+	        	System.out.println(layoutName);
+	        	if (layoutNamesToIds.keySet().contains(layoutName)) {
+	        		name = node.getNodeName();
+	        		int id = layoutNamesToIds.get(layoutName);
+	        		if (Scene.v().containsClass(name)) {
+	        			SootClass clazz = Scene.v().getSootClass(name);
+	        			layoutIdToClass.put(new Integer(id), clazz);
+	        		}
+	        		layoutNamesToClass.put(layoutName,name);
+	        		name = null;
+	        	}
+	        }
+		}
+		
+		return layoutIdToClass;
+	}
 	
 	public SootMethod getDefaultOnResume() {
 		assert mainActivities.size()>0:"No default activities in AndroidManifest.xml";

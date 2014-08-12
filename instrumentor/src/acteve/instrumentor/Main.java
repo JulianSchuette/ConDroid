@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -54,6 +55,7 @@ import org.xml.sax.SAXException;
 
 import soot.Hierarchy;
 import soot.JimpleClassSource;
+import soot.MethodOrMethodContext;
 import soot.Modifier;
 import soot.PackManager;
 import soot.Scene;
@@ -65,6 +67,7 @@ import soot.Transform;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.android.data.AndroidMethod;
+import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 import soot.util.Chain;
 
@@ -84,13 +87,15 @@ public class Main extends SceneTransformer {
 	private static boolean LIMIT_TO_CALL_PATH = true; //Limit instrumentation to methods along the CP to reflection use?
 	private static boolean SKIP_CONCOLIC_INSTRUMENTATION = false;
 	private static boolean SKIP_ALL_INSTRUMENTATION = true;	//For debugging
-	
+	private static boolean SKIP_CG_EXTENTION=false;
+
 	/**
 	 * Classes to exclude from instrumentation (all acteve, dalvik classes, plus some android SDK classes which are used by the instrumentation itself).
 	 */
 	//TODO Exclude these classes from instrumentation
 	private static Pattern excludePat = Pattern
 			.compile("dummyMainClass|(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
+	protected static InstrumentationHelper ih;
 	
 	@Override
 	protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
@@ -217,7 +222,7 @@ public class Main extends SceneTransformer {
 			//System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
 			classesToInstrument.add(c);
 		}
-				
+
 		PackManager.v().getPack("cg").apply();
 		
 		//Collect additional classes which will be injected into the app
@@ -230,15 +235,20 @@ public class Main extends SceneTransformer {
 		}
 
 		//Get the lifecycle method to instrument
-		InstrumentationHelper ih = new InstrumentationHelper(new File(apk));
+		ih = new InstrumentationHelper(new File(apk));
 		SootMethod lcMethodToExtend = ih.getDefaultOnResume();
 		
 		assert lcMethodToExtend!=null:"No default activity found";
-				
+		
 		if (!SKIP_CONCOLIC_INSTRUMENTATION && !SKIP_ALL_INSTRUMENTATION) {
 			PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
 		}
+
+		if (!SKIP_CG_EXTENTION) {
+			PackManager.v().getPack("cg").add(new Transform("cg.android", new AndroidCGExtender()));
+		}
 		
+			
 		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
 		if (LIMIT_TO_CALL_PATH ) {
 			/* 
@@ -277,7 +287,7 @@ public class Main extends SceneTransformer {
 
 			//2)
 			List<SootMethod> goalMethods = MethodUtils.findReflectiveLoadingMethods(entryPoints);
-			System.out.println("Found the following reflective class loading methods:");
+			System.out.println("Found the following goal methods:");
 			for (SootMethod m : goalMethods){
 				System.out.println("Signature: " + m.getSignature());
 			}
@@ -288,9 +298,12 @@ public class Main extends SceneTransformer {
 				if(!excludePat.matcher(goalMeth.getDeclaringClass().getName()).matches())
 					classesAlongTheWay.add(goalMeth.getDeclaringClass());
 				//and all the classes on the way to the call:
-				for (SootMethod caller : MethodUtils.findTransitiveCallersOf(goalMeth)){
-					if(!excludePat.matcher(caller.getDeclaringClass().getName()).matches()){
-						classesAlongTheWay.add(caller.getDeclaringClass());
+				CallGraph subGraph = MethodUtils.findTransitiveCallersOf(goalMeth);
+				Iterator<MethodOrMethodContext> methodsAlongThePath = subGraph.sourceMethods();
+				while (methodsAlongThePath.hasNext()) {
+					SootMethod methodAlongThePath = methodsAlongThePath.next().method();
+					if(!excludePat.matcher(methodAlongThePath.getDeclaringClass().getName()).matches()){
+						classesAlongTheWay.add(methodAlongThePath.getDeclaringClass());
 					}
 				}
 			}
