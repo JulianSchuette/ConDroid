@@ -7,7 +7,9 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import soot.Kind;
 import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootClass;
@@ -22,6 +24,7 @@ import soot.tagkit.Tag;
 import soot.tagkit.VisibilityAnnotationTag;
 import soot.util.HashChain;
 import soot.util.dot.DotGraph;
+import soot.util.dot.DotGraphEdge;
 import soot.util.dot.DotGraphNode;
 import soot.util.queue.QueueReader;
 
@@ -476,6 +479,8 @@ public class MethodUtils {
 	 * @return
 	 */
 	public static CallGraph findTransitiveCallersOf(SootMethod sootMethod) {
+		Pattern actevePat = Pattern.compile("dummyMainClass|(acteve\\..*)");
+
 		System.out.println("Finding transitive callers of " + sootMethod.getSignature());
 		String dotFile = "goals_"+sootMethod.getDeclaringClass().getName() + sootMethod.getName();
 		CallGraph callGraph = Scene.v().getCallGraph();
@@ -489,26 +494,28 @@ public class MethodUtils {
 			Iterator<Edge> edgesInto = callGraph.edgesInto(sootMethod);
 			while (edgesInto.hasNext()) {
 				Edge edge = edgesInto.next();
-				if (!edge.getSrc().method().equals(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>")))
-					subGraph.addEdge(edge);
-				SootMethod source = edge.getSrc().method();
-				
-				if (MethodUtils.getCalleesOf(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>")).contains(source)
-						&& !source.getName().equals("<init>")) {
-					source.addTag(new GenericAttribute("entrymethod", new byte[0]));
-					System.out.println("This is an entrypoint: " + source);
-				} else if (Scene.v().getActiveHierarchy().isClassSubclassOf(source.getDeclaringClass(), Scene.v().getSootClass("android.view.View"))
-						&& (source.getSubSignature().equals("void <init>(android.content.Context)")
-								|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet)")
-								|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet,int)"))) { 
-					source.addTag(new GenericAttribute("entrymethod", new byte[0]));					
-					System.out.println("This is a view constructor and a potential entrypoint: " + source);
-				}else {
-					System.out.println("Not an entrypoint: " + source.getSignature());
-				}
-				if (!transitiveSources.contains(source)) {
-					transitiveSources.add(source);
-					unprocessedSources.add(source);
+				if (!actevePat.matcher(edge.getSrc().method().getDeclaringClass().getName()).matches()) {
+					if (!edge.getSrc().method().equals(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>")))
+						subGraph.addEdge(edge);
+					SootMethod source = edge.getSrc().method();
+					
+					if (MethodUtils.getCalleesOf(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>")).contains(source)
+							&& !source.getName().equals("<init>")) {
+						source.addTag(new GenericAttribute("entrymethod", new byte[0]));
+						System.out.println("This is an entrypoint: " + source);
+					} else if (Scene.v().getActiveHierarchy().isClassSubclassOf(source.getDeclaringClass(), Scene.v().getSootClass("android.view.View"))
+							&& (source.getSubSignature().equals("void <init>(android.content.Context)")
+									|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet)")
+									|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet,int)"))) { 
+						source.addTag(new GenericAttribute("entrymethod", new byte[0]));					
+						System.out.println("This is a view constructor and a potential entrypoint: " + source);
+					}else {
+						System.out.println("Not an entrypoint: " + source.getSignature());
+					}
+					if (!transitiveSources.contains(source)) {
+						transitiveSources.add(source);
+						unprocessedSources.add(source);
+					}
 				}
 			}
 		}
@@ -539,7 +546,12 @@ public class MethodUtils {
 				srcNode.setAttribute("color", "deeppink");
 				srcNode.setAttribute("shape", "box");
 			}
-			dg.drawEdge(src.getSignature(), tgt.getSignature());
+			DotGraphEdge dgEdge = dg.drawEdge(src.getSignature(), tgt.getSignature());
+			if (e.kind() == Kind.CLINIT) {
+				dgEdge.setAttribute("style", "dashed");
+			} else {
+				dgEdge.setAttribute("style", "bold");
+			}
 		}
 		dg.plot(prefix + "_cg.dot");
 	}

@@ -92,8 +92,8 @@ public class Main extends SceneTransformer {
 	/**
 	 * Classes to exclude from instrumentation (all acteve, dalvik classes, plus some android SDK classes which are used by the instrumentation itself).
 	 */
-	//TODO Exclude these classes from instrumentation
-	private static Pattern excludePat = Pattern
+	//Exclude these classes from instrumentation
+	protected final static Pattern excludePat = Pattern
 			.compile("dummyMainClass|(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
 	protected static InstrumentationHelper ih;
 	
@@ -224,12 +224,6 @@ public class Main extends SceneTransformer {
 		}
 
 		PackManager.v().getPack("cg").apply();
-
-		if (!SKIP_CG_EXTENTION) {
-			PackManager.v().getPack("cg").add(new Transform("cg.android", new AndroidCGExtender()));
-		}
-		
-		PackManager.v().getPack("cg").apply();
 		
 		//Collect additional classes which will be injected into the app
 		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
@@ -246,6 +240,10 @@ public class Main extends SceneTransformer {
 		
 		assert lcMethodToExtend!=null:"No default activity found";
 		
+		if (!SKIP_CG_EXTENTION) {
+			PackManager.v().getPack("cg").add(new Transform("cg.android", new AndroidCGExtender()));
+		}
+
 		if (!SKIP_CONCOLIC_INSTRUMENTATION && !SKIP_ALL_INSTRUMENTATION) {
 			PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
 		}
@@ -263,6 +261,9 @@ public class Main extends SceneTransformer {
 			 * 3)   Determine all paths from methods in 1) to methods in 2)
 			 * 4)   Instrument only on those paths 
 			 */
+			
+			PackManager.v().getPack("cg").apply();
+
 			
 			HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
 			

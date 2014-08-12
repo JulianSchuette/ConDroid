@@ -63,10 +63,10 @@ public class AndroidCGExtender extends SceneTransformer {
 										if (clazz!=null) {
 											// insert implicit edge into CG
 											SootMethod constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet,int)");
-											Edge newEdge = new Edge(b.getMethod(), u, constr, Kind.VIRTUAL);
+											Edge newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
 											cg.addEdge(newEdge);
 											constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet)");
-											newEdge = new Edge(b.getMethod(), u, constr, Kind.NEWINSTANCE);
+											newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
 											System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
 											cg.addEdge(newEdge);							
 										} else {
