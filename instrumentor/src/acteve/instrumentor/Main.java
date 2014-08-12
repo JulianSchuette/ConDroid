@@ -224,6 +224,12 @@ public class Main extends SceneTransformer {
 		}
 
 		PackManager.v().getPack("cg").apply();
+
+		if (!SKIP_CG_EXTENTION) {
+			PackManager.v().getPack("cg").add(new Transform("cg.android", new AndroidCGExtender()));
+		}
+		
+		PackManager.v().getPack("cg").apply();
 		
 		//Collect additional classes which will be injected into the app
 		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
@@ -244,10 +250,6 @@ public class Main extends SceneTransformer {
 			PackManager.v().getPack("wjtp").add(new Transform("wjtp.acteve", new Main()));
 		}
 
-		if (!SKIP_CG_EXTENTION) {
-			PackManager.v().getPack("cg").add(new Transform("cg.android", new AndroidCGExtender()));
-		}
-		
 			
 		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
 		if (LIMIT_TO_CALL_PATH ) {
