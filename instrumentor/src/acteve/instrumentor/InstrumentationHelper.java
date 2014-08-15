@@ -641,7 +641,12 @@ public class InstrumentationHelper {
 		assert mainActivities.size()>0:"No default activities in AndroidManifest.xml";
 			
 		SootClass mainAct = Scene.v().getSootClass(mainActivities.iterator().next());
-		SootMethod onResume = mainAct.getMethod("void onResume()");
+		SootMethod onResume;
+		try {
+			onResume = mainAct.getMethod("void onResume()");
+		} catch (RuntimeException rte) {
+			onResume=null;
+		}
 		return onResume;
 	}
 	

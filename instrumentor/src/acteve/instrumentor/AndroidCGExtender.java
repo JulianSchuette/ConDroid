@@ -62,13 +62,25 @@ public class AndroidCGExtender extends SceneTransformer {
 										System.out.println("This is my class: " + clazz);
 										if (clazz!=null) {
 											// insert implicit edge into CG
-											SootMethod constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet,int)");
-											Edge newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
-											cg.addEdge(newEdge);
-											constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet)");
-											newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
-											System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
-											cg.addEdge(newEdge);							
+											SootMethod constr = null;
+											Edge newEdge=null;
+											try {
+												constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet,int)");
+												newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
+												System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
+												cg.addEdge(newEdge);
+											} catch (RuntimeException rte) {
+												//Method does not exist
+												
+											}
+											try {
+												constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet)");
+												newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
+												System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
+												cg.addEdge(newEdge);
+											} catch (RuntimeException rte) {
+												//method does not exist
+											}
 										} else {
 											System.err.println("Could not find class for view id " + ((IntConstant) val).value);
 										}						

@@ -86,7 +86,7 @@ public class Main extends SceneTransformer {
 	private static boolean OMIT_MANIFEST_MODIFICATION = false;
 	private static boolean LIMIT_TO_CALL_PATH = true; //Limit instrumentation to methods along the CP to reflection use?
 	private static boolean SKIP_CONCOLIC_INSTRUMENTATION = false;
-	private static boolean SKIP_ALL_INSTRUMENTATION = true;	//For debugging
+	private static boolean SKIP_ALL_INSTRUMENTATION = false;	//For debugging
 	private static boolean SKIP_CG_EXTENTION=false;
 
 	/**
@@ -237,6 +237,9 @@ public class Main extends SceneTransformer {
 		//Get the lifecycle method to instrument
 		ih = new InstrumentationHelper(new File(apk));
 		SootMethod lcMethodToExtend = ih.getDefaultOnResume();
+		if (lcMethodToExtend==null) {
+			lcMethodToExtend = ih.getDefaultOnCreate();
+		}
 		
 		assert lcMethodToExtend!=null:"No default activity found";
 		
