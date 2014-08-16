@@ -7,6 +7,11 @@
  * 
  * Contributors: Christian Fritz, Steven Arzt, Siegfried Rasthofer, Eric
  * Bodden, and others.
+ * 
+ * Modifications by Rafael Fedler 2014 based on rev. 1f47322439
+ * https://github.com/secure-software-engineering/soot-infoflow/blob/1f473224396dcca458d7ee3ae676d9c5c6192a52/src/soot/jimple/infoflow/entryPointCreators/BaseEntryPointCreator.java
+ * * Support insertion of method call before a given unit
+ * * Heuristic to retrieve live context object
  ******************************************************************************/
 package soot.jimple.infoflow.entryPointCreators;
 
@@ -97,7 +102,8 @@ public abstract class CBaseEntryPointCreator implements CIEntryPointCreator {
 		return this.createDummyMainInternal(dummyMainMethod);
 	}
 
-	protected SootMethod createDummyMainInternal() {
+	protected SootMethod createDummyMainInternal() 
+	{
 		SootMethod emptySootMethod = createEmptyMainMethod(Jimple.v().newBody());
 		return createDummyMainInternal(emptySootMethod);
 	}
@@ -128,7 +134,7 @@ public abstract class CBaseEntryPointCreator implements CIEntryPointCreator {
 		return mainMethod;
 	}
 	
-	public Stmt buildMethodCall(SootMethod currentMethod, Body body, Local classLocal, LocalGenerator gen){
+	protected Stmt buildMethodCall(SootMethod currentMethod, Body body, Local classLocal, LocalGenerator gen){
 		return buildMethodCall(currentMethod, body, classLocal, gen, Collections.<SootClass>emptySet());
 	}
 	

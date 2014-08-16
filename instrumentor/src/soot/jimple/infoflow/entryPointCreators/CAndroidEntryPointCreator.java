@@ -7,6 +7,10 @@
  * 
  * Contributors: Christian Fritz, Steven Arzt, Siegfried Rasthofer, Eric
  * Bodden, and others.
+ * 
+ * Modifications by Rafael Fedler based on rev. 13c87a70897447b9ec91d0b7edc4f4c77bd8502b
+ * https://raw.githubusercontent.com/secure-software-engineering/soot-infoflow/13c87a70897447b9ec91d0b7edc4f4c77bd8502b/src/soot/jimple/infoflow/entryPointCreators/AndroidEntryPointCreator.java
+ * * cast from collection to ArrayList for compatibility with older soot version
  ******************************************************************************/
 package soot.jimple.infoflow.entryPointCreators;
 
@@ -57,6 +61,9 @@ import soot.options.Options;
  * and http://developer.android.com/reference/android/content/BroadcastReceiver.html
  * 
  * @author Christian, Steven Arzt
+ * 
+ * Unmodified copy by Rafael Fedler based on rev. 1f473224396dcca458d7ee3ae676d9c5c6192a52  
+ * https://raw.githubusercontent.com/secure-software-engineering/soot-infoflow/1f473224396dcca458d7ee3ae676d9c5c6192a52/src/soot/jimple/infoflow/entryPointCreators/IEntryPointCreator.java
  * 
  */
 public class CAndroidEntryPointCreator extends CBaseEntryPointCreator implements CIEntryPointCreator{
