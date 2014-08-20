@@ -148,7 +148,7 @@ public class Emulator extends Task
 		execute(pushSettingsFile);
 		execute(pushMonkeyScript);
 		execute(startActivity);
-
+		try {	Thread.sleep(4000); } catch (InterruptedException e1) {	}
 		killActivity.prepare();
 		pullLogCat.prepare();
 
