@@ -384,6 +384,18 @@ public class Instrumentor extends AbstractStmtSwitch {
 			units.insertBefore(symAsgnStmt, ifStmt);
 			
 			//TODO At this point we need to insert a staticinvoke to some helper method which sets op1 and op2 and determined by the solver to enforce a specific path
+//			if (condExp.getOp1() instanceof Immediate) {
+//				if (condExp.getOp1().getType() instanceof soot.IntType) {
+//					System.out.println("Enforcing value in " + body.getMethod().getName() + ": " + condExp.getOp1());
+//					units.insertBefore(G.jimple.newAssignStmt(condExp.getOp1(),
+//					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(condExp.getOp1().toString().toUpperCase()))), ifStmt);
+//				} else {
+//					System.out.println("not an integer type: " + condExp.getOp1() + " - " + condExp.getOp1().getType().toString());
+//				}
+//				//				uniqueVarCounter++;
+//			} else {
+//				System.out.println("Is not an immediate: " + condExp.getOp1());
+//			}
 			
 			//Insert symbolic "false" assumption immediately after concrete if-statement
 			System.out.println("Inserting after: " + assumeFlsStmt.toString());
@@ -492,11 +504,13 @@ public class Instrumentor extends AbstractStmtSwitch {
 			if(addSymLocationFor(retValue.getType())) {
 				//BY Julian: Force solution value to drive execution down the new path.
 //				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
-				
+				SootMethod modelInvoker = ModelMethodsHandler.getModelInvokerFor(callee);
+				if (modelInvoker != null) 
+					G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue, G.staticInvokeExpr(G.getSolution_long, StringConstant.v("$Lsym_L_java_lang_System_currentTimeMillis"))));
+
 				G.editor.insertStmtAfter(G.jimple.newAssignStmt(symLocalfor(retValue),
 																G.staticInvokeExpr(G.retPop, IntConstant.v(subSig))));
 				
-				SootMethod modelInvoker = ModelMethodsHandler.getModelInvokerFor(callee);
 				if (modelInvoker != null) {
 					G.editor.insertStmtAfter(G.jimple.newInvokeStmt(G.staticInvokeExpr(modelInvoker.makeRef(), args)));
 				}
@@ -554,25 +568,25 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 
 		//BY JULIAN: Enforce specific solution values to tracked variables TODO: Unfinished.
-		if (leftOp instanceof Local && localsMap.containsKey(leftOp)) {
-			Type t = leftOp.getType();
-			if (t instanceof IntType) {
-				G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
-					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()+"_"+uniqueVarCounter))));
-				uniqueVarCounter++;
-			} else if (t instanceof FloatType) {
-				//TODO support floats
-				System.out.println("Not yet implemented: Enforcing a solution value for float " + as.toString());
-			} else if (t instanceof BooleanType) {
-				//TODO support booleans
-				System.out.println("Not yet implemented: Enforcing a solution value for boolean " + as.toString());
-
-			} // ...
-		} else {
-			//TODO Handle assignment to array entries and fields
-			System.out.println("Not yet implemented: Enforcing a solution value for field/array " + as.toString());
-		
-		}
+//		if (leftOp instanceof Local && localsMap.containsKey(leftOp)) {
+//			Type t = leftOp.getType();
+//			if (t instanceof IntType) {
+//				G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
+//					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()+uniqueVarCounter))));
+//				uniqueVarCounter++;
+//			} else if (t instanceof FloatType) {
+//				//TODO support floats
+//				System.out.println("Not yet implemented: Enforcing a solution value for float " + as.toString());
+//			} else if (t instanceof BooleanType) {
+//				//TODO support booleans
+//				System.out.println("Not yet implemented: Enforcing a solution value for boolean " + as.toString());
+//
+//			} // ...
+//		} else {
+//			//TODO Handle assignment to array entries and fields
+//			System.out.println("Not yet implemented: Enforcing a solution value for field/array " + as.toString());
+//		
+//		}
 	}
 
 	@Override

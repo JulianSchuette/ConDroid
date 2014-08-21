@@ -782,7 +782,7 @@ public class Util
 	 * 
 	 */
 	public static int getSolution_int(Object local) {
-		System.out.println("return new solution for "+local);
+		System.out.println("request for new solution for "+local);
 		readLatestSolution();
 		if (solutionMap.containsKey(local.toString())) {
 			System.out.println(local + " -> " + Integer.parseInt(solutionMap.get(local.toString())));
@@ -792,7 +792,22 @@ public class Util
 			for (String key: solutionMap.keySet()) {
 				System.out.println("   " + key + " : " + solutionMap.get(key));
 			}
-			return 42;	//42 is the answer to everything
+			return 123;	
+		}
+	}
+
+	public static long getSolution_long(Object local) {
+		System.out.println("request for new solution for "+local);
+		readLatestSolution();
+		if (solutionMap.containsKey(local.toString())) {
+			System.out.println(local + " -> " + Long.parseLong(solutionMap.get(local.toString())));
+			return Long.parseLong(solutionMap.get(local.toString()));
+		} else {
+			System.err.println("Hm. Solution for " + local + " required but not available. This is the current solutionMap: ");
+			for (String key: solutionMap.keySet()) {
+				System.out.println("   " + key + " : " + solutionMap.get(key));
+			}
+			return 123;	
 		}
 	}
 
