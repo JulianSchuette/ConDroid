@@ -142,6 +142,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 	//private Set<Integer> currentWriteSet;
 	private SootMethod currentMethod;
 	private int sigIdOfCurrentMethod;
+	private static int uniqueVarCounter;
 
 	private boolean doRW() {
 		return doRW(null);
@@ -557,7 +558,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 			Type t = leftOp.getType();
 			if (t instanceof IntType) {
 				G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
-					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()))));
+					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()+"_"+uniqueVarCounter))));
+				uniqueVarCounter++;
 			} else if (t instanceof FloatType) {
 				//TODO support floats
 				System.out.println("Not yet implemented: Enforcing a solution value for float " + as.toString());

@@ -53,7 +53,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
-import soot.Hierarchy;
 import soot.JimpleClassSource;
 import soot.MethodOrMethodContext;
 import soot.Modifier;

@@ -107,8 +107,8 @@ public class Emulator extends Task
 		subtasks.add(pushMonkeyScript);
 		
 //		Julian: Don't wait for app to finish. This won't happen if app crashes
-//		String amArgs = "-W -n " + appPkgName + "/" + mainActivity;
-		String amArgs = "-n " + appPkgName + "/" + mainActivity;
+		String amArgs = "-W -S -n " + appPkgName + "/" + mainActivity;
+//		String amArgs = "-n " + appPkgName + "/" + mainActivity;
 		if(activityArgs != null)
 			amArgs +=  " " + activityArgs;
 		this.startActivity = new AdbTask(port, "shell am start " + amArgs); 
@@ -147,12 +147,16 @@ public class Emulator extends Task
 		execute(clearHistory);
 		execute(pushSettingsFile);
 		execute(pushMonkeyScript);
-		execute(startActivity);
-		try {	Thread.sleep(4000); } catch (InterruptedException e1) {	}
 		killActivity.prepare();
 		pullLogCat.prepare();
+		execute(startActivity);
+		System.out.println("Waiting for activity to settle...");
+		try {	Thread.sleep(4000); } catch (InterruptedException e1) {	}
 
+		System.out.println("Running monkey script");
 		execute(runMonkey);
+		
+		System.out.println("Killing activity");
 		execute(killActivity);
 		execute(pullLogCat);
 		execute(logcatEnd);

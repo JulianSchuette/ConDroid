@@ -101,7 +101,8 @@ public class Executor
 				path = PathsRepo.getNextPath();
 				if(path == null) {
 					int n = available.size();
-					System.out.println("remaining free available emus" + n);
+
+					//					System.out.println("remaining free available emus" + n);
 					if(n == numEmus)
 						return true;
 				} else {
@@ -110,6 +111,7 @@ public class Executor
 			}
 			MonkeyScript script;
 			try{
+				System.out.println("Generating new script");
 				script = path.generateScript();
 			}catch(IOException e){
 				throw new Error(e);
@@ -154,6 +156,7 @@ public class Executor
 		}
 
 		public void run() {
+			System.out.println("Starting new worker thread (path.id="+path.id()+", no of events in script=" + script.length()+")");
 			ExecResult result = execute();
 			switch(result) {			
 			case DIVERGED:

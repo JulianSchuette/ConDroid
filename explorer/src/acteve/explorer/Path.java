@@ -128,66 +128,85 @@ public class Path
      */
     MonkeyScript generateScript() throws IOException
     {
-		File scriptToRun = Main.newOutFile(Emulator.SCRIPT_TXT+"."+id);
-		if(scriptToRun.exists()) {
-			//if this is a path that is gen-0 path or 
-			//generated from extension or repeatation
-            MonkeyScript ms = new ElementaryMonkeyScript(scriptToRun);
-			//ms.generate(Main.newOutFile(Emulator.SCRIPT_TXT));
-			return ms;
-        }
+    	File scriptToRun = Main.newOutFile(Emulator.SCRIPT_TXT+"."+id);    	
+//		if(scriptToRun.exists()) {
+//		System.out.println("Script does not exist: " + scriptToRun.getAbsolutePath());
+
         File pcDeclFile = Main.newOutFile(pcDeclFileNameFor(seedId));
         File smtFile = Main.newOutFile(smtFileNameFor(id));
-        System.out.println("Smt file: " + smtFile.getAbsolutePath());
-        copy(pcDeclFile, smtFile);
 
-        PrintWriter smtWriter = Main.newWriter(smtFile, true);
-        BufferedReader reader = Main.newReader(pcFileNameFor(seedId));
-        
-        String line = reader.readLine();
-        int i = 1;
-        while(i < depth){
-            char c = line.charAt(0);
-            if(c != '*')
-                i++;
-            else
-                line = line.substring(1);
-            smtWriter.println("(assert "+line+")");
-            line = reader.readLine();
-        }
-        char c = line.charAt(0);
-        while(c == '*'){
-            smtWriter.println("(assert "+line.substring(1)+")");
-            line = reader.readLine();
-            c = line.charAt(0);
-        }
-        smtWriter.println("(assert (not "+line+"))");
+//		if(scriptToRun.exists()) {
+//	        System.out.println("Script exists: " + scriptToRun.getAbsolutePath());
+//			//if this is a path that is gen-0 path or 
+//			//generated from extension or repeatation
+//	        MonkeyScript ms = new ElementaryMonkeyScript(scriptToRun);
+//			//ms.generate(Main.newOutFile(Emulator.SCRIPT_TXT));
+//			return ms;
+//	    }
 
-        smtWriter.println("(check-sat)");
-        smtWriter.println("(get-model)");
+        System.out.println("Smt file        : " + smtFile.exists() + " - " + smtFile.getAbsolutePath());
+        System.out.println("pc file     : " + Main.newOutFile(pcFileNameFor(seedId)).exists() + " - " + new File(pcFileNameFor(seedId)).getAbsolutePath());
+        System.out.println("pcDecl file     : " + pcDeclFile.exists() + " - " + pcDeclFile.getAbsolutePath());
+        System.out.println("scriptToRun file: " + scriptToRun.exists() + " - " + scriptToRun.getAbsolutePath());
         
-        reader.close();
-        smtWriter.close();
-        
-        File z3OutFile = Main.newOutFile(Z3_OUT+id);
-        File z3ErrFile = Main.newOutFile(Z3_ERR+id);
-        System.out.println("Z3 Out file " + z3OutFile.getAbsolutePath());
-        System.out.println("Z3 Err file " + z3ErrFile.getAbsolutePath());
-        new Z3Task().exec(z3OutFile, z3ErrFile, smtFile.getAbsolutePath());
-        
-        Z3Model model = Z3ModelReader.read(z3OutFile);
-        if(model != null){
-        	//TODO By Julian: This is where we received a solution to our path constraint. I.e., the values of the solution must now be injected at the appropriate places and the app must be started again, this time running with the modified values.
-        	// Acteve only deals with tap events, so their way of setting new input values is a monkey script. 
-        	// If path conditions depend on API calls like System.currentTimeMillis() however, there is currently no way of modifying their return values.
-        	// This should be solved by injecting methods which read the values from the solved model
-        	System.out.println("** Solved model **");
-        	model.print();
-            File seedMonkeyScript = Main.newOutFile(Emulator.SCRIPT_TXT+"."+seedId);
-            MonkeyScript newMonkeyScript = new FuzzedMonkeyScript(seedMonkeyScript, model);
-			newMonkeyScript.addComment("Fuzzed from " + Emulator.SCRIPT_TXT+"."+seedId);
-            newMonkeyScript.saveAs(scriptToRun);
-			return newMonkeyScript;
+        if (pcDeclFile.exists())
+        	copy(pcDeclFile, smtFile);
+
+        if (Main.newOutFile(pcFileNameFor(seedId)).exists()) {
+	        PrintWriter smtWriter = Main.newWriter(smtFile, true);
+	        BufferedReader reader = Main.newReader(pcFileNameFor(seedId));
+	        
+	        String line = reader.readLine();
+	        int i = 1;
+	        while(i < depth){
+	            char c = line.charAt(0);
+	            if(c != '*')
+	                i++;
+	            else
+	                line = line.substring(1);
+	            smtWriter.println("(assert "+line+")");
+	            line = reader.readLine();
+	        }
+	        char c = line.charAt(0);
+	        while(c == '*'){
+	            smtWriter.println("(assert "+line.substring(1)+")");
+	            line = reader.readLine();
+	            c = line.charAt(0);
+	        }
+	        smtWriter.println("(assert (not "+line+"))");
+	
+	        smtWriter.println("(check-sat)");
+	        smtWriter.println("(get-model)");
+	        
+	        reader.close();
+	        smtWriter.close();
+        }
+        if (smtFile.exists()) {
+	        File z3OutFile = Main.newOutFile(Z3_OUT+id);
+	        File z3ErrFile = Main.newOutFile(Z3_ERR+id);
+	        System.out.println("Z3 Out file " + z3OutFile.getAbsolutePath());
+	        System.out.println("Z3 Err file " + z3ErrFile.getAbsolutePath());
+	        new Z3Task().exec(z3OutFile, z3ErrFile, smtFile.getAbsolutePath());
+	        
+	        Z3Model model = Z3ModelReader.read(z3OutFile);
+	        if(model != null){
+	        	//TODO By Julian: This is where we received a solution to our path constraint. I.e., the values of the solution must now be injected at the appropriate places and the app must be started again, this time running with the modified values.
+	        	// Acteve only deals with tap events, so their way of setting new input values is a monkey script. 
+	        	// If path conditions depend on API calls like System.currentTimeMillis() however, there is currently no way of modifying their return values.
+	        	// This should be solved by injecting methods which read the values from the solved model
+	        	System.out.println("** Solved model **");
+	        	model.print();
+	            File seedMonkeyScript = Main.newOutFile(Emulator.SCRIPT_TXT+"."+seedId);
+	            MonkeyScript newMonkeyScript = new FuzzedMonkeyScript(seedMonkeyScript, model);
+				newMonkeyScript.addComment("Fuzzed from " + Emulator.SCRIPT_TXT+"."+seedId);
+	            newMonkeyScript.saveAs(scriptToRun);
+				return newMonkeyScript;
+	        }
+        } else {
+        	System.out.println("No smt file exists, nothing to solve");
+        	MonkeyScript ms = new ElementaryMonkeyScript(scriptToRun);
+			ms.generate(Main.newOutFile(Emulator.SCRIPT_TXT));
+			return ms;
         }
         return null;
     }
@@ -215,6 +234,7 @@ public class Path
     */
     ExecResult postProcess() throws IOException
     {		
+    	System.out.println("In postprocess");
 		File logCatFile = Main.newOutFile(Emulator.LOGCAT_OUT+id);
 		File monkeyFile = Main.newOutFile(Emulator.MONKEY_OUT+id);
 		File syslogFile = Main.newOutFile(Emulator.SYSLOG_OUT+id);
@@ -229,7 +249,7 @@ public class Path
             String line;
             // trace file of seed execution must have at least "depth" number of lines
             String traceFile = traceFileNameFor(seedId);
-            System.out.println("Reading from tracefile " + traceFile);
+            System.out.println("    Reading from tracefile " + traceFile);
             BufferedReader reader = Main.newReader(traceFile);
             for (int i = 0; i < depth - 1;) {
                 line = reader.readLine();
@@ -242,14 +262,16 @@ public class Path
 			do {
 				line = reader.readLine();
 			} while(line !=null && line.equals(""));
-			if(extended && line!=null) {
-				pathTxtList.add(line);
-			} else {
-				char c = line.charAt(0);
-				assert c == 'T' || c == 'F' : "unexpected " + line;
-				String flip = (c == 'T' ? "F" : "T") + line.substring(1);
-				//pathTxtWriter.println(flip);
-				pathTxtList.add(flip);
+			if (line!=null) {
+				if(extended) {
+					pathTxtList.add(line);
+				} else {
+					char c = line.charAt(0);
+					assert c == 'T' || c == 'F' : "unexpected " + line;
+					String flip = (c == 'T' ? "F" : "T") + line.substring(1);
+					//pathTxtWriter.println(flip);
+					pathTxtList.add(flip);
+				}
 			}
 
             reader.close();
@@ -258,7 +280,7 @@ public class Path
         PrintWriter traceWriter = Main.newWriter(traceFileNameFor(id));
         PrintWriter pcWriter = Main.newWriter(pcFileNameFor(id));
         Z3DeclWriter declWriter = new Z3DeclWriter(Main.newOutFile(pcDeclFileNameFor(id)));
-        //CoverageMonitor covMonitor = new CoverageMonitor(id);
+//        CoverageMonitor covMonitor = new CoverageMonitor(id);
         RWAnalyzer rwAnalyzer = new RWAnalyzer();
 		ReadOnlyLastTapDetector roltDetector = new ReadOnlyLastTapDetector();
 
@@ -266,9 +288,11 @@ public class Path
         boolean diverged = false;
         String line;
         if(!(logCatFile.length() > 0)) throw new Error("Empty trace file");
+        System.out.println("    Reading from logcat file " + logCatFile.getAbsolutePath() + " into tracefile " + traceFileNameFor(id));
         BufferedReader reader = Main.newReader(logCatFile);
         while ((line = reader.readLine()) != null) {
             if (line.startsWith(BRANCH_MARKER)) {
+            	System.out.println("Found brach marker! " + line);
                 int i = line.indexOf(':');
                 String bid = line.substring(i+2).trim();
                 if (!diverged && count < pathTxtSize) {
@@ -286,7 +310,8 @@ public class Path
                 //line = line.substring(line.indexOf(':')+2).trim();
                 //covMonitor.process(line);
             } else if (line.startsWith(PC_MARKER)) {
-                line = line.substring(line.indexOf(':')+2).trim();                
+                line = line.substring(line.indexOf(':')+2).trim();
+                System.out.println("    Writing PC_MARKER to PC file " + pcFileNameFor(id) + " and decl file " + pcDeclFileNameFor(id));
                 pcWriter.println(line);
                 declWriter.process(line);
 				//panelDetector.process(pc);
@@ -340,21 +365,21 @@ public class Path
 		  }
 		*/
 		boolean endsWithPanelClick = roltDetector.readOnlyLastTap();//panelDetector.lastTapOnPanel();
-		
+		System.out.println("     Creating new PathInfo");
 		PathInfo info = new PathInfo(numEvents, 
 									 count, 
 									 roltDetector.writeSet(), 
 									 rwAnalyzer.rwSet(), 
 									 endsWithPanelClick);
 		info.dump(Main.newOutFile(PathInfo.fileName(id)));
-		System.out.println("last tap on panel: " + endsWithPanelClick);
+		System.out.println("     last tap on panel: " + endsWithPanelClick);
 		return ExecResult.OK;
     }
 
     void generateNextGenPaths(int traceLength)
     {
-        System.out.println("traceLength " + traceLength + " depth " + depth);
         for(int i = traceLength;  i > depth; i--){
+        	System.out.println("in generateNextGenPaths: traceLength " + traceLength + " depth " + depth);
             Path newPath = new Path(id, i);
             System.out.println("new path: id = " + newPath.id + " depth = " + i);
             PathsRepo.addPath(newPath);
@@ -412,6 +437,7 @@ public class Path
 
     static void copy(File srcFile, File dstFile)
     {
+    	System.out.println("Copying from " + srcFile.getAbsolutePath() + " to " + dstFile.getAbsolutePath());
         try{
             FileInputStream in = new FileInputStream(srcFile);
             FileOutputStream out = new FileOutputStream(dstFile);

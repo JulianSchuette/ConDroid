@@ -68,6 +68,9 @@ public class Mylog
 	public static void e(String tag, String msg)
 	{
 		System.out.println(tag + " " + msg);
+		if (tag.contains("BRANCH")) {
+			System.out.println("I am branching!!!!");
+		}
 		writer().println("E/"+tag+" : "+msg);
 		writer().flush();
 	}
@@ -105,18 +108,19 @@ public class Mylog
 				writer.close();
 			}
 
-			try{
+			try{				
 				String pkg = new BufferedReader(new FileReader(PKG_FILE)).readLine();
 				File killedfile = new File(LOG_DIR_PREFIX+pkg+KILLED_FILE);
+				android.util.Slog.e("Mylog","Creating kill file " + killedfile.getAbsolutePath());
 				BufferedWriter writer = new BufferedWriter(new FileWriter(killedfile));
 				writer.write(0);
+				writer.flush();
 				writer.close();
+				android.util.Slog.e("Mylog","kill file exists" + killedfile.exists());
 			}catch(IOException e){
 				throw new Error(e);
 			}
 			android.util.Slog.e("Mylog", "About to exit.");
-			
-			System.exit(0);
 		}
 	}
 }

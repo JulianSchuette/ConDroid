@@ -66,7 +66,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FileUtils;
-import org.jf.baksmali.main;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -94,6 +93,7 @@ import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.VoidType;
+import soot.baf.PlaceholderInst;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.javaToJimple.LocalGenerator;
 import soot.jimple.AssignStmt;
@@ -118,6 +118,7 @@ import soot.jimple.parser.lexer.LexerException;
 import soot.jimple.parser.parser.ParserException;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
+import soot.tagkit.StringConstantValueTag;
 import soot.util.Chain;
 
 /**
@@ -843,7 +844,9 @@ public class InstrumentationHelper {
 				otherActivities.add(m.getDeclaringClass());				
 			}
 		}
-		
+		Unit comment = new soot.jimple.internal.JNopStmt();
+		comment.addTag(new StringConstantValueTag("Artificial calls to other activities"));
+		body.getUnits().insertBefore(comment, returnstmt);
 		for (SootClass activity:otherActivities) {				
 				//Intent i = new Intent(this, bla.Blubb.class)
 				String classToInvoke = activity.getName().replace('.', '/');

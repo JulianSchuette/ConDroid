@@ -31,10 +31,14 @@
 
 package acteve.explorer;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-
-import java.io.File;
 
 public class PullLogCatTask extends Task
 {
@@ -44,6 +48,7 @@ public class PullLogCatTask extends Task
 	private AdbTask rmDeviceKilledProcFile;
 	private File killedFile;
 	private final int port;
+	private File tmpLogCatFile;
 
     private static final String LOG_FILE = "/mylog.txt";
     private static final String LOG_DIR_PREFIX = "/data/data/";
@@ -57,7 +62,7 @@ public class PullLogCatTask extends Task
 		String deviceKilledFilePath = LOG_DIR_PREFIX+appPkgName+"/"+KILLED_FILE;
 
 		killedFile = Main.newOutFile(KILLED_FILE+".emu"+port);
-
+		this.tmpLogCatFile = tmpLogCatFile;
 		pullKilledProcFile = new AdbTask(port, "pull " + deviceKilledFilePath + " " + killedFile.getAbsolutePath());
 		pullLogCatFile = new AdbTask(port, "pull " + deviceLogCatFilePath  + " " + tmpLogCatFile.getAbsolutePath());
 		rmDeviceLogCatFile = new AdbTask(port, "shell rm " + deviceLogCatFilePath);
@@ -69,7 +74,7 @@ public class PullLogCatTask extends Task
 		if(killedFile.exists() && !killedFile.delete())
 			throw new Error("cannot delete " +killedFile.getAbsolutePath());
 		rmDeviceKilledProcFile.execute();
-//		rmDeviceLogCatFile.execute();
+		rmDeviceLogCatFile.execute();
 	}
 	
 	public void execute()
@@ -88,12 +93,22 @@ public class PullLogCatTask extends Task
 				throw new Error("thread sleep");
 			}
 		}
-//		if(!killedFile.exists()) {
-//			throw new EmuGoneWildException(port);
-//		} else {
+		if(!killedFile.exists()) {
+			throw new EmuGoneWildException(port);
+		} else {
 			System.out.println("");
 			pullLogCatFile.execute();
-//		}
+			try {
+				BufferedReader r = new BufferedReader(new FileReader(tmpLogCatFile));
+				String line = null;
+				System.out.println("Logcat file follows. Does it contain BRANCH?");
+				while ((line=r.readLine())!=null) {
+					System.out.println("   " + line);
+				}
+			} catch (NullPointerException | IOException npe) {
+				npe.printStackTrace();
+			}
+		}
 		
 	}
 

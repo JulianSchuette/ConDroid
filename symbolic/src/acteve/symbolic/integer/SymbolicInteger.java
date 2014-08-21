@@ -45,6 +45,7 @@ public class SymbolicInteger extends IntegerExpression
     public SymbolicInteger(int type, int seed)
     {
 		this(type, null, seed);
+		System.out.println("SymbolicInteger constructor without a name and type " + type);
     }
 
     public SymbolicInteger(int type, String name, int seed) 
@@ -62,6 +63,7 @@ public class SymbolicInteger extends IntegerExpression
 			exprString = makeName("$S$", name);
 			break;
 		case Types.INT:
+			System.out.println("SymbolicInteger constructor with name="+name);
 			exprString = makeName("$I$", name);
 			break;
 		case Types.BOOLEAN:
@@ -83,7 +85,9 @@ public class SymbolicInteger extends IntegerExpression
 
     static String makeName()
     {
-		return "$I$"+count++;
+    	System.out.println("SymbolicInteger: making a new name: $I$"+(count+1));
+    	Thread.dumpStack();
+		return "$I$" + count++;
     }
 	
     public String toString() 

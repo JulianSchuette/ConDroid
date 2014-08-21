@@ -57,6 +57,7 @@ public class PathsRepo
 	
 	static void addPath(Path p)
 	{
+		System.out.println("Queueing new path " + p.id());
 		allPaths.add(p);
 	}
 	
