@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import org.apache.tools.ant.taskdefs.Replace;
+
 import acteve.symbolic.A3TInstrumented;
 import acteve.symbolic.A3TNative;
 import soot.BooleanType;
@@ -71,6 +73,7 @@ import soot.ArrayType;
 import soot.IntType;
 import soot.SootMethodRef;
 import soot.FastHierarchy;
+import soot.dexpler.Util;
 import soot.jimple.AbstractStmtSwitch;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
@@ -505,8 +508,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 				//BY Julian: Force solution value to drive execution down the new path.
 //				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
 				SootMethod modelInvoker = ModelMethodsHandler.getModelInvokerFor(callee);
-				if (modelInvoker != null) 
-					G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue, G.staticInvokeExpr(G.getSolution_long, StringConstant.v("$Lsym_L_java_lang_System_currentTimeMillis"))));
+				if (modelInvoker != null) {
+					System.out.println("Should be $Lsym_L_java_lang_System_currentTimeMillis :" + toSymbolicVarName(callee));
+					G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue, G.staticInvokeExpr(G.getSolution_long, StringConstant.v(toSymbolicVarName(callee)))));
+				}
 
 				G.editor.insertStmtAfter(G.jimple.newAssignStmt(symLocalfor(retValue),
 																G.staticInvokeExpr(G.retPop, IntConstant.v(subSig))));
@@ -517,6 +522,32 @@ public class Instrumentor extends AbstractStmtSwitch {
 			}
 		}
 	}
+
+	/**
+	 * Converts Soot method name to symbolic variable representing its return value.
+	 * 
+	 * @param callee
+	 * @return
+	 */
+	private String toSymbolicVarName(SootMethod callee) {
+		String name =callee.getBytecodeSignature();
+		name = name.replace(".", "_");
+		name = name.replace(": ", "_");
+		name = name.replace('(', '_');
+		name = name.replace(')', '_');
+		name = name.replace(',', '_');
+		name = name.replace("<","").replace(">","");
+		
+		String t = callee.getReturnType().toString();
+		if (t.equals("long")) {
+			t = "L";
+		} else if (t.equals("int")) {
+			t = "I";
+		} //TODO handle more types.
+		
+		return "$"+t+"sym_"+name;
+	}
+	
 
 	/**
 	 * Called by soot.util.Switchable.apply()

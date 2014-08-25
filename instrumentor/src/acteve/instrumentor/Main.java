@@ -76,7 +76,7 @@ public class Main extends SceneTransformer {
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	static boolean DEBUG = true;
-	public final static boolean DUMP_JIMPLE = false; //default: false. Set to true to create Jimple code instead of APK
+	public final static boolean DUMP_JIMPLE = true; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries

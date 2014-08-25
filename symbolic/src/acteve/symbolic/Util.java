@@ -835,21 +835,26 @@ public class Util
 					BufferedReader fr = new BufferedReader(new FileReader(solutionFile));
 					String line = null;
 					String currentVar = "";
-					String currentValue = "";
+					String currentValue = null;
 					while ((line = fr.readLine()) != null) {
-						//Quite verzettelt, but works...
 						int i = line.indexOf("define-fun ");
 						int j = line.lastIndexOf("(");
 						if (i>=0) {
 							currentVar = line.substring(i+11, j).trim();
+							currentValue = null;
 							//$I$0 -> $I0
 							if (currentVar.charAt(2)=='$')
 								currentVar = currentVar.substring(0,2) + currentVar.substring(3, currentVar.length());
+							else
+								System.err.println("Unexpected line in solution.txt: " + line);
 						} else if (line.endsWith(")") && line.trim().length()>1) {
 							currentValue = line.substring(0,line.length()-1).trim();
 						}
-						System.out.println("Solution: " + currentVar + " : " + currentValue);
-						solutionMap.put(currentVar,  currentValue);
+						
+						if (currentVar!="" && currentValue!=null) {
+							System.out.println("Solution: " + currentVar + " : " + currentValue);
+							solutionMap.put(currentVar,  currentValue);
+						}
 					}
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
