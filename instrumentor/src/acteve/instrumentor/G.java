@@ -173,7 +173,9 @@ public class G
 		map.put(Jimple.CMP, "_cmp");
 		map.put(Jimple.CMPL, "_cmpl");
 		map.put(Jimple.CMPG, "_cmpg");
-		
+
+		map.put("contains", "java.lang.String: boolean contains(java.lang.CharSequence)");
+
 		negationMap.put("==", "!=");
 		negationMap.put("!=", "==");
 		negationMap.put(">=", "<");
@@ -189,6 +191,8 @@ public class G
 		typeMap.put(LongType.v(), Types.LONG);
 		typeMap.put(FloatType.v(), Types.FLOAT);
 		typeMap.put(DoubleType.v(), Types.DOUBLE);
+		
+		binopSymbolToMethodName.put("<java.lang.String: boolean contains(java.lang.CharSequence)>", "_contains");
 									   		
 		int count = 31;
 		String argPushRetType = "void";

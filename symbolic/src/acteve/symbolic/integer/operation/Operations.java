@@ -68,6 +68,7 @@ public class Operations
     public String longConstant(long v)    { return (v >= 0) ? String.valueOf(v) : "(- "+String.valueOf(-v)+")"; }
     public String floatConstant(float v)  { return (v >= 0) ? String.valueOf(v) : "(- "+String.valueOf(-v)+")"; }
     public String doubleConstant(double v){ return (v >= 0) ? String.valueOf(v) : "(- "+String.valueOf(-v)+")"; }
+    public String stringConstant(String v){ return "\""+v+"\""; }
 	public String refConstant(Object o)   { return (o == null ? "null" : o.getClass().getName())+"@"+System.identityHashCode(o); }
 
 	public BinaryOperator conjunct(){ return new BooleanBinaryOperator("and"); }

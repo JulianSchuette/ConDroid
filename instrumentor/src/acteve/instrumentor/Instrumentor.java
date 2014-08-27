@@ -31,98 +31,75 @@
 
 package acteve.instrumentor;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Arrays;
-import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.io.IOException;
-import java.util.regex.Pattern;
 
-import org.apache.tools.ant.taskdefs.Replace;
-
-import acteve.symbolic.A3TInstrumented;
-import acteve.symbolic.A3TNative;
-import soot.BooleanType;
-import soot.FloatType;
-import soot.Scene;
+import soot.ArrayType;
 import soot.Body;
 import soot.Immediate;
+import soot.IntType;
 import soot.Local;
-import soot.Modifier;
+import soot.PatchingChain;
 import soot.PrimType;
-import soot.RefType;
 import soot.RefLikeType;
+import soot.RefType;
+import soot.Scene;
 import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
-import soot.Type;
-import soot.Value;
-import soot.Unit;
-import soot.VoidType;
-import soot.ArrayType;
-import soot.IntType;
 import soot.SootMethodRef;
-import soot.FastHierarchy;
-import soot.dexpler.Util;
+import soot.Type;
+import soot.Unit;
+import soot.Value;
 import soot.jimple.AbstractStmtSwitch;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
 import soot.jimple.CastExpr;
 import soot.jimple.CaughtExceptionRef;
+import soot.jimple.ConditionExpr;
 import soot.jimple.Constant;
 import soot.jimple.FieldRef;
-import soot.jimple.GotoStmt;
 import soot.jimple.IdentityStmt;
+import soot.jimple.IfStmt;
+import soot.jimple.InstanceFieldRef;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InstanceOfExpr;
 import soot.jimple.IntConstant;
-import soot.jimple.InstanceFieldRef;
-import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
+import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.LengthExpr;
+import soot.jimple.LookupSwitchStmt;
 import soot.jimple.NegExpr;
-import soot.jimple.EqExpr;
 import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.NewMultiArrayExpr;
 import soot.jimple.NullConstant;
 import soot.jimple.ReturnStmt;
-import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StaticFieldRef;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
-import soot.jimple.VirtualInvokeExpr;
-import soot.util.Chain;
-import soot.PatchingChain;
-import soot.jimple.ConditionExpr;
-import soot.jimple.IfStmt;
-import soot.jimple.NullConstant;
 import soot.jimple.TableSwitchStmt;
-import soot.jimple.LookupSwitchStmt;
-import soot.tagkit.GenericAttribute;
-import soot.tagkit.SourceFileTag;
+import soot.jimple.internal.JReturnVoidStmt;
+import soot.jimple.internal.JVirtualInvokeExpr;
+import soot.tagkit.BytecodeOffsetTag;
 import soot.tagkit.LineNumberTag;
+import soot.tagkit.SourceFileTag;
 import soot.tagkit.SourceLineNumberTag;
 import soot.tagkit.SourceLnPosTag;
-import soot.tagkit.BytecodeOffsetTag;
 import soot.tagkit.StringTag;
-import soot.toolkits.graph.PostDominatorAnalysis;
-import soot.toolkits.graph.DirectedGraph;
-import soot.toolkits.graph.UnitGraph;
-import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.util.Chain;
 
 
 public class Instrumentor extends AbstractStmtSwitch {
@@ -233,6 +210,11 @@ public class Instrumentor extends AbstractStmtSwitch {
 		saveFiles();
 	}
 
+	/**
+	 * Add symbolic pendants to fields in a class.
+	 * 
+	 * @param c
+	 */
 	private void addSymbolicFields(SootClass c) {
 		for (Iterator<SootField> it = c.getFields().snapshotIterator(); it.hasNext();) {
 			SootField origField = (SootField) it.next();
@@ -284,7 +266,12 @@ public class Instrumentor extends AbstractStmtSwitch {
 			if (paramOrThisIdentityStmt(s)) {
 				params.add((Local) ((IdentityStmt) s).getLeftOp());
 			} else if (s.containsInvokeExpr()) {
-				handleInvokeExpr(s);
+				if (s instanceof AssignStmt && isSupportedByModel(s.getInvokeExpr())) {
+					//Treat like binop stmt
+					handleModelledInvokeExpr((AssignStmt) s);
+				} else {
+					handleInvokeExpr(s);
+				}
 			} else if (!s.branches())
 				s.apply(this);
 		}
@@ -296,6 +283,65 @@ public class Instrumentor extends AbstractStmtSwitch {
 		
 		G.debug(method, Main.DEBUG);
 	}
+	
+	/**
+	 * Handles invokes supported by the model, e.g. String.contains.
+	 * s is expected to be an assignStmt with an InvokeExpr.
+	 */
+	private void handleModelledInvokeExpr(AssignStmt s) {
+//		Immediate op1 = (Immediate) binExpr.getOp1();
+//        Immediate op2 = (Immediate) binExpr.getOp2();
+		if (!s.containsInvokeExpr()) {
+			System.err.println("Unexpected: handleModelledInvokeExpr with non-invoke stmt: " + s.toString());
+			return;
+		}
+		
+        if (!(s.getLeftOp() instanceof Immediate)) {
+			System.err.println("Unexpected: handleModelledInvokeExpr with non-immediate local: " + s.toString());
+        	return;
+        }
+        
+		//TODO Consider negate?
+		
+//        Immediate op1 = (Immediate) 
+        JVirtualInvokeExpr rightOp = (JVirtualInvokeExpr) s.getRightOp();
+        
+        System.out.println(rightOp);
+        Immediate op1 = (Immediate) rightOp.getBase();
+        Immediate op2 = (Immediate) s.getInvokeExpr().getArg(0);
+        
+//		Type op1Type = op1.getType();
+//		op1Type = op1Type instanceof RefLikeType ? RefType.v("java.lang.String") : Type.toMachineType(op1Type);
+//
+//		Type op2Type = op2.getType();
+//		op2Type = op2Type instanceof RefLikeType ? RefType.v("java.lang.String") : Type.toMachineType(op2Type);
+
+		Immediate symOp1 = op1 instanceof Constant ? NullConstant.v() : localsMap.get((Local) op1);
+		Immediate symOp2 = op2 instanceof Constant ? NullConstant.v() : localsMap.get((Local) op2);
+		
+		String methodName = G.binopSymbolToMethodName.get(s.getInvokeExpr().getMethod().getSignature()); //TODO add java.lang.string.contains to binopsymboltomethodname
+		System.out.println("Method sig: " + methodName);
+		String methodSig = G.EXPRESSION_CLASS_NAME + " " + methodName + "(" + G.EXPRESSION_CLASS_NAME + "," + 
+				G.EXPRESSION_CLASS_NAME + "," + RefType.v("java.lang.String") + "," + RefType.v("java.lang.String") + ")";
+		SootMethodRef ref = G.symOpsClass.getMethod(methodSig).makeRef();
+		StaticInvokeExpr rhs = G.staticInvokeExpr(ref, Arrays.asList(new Immediate[]{symOp1, symOp2, op1, op2}));
+
+		G.assign(symLocalfor((Immediate) s.getLeftOp()), rhs);
+	}
+	
+	/**
+	 * Returns true if invocation should be reflected in Z3 model.
+	 * 
+	 */
+	private boolean isSupportedByModel(InvokeExpr expr) {
+		String m = expr.getMethod().getSignature();
+		if (m.equals("<java.lang.String: boolean contains(java.lang.CharSequence)>")) {
+			return true;
+		}
+		return false;
+	}
+	
+
 
     private static String getStr(Unit h, String methodSigAndFileStr) {
         int bci;
@@ -596,6 +642,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 		else if (rightOp instanceof Immediate && leftOp instanceof Local) {
 			handleSimpleAssignStmt((Local) leftOp, (Immediate) rightOp);
+		} else {
+			System.out.println("Unhandled assign stmt: " + as);
 		}
 
 		//BY JULIAN: Enforce specific solution values to tracked variables TODO: Unfinished.
@@ -663,6 +711,29 @@ public class Instrumentor extends AbstractStmtSwitch {
 		if(!addSymLocationFor(leftOp.getType()))
 			return;
 		G.assign(symLocalfor(leftOp), symLocalfor(rightOp));
+		
+		// Handle system constant which should be replaced by solutions.
+		Local retValue = (Local) leftOp;
+		//BY Julian: Force solution value to drive execution down the new path.
+//				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
+//		SootMethod modelInvoker = ModelMethodsHandler.getModelInvokerFor(callee); //TODO write new invoker for symbolic constants?
+
+		System.out.println("Simple assign stmt: " + leftOp + " <- " + rightOp);
+		
+//		if (modelInvoker != null) {
+//			System.out.println("Should be $Lsym_L_java_lang_System_currentTimeMillis :" + toSymbolicVarName(callee));
+//			G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue, G.staticInvokeExpr(G.getSolution_long, StringConstant.v(toSymbolicConstName(rightOp)))));
+//		}
+//
+//		G.editor.insertStmtAfter(G.jimple.newAssignStmt(symLocalfor(retValue),
+//														G.staticInvokeExpr(G.retPop, IntConstant.v(subSig))));
+//		
+//		if (modelInvoker != null) {
+//			G.editor.insertStmtAfter(G.jimple.newInvokeStmt(G.staticInvokeExpr(modelInvoker.makeRef(), args)));
+//		}
+
+			
+		
 	}
 
 	void handleStoreStmt(FieldRef leftOp, Immediate rightOp) 
@@ -675,10 +746,25 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 
 		SootField fld = leftOp.getField();
-		if (!Main.isInstrumented(fld.getDeclaringClass())) 
+		if (!Main.isInstrumented(fld.getDeclaringClass())&&!fld.getDeclaringClass().getName().contains("android.os")) 
 			return;
 
+		System.out.println("Creating field for " + fld);
+		//JULIAN
+//		if (!fieldsMap.containsKey(fld)) {
+//			SootClass c = new SootClass("models."+fld.getDeclaringClass().getName());
+//			SootField symField = new SootField(fld.getName()+"$sym",
+//											   G.EXPRESSION_TYPE, fld.getModifiers());
+//			c.addField(symField);
+//			c.setApplicationClass();
+//			fieldsMap.put(fld, symField);
+//			System.out.println("Field not contained. Creating a new one: " + symField);
+//		}
+		
+		
+		
 		if(addSymLocationFor(fld.getType())) {
+			
 			SootField fld_sym = fieldsMap.get(fld);
 			assert fld_sym != null : fld + " " + fld.getDeclaringClass();
 			FieldRef leftOp_sym;
@@ -738,13 +824,74 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 		SootField fld = rightOp.getField();
 		Local leftOp_sym = localsMap.get(leftOp);
-		if (!Main.isInstrumented(fld.getDeclaringClass())) {
+		if (!Main.isInstrumented(fld.getDeclaringClass()) && ! fld.getDeclaringClass().getName().contains("android.os")) {
 			if(leftOp_sym != null)
 				G.assign(leftOp_sym, NullConstant.v());
 			return;
 		}
-		
+		System.out.println("Tracing field "+fld.getDeclaration());
 		if(addSymLocationFor(fld.getType())) {
+			//BY JULIAN: Create symbolic counterpart of fields, even if not part of application
+			if (!fieldsMap.containsKey(fld)) {
+				//Create new field
+				SootClass c = null;
+				if (!Scene.v().containsClass("models."+fld.getDeclaringClass().getName())) {
+					c = new SootClass("models."+fld.getDeclaringClass().getName());
+					c.setApplicationClass();					
+				} else {
+					c = Scene.v().getSootClass("models."+fld.getDeclaringClass().getName());
+				}
+				SootField symField = new SootField(fld.getName()+"$sym",
+												   G.EXPRESSION_TYPE, fld.getModifiers());
+				c.addField(symField);
+				
+				//Assign non-clinitMethod value to field
+					SootMethod clinitMethod = null;
+				  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
+				    clinitMethod = new soot.SootMethod("<clinit>", new ArrayList(), soot.VoidType.v(), soot.Modifier.STATIC, new ArrayList<SootClass>());                
+				    clinitMethod.setActiveBody(Jimple.v().newBody(clinitMethod));
+				    c.addMethod(clinitMethod);
+				}
+				else {
+				    clinitMethod = c.getMethod("<clinit>", new ArrayList(), soot.VoidType.v());
+				}		  
+				Body initializer = clinitMethod.retrieveActiveBody();
+				PatchingChain<Unit> units = initializer.getUnits();
+				//Initialize field
+				if (symField.isStatic()) {				
+					RefType fieldType = RefType.v("acteve.symbolic.integer.Expression");
+					RefType fieldSpecificType = RefType.v("acteve.symbolic.string.StringConstant");
+					SootClass fieldClass = fieldSpecificType.getSootClass();
+//					fieldClass.setResolvingLevel(SootClass.SIGNATURES);
+					Local loc = Jimple.v().newLocal("tmp0",fieldType);
+					initializer.getLocals().add(loc);
+					
+					SootMethodRef ctorRef = fieldSpecificType.getSootClass().getMethod("void <init>()").makeRef();
+					
+					AssignStmt newStmt = Jimple.v().newAssignStmt(loc, Jimple.v().newNewExpr(RefType.v("acteve.symbolic.string.StringConstant")));
+					InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(loc, ctorRef));
+					AssignStmt assignToFld = Jimple.v().newAssignStmt(Jimple.v().newStaticFieldRef(symField.makeRef()), loc);
+				
+					Iterator<Unit> it = units.iterator();
+					Unit insertPoint = null;
+					if (units.size()>0) {
+						while (it.hasNext() && !((insertPoint = it.next()) instanceof JReturnVoidStmt)) { /* fast forward ... */ }
+					} else {
+						insertPoint = Jimple.v().newReturnVoidStmt();
+						units.add(insertPoint);
+					}
+					units.insertBefore(newStmt, insertPoint);
+					units.insertBefore(invokeStmt, insertPoint);
+					units.insertBefore(assignToFld, insertPoint);
+				
+				} else {
+					System.err.println("Field is not static " + fld);
+				}
+				
+				fieldsMap.put(fld, symField);
+				System.out.println("Field not contained. Creating a new one: " + symField);
+			}
+			
 			SootField fld_sym = fieldsMap.get(fld);
 			assert fld_sym != null : fld + " " + fld.getDeclaringClass();
 			FieldRef rightOp_sym;
@@ -948,7 +1095,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 				return true;
 			String className = ((RefType) type).getSootClass().getName();
 			if(className.equals("java.io.Serializable") ||
-			   className.equals("java.lang.Cloneable"))
+			   className.equals("java.lang.Cloneable")
+			   ||  className.equals("java.lang.String")
+			   )
 				return true;
 		}
 		return false; //because arrays are subtypes of object

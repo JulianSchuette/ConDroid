@@ -580,7 +580,8 @@ public class Util
 	public static void assume(Expression e, int branchId, boolean b) 
 	{
 		if (e == null) {
-			Mylog.e("PRE_A3T_BRANCH", "Assume called with null symbolic expression on branch id " + branchId + " and concrete value " + b);
+			Mylog.e("PRE_A3T_BRANCH", "Assume called with null symbolic expression on branch id " + branchId + " and conditional value " + b);
+			Thread.dumpStack();
 			return;
 		}
 

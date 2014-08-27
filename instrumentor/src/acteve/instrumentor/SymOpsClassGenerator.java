@@ -71,6 +71,7 @@ public class SymOpsClassGenerator
     private static final String LongCMP     = "integer.LongExpression";
     private static final String IntCMP      = "integer.IntegerExpression";
 	private static final String Array       = "array.Array";
+	private static final String Strings     = "string.String";
 
     static SootClass generate()
     {
@@ -85,6 +86,7 @@ public class SymOpsClassGenerator
 		addLongCMPMethod();
 		addIntCMPMethods();
 		addArrayMethods();
+		addStringMethods();
 
 		return klass;
     }
@@ -105,6 +107,12 @@ public class SymOpsClassGenerator
     {
 		SootClass equalityInterface = Scene.v().getSootClass(PACKAGE_NAME+Equality);
 		addBinaryMethods(new String[]{"==", "!="}, new Type[]{IntType.v(), RefType.v("java.lang.Object")}, equalityInterface);
+    }
+	
+    static void addStringMethods()
+    {
+		SootClass stringsInterface = Scene.v().getSootClass(PACKAGE_NAME+Strings);
+		addBinaryMethods(new String[]{"<java.lang.String: boolean contains(java.lang.CharSequence)>"}, new Type[]{RefType.v("java.lang.String")}, stringsInterface);
     }
 	
     static void addCMPMethods()
@@ -174,6 +182,7 @@ public class SymOpsClassGenerator
     {
 		for (String op : binops) {
 			String opMethodName = G.binopSymbolToMethodName.get(op);
+	    	System.out.println("Adding binop method " + opMethodName);
 			for (Type type : types) {
 				addMethod(opMethodName, new Type[]{type, type}, operatorClass);
 			}
@@ -224,6 +233,8 @@ public class SymOpsClassGenerator
 			paramTypesList.add(paramTypes[i]);
 		}
 		SootMethod method = new SootMethod(opMethodName, paramTypesList, G.EXPRESSION_TYPE, mod);
+		System.out.println("Adding " + method.getName());
+		Thread.dumpStack();
 		klass.addMethod(method);	
 		G.addBody(method);
 
@@ -236,13 +247,23 @@ public class SymOpsClassGenerator
 		Stmt makeExpr1 = G.jimple.newAssignStmt(op1Cast, 
 			G.staticInvokeExpr(constClass.getMethodByName("get").makeRef(), op1Concrete));
 		Stmt op1CastAssignment = G.jimple.newAssignStmt(op1Cast, G.jimple.newCastExpr(op1, op1Cast.getType()));
+
+		//BY JULIAN
+		Local locString = G.newLocal( RefType.v("java.lang.String"));
+		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " called")));
+//		G.assign(locString,G.virtualInvokeExpr(op1,"<java.lang.Object: java.lang.String toString()>"));
+//		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),locString));
+		// END BY JULIAN
+
+		
 		G.iff(G.neExpr(op1, NullConstant.v()), op1CastAssignment);
 		
 		for(int i = 1; i < numOperands; i++){
 			Local operand = paramLocals.get(i);
 			G.iff(G.neExpr(operand, NullConstant.v()), makeExpr1);
 		}		
-		
+		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " returns null")));
+
 		G.ret(NullConstant.v());
 		G.insertStmt(op1CastAssignment);
 		Stmt nop = G.jimple.newNopStmt();
@@ -269,10 +290,10 @@ public class SymOpsClassGenerator
 			G.jimple.newVirtualInvokeExpr(op1Cast, opMethod, args);
         G.assign(result, ie);
 		//BY JULIAN
-		Local lString = G.newLocal( RefType.v("java.lang.String"));
-		G.assign(lString, G.virtualInvokeExpr(result, Scene.v().getMethod("<java.lang.Object: java.lang.String toString()>").makeRef()));
+//		Local lString = G.newLocal( RefType.v("java.lang.String"));
+//		G.assign(lString, G.virtualInvokeExpr(result, Scene.v().getMethod("<java.lang.Object: java.lang.String toString()>").makeRef()));
 		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " returns")));
-		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),lString));
+//		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),lString));
 		// END BY JULIAN
 
 		G.ret(result);
@@ -297,7 +318,11 @@ public class SymOpsClassGenerator
 			name = "integer."+name;
 		}
 		else if (type instanceof RefType) {
-			name = "integer.RefConstant";
+			if (((RefType) type).getSootClass().getName().equals("java.lang.String")) {
+				name = "string.StringConstant";
+			} else {
+				name = "integer.RefConstant";
+			}
 		}
 		else if (type instanceof ArrayType) {
 			if (type.equals(ArrayType.v(BooleanType.v(),1)))
