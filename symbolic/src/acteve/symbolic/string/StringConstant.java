@@ -32,13 +32,9 @@
 package acteve.symbolic.string;
 
 import acteve.symbolic.Constant;
-import acteve.symbolic.integer.BinaryIntegerExpression;
+import acteve.symbolic.integer.BinaryBooleanExpression;
 import acteve.symbolic.integer.BooleanBinaryOperator;
-import acteve.symbolic.integer.BooleanExpression;
 import acteve.symbolic.integer.Expression;
-import acteve.symbolic.integer.IntegerConstant;
-import acteve.symbolic.integer.IntegerExpression;
-import acteve.symbolic.integer.operation.NEGATION;
 import acteve.symbolic.integer.operation.Operations;
 
 
@@ -91,7 +87,7 @@ public class StringConstant extends StringExpression implements Constant
 	@Override
 	public Expression _contains(Expression e) {
 		System.out.println("CONTAINSCONTAINS. StringConstant._contains called with expression " + e.getClass().getName() + " , " + e.exprString() + " , " + e.toYicesString());
-		return new BinaryIntegerExpression(new BooleanBinaryOperator("Contains"), this, e);
+		return new BinaryBooleanExpression(new BooleanBinaryOperator("Contains"), this, e);
 	}
 
 

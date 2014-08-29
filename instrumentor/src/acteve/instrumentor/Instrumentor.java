@@ -41,10 +41,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import soot.ArrayType;
 import soot.Body;
+import soot.BooleanType;
 import soot.Immediate;
 import soot.IntType;
 import soot.Local;
@@ -99,6 +101,9 @@ import soot.tagkit.SourceFileTag;
 import soot.tagkit.SourceLineNumberTag;
 import soot.tagkit.SourceLnPosTag;
 import soot.tagkit.StringTag;
+import soot.toolkits.graph.UnitGraph;
+import soot.toolkits.graph.pdg.EnhancedUnitGraph;
+import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.util.Chain;
 
 
@@ -410,6 +415,32 @@ public class Instrumentor extends AbstractStmtSwitch {
 				System.out.println("Only constants are compared. No need for symbolic tracing " + condExp.toString() + ". Skipping");
 				continue;
 			}
+			//Check UD chain for references to String methods
+			Value realV = null;
+			if (condExp.getOp1() instanceof Local) {
+				List<Unit> defs = generateUseDefChain(body, ifStmt, (Local) condExp.getOp1());
+				ListIterator<Unit> it = defs.listIterator(defs.size());
+				while (it.hasPrevious()) {
+					Unit def = it.previous();
+					System.out.println(def instanceof AssignStmt);
+					
+					if (def instanceof AssignStmt && ((AssignStmt) def).containsInvokeExpr()) {
+						Unit symDef = units.getPredOf(def);
+						if (symDef instanceof AssignStmt && ((AssignStmt) symDef).containsInvokeExpr() && ((AssignStmt) symDef).getInvokeExpr().getMethod().getDeclaringClass().getName().equals(G.SYMOPS_CLASS_NAME)) {
+							SootMethod m = ((AssignStmt) symDef).getInvokeExpr().getMethod();
+							
+							if (m.getName().equals("_contains")) { //TODO Handle more operations supported by Z3 here
+								realV = ((AssignStmt) symDef).getLeftOp();
+								System.out.println("Replacing conditional with string operation: " + condExp.toString() + " : " + realV);
+								break;
+							}
+							
+						} else {
+							System.out.println("No symbolic counterpart found for " + def);
+						}
+					}
+				}
+			}
 			IntConstant condId = IntConstant.v(absCondId);
 
 			// Assign symbolic value of concrete expr 'condExp' to local var 'symVar'.
@@ -417,6 +448,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 			if(v == null)
 				v = NullConstant.v();
+			if (realV !=null) { //TODO fixme! Assign leftOp of stmt before "stuff", if stmt is staticinvoke symbolicoperations._contains
+				v = realV;
+			}
 			System.out.println("Value v: " + v.toString());
 			Stmt symAsgnStmt = G.jimple.newAssignStmt(symVar, v);
 
@@ -1223,5 +1257,12 @@ public class Instrumentor extends AbstractStmtSwitch {
             System.exit(1);
         }
     }
+	
+	private List<Unit> generateUseDefChain(Body body, Unit u, Local l) {
+		UnitGraph unitGraph = new EnhancedUnitGraph(body);
+		SimpleLocalDefs simpleLocalDefs = new SimpleLocalDefs(unitGraph);
+		List<Unit> defUnits = simpleLocalDefs.getDefsOfAt(l, u);
+		return defUnits;
+	}
 }
 
