@@ -40,6 +40,7 @@ import acteve.symbolic.integer.operation.Operations;
 
 public class StringConstant extends StringExpression implements Constant
 {
+	int count = 0;
 	public StringConstant() {
 		this.seed = "SEED";
 	}
@@ -58,6 +59,8 @@ public class StringConstant extends StringExpression implements Constant
     {
 		return Operations.v.stringConstant(seed);
     }
+    
+    
     
     public static StringConstant get(java.lang.String c)
     {

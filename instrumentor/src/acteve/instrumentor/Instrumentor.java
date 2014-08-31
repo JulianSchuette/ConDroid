@@ -629,6 +629,22 @@ public class Instrumentor extends AbstractStmtSwitch {
 	}
 	
 
+	private String toSymbolicVarName(SootField fld) {
+		String t = fld.getType().toString();
+		if (t.equals("java.lang.String"))
+			t = "X";
+		String name = fld.getSignature();
+		System.out.println("Field Signature is " + name);
+		name = name.replace(".", "_");
+		name = name.replace(": ", "_");
+		name = name.replace(" ", "_");
+		name = name.replace(',', '_');
+		name = name.replace("<","").replace(">","");
+		return "$"+t+"sym_"+name;
+	}
+
+	
+
 	/**
 	 * Called by soot.util.Switchable.apply()
 	 */
@@ -894,29 +910,28 @@ public class Instrumentor extends AbstractStmtSwitch {
 				//Initialize field
 				if (symField.isStatic()) {				
 					RefType fieldType = RefType.v("acteve.symbolic.integer.Expression");
-					RefType fieldSpecificType = RefType.v("acteve.symbolic.string.StringConstant");
-					SootClass fieldClass = fieldSpecificType.getSootClass();
-//					fieldClass.setResolvingLevel(SootClass.SIGNATURES);
-					Local loc = Jimple.v().newLocal("tmp0",fieldType);
+					RefType fieldSpecificType = RefType.v("acteve.symbolic.string.SymbolicString");
+					
+					Local loc = Jimple.v().newLocal(toSymbolicVarName(fld),fieldType);
 					initializer.getLocals().add(loc);
 					
-					SootMethodRef ctorRef = fieldSpecificType.getSootClass().getMethod("void <init>()").makeRef();
-					
-					AssignStmt newStmt = Jimple.v().newAssignStmt(loc, Jimple.v().newNewExpr(RefType.v("acteve.symbolic.string.StringConstant")));
-					InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(loc, ctorRef));
-					AssignStmt assignToFld = Jimple.v().newAssignStmt(Jimple.v().newStaticFieldRef(symField.makeRef()), loc);
+					SootMethodRef ctorRef = fieldSpecificType.getSootClass().getMethod("void <init>(java.lang.String)").makeRef();
+
+					AssignStmt newStrCnstStmt = Jimple.v().newAssignStmt(loc, Jimple.v().newNewExpr(RefType.v("acteve.symbolic.string.SymbolicString")));
+					InvokeStmt invokeCnstrctrStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(loc, ctorRef,StringConstant.v(toSymbolicVarName(fld))));
+					AssignStmt assignToSymFld = Jimple.v().newAssignStmt(Jimple.v().newStaticFieldRef(symField.makeRef()), loc);
 				
 					Iterator<Unit> it = units.iterator();
 					Unit insertPoint = null;
 					if (units.size()>0) {
-						while (it.hasNext() && !((insertPoint = it.next()) instanceof JReturnVoidStmt)) { /* fast forward ... */ }
+						while (it.hasNext() && !((insertPoint = it.next()) instanceof JReturnVoidStmt)) { /* fast forward until return ... */ }
 					} else {
 						insertPoint = Jimple.v().newReturnVoidStmt();
 						units.add(insertPoint);
 					}
-					units.insertBefore(newStmt, insertPoint);
-					units.insertBefore(invokeStmt, insertPoint);
-					units.insertBefore(assignToFld, insertPoint);
+					units.insertBefore(newStrCnstStmt, insertPoint);
+					units.insertBefore(invokeCnstrctrStmt, insertPoint);
+					units.insertBefore(assignToSymFld, insertPoint);
 				
 				} else {
 					System.err.println("Field is not static " + fld);
@@ -959,6 +974,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			}
 		}
 	}
+
 
 	void handleNewStmt(Local leftOp, NewExpr rightOp)
 	{

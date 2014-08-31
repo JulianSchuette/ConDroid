@@ -93,6 +93,9 @@ public class Z3DeclWriter
 			case 'D':
 				type = "Real";
 		    break;
+			case 'X':
+				type = "String";
+				break;
 			default:
 				throw new RuntimeException(varName);
 			}

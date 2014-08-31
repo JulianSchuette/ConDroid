@@ -44,6 +44,9 @@ public abstract class IntegerExpression extends Expression implements Equality, 
 
 	protected final String toYicesString(String str)
     {
+		
+		System.out.println("TOYICES: " + str);
+		Thread.dumpStack();
 		String newName = SymbolicInteger.makeName();
         Expression.pc.printConstraint("(= " + newName + " " + str + ")");
         return newName;

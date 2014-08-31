@@ -17,8 +17,10 @@ public abstract class StringExpression extends Expression implements String, Equ
 		return seed;
     }
     
-    public java.lang.String toYicesString() {
+    public java.lang.String toYicesString(java.lang.String str) {
         Expression.pc.printConstraint("(WHAZZAT " + seed+ " " +exprString + ")");
+        java.lang.String newName = SymbolicString.makeName();
+        Expression.pc.printConstraint("(= " + newName + " " + str + ")");
         return "YicesString of StringExpr";
     }
 
