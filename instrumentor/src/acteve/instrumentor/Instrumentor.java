@@ -216,7 +216,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 	}
 
 	/**
-	 * Add symbolic pendants to fields in a class.
+	 * Add symbolic counterparts to fields in a class.
 	 * 
 	 * @param c
 	 */
@@ -252,10 +252,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 	private void instrument(SootMethod method) {
 		SwitchTransformer.transform(method);
  		localsMap.clear();
-		//currentWriteSet = new HashSet<Integer>();
-		//writeMap.put(sigIdOfCurrentMethod, currentWriteSet);
-
-		System.out.println("Instrumenting " + method.getSignature());
 
 		Body body = method.retrieveActiveBody();		
 		G.editor.newBody(body, method);
@@ -294,8 +290,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 	 * s is expected to be an assignStmt with an InvokeExpr.
 	 */
 	private void handleModelledInvokeExpr(AssignStmt s) {
-//		Immediate op1 = (Immediate) binExpr.getOp1();
-//        Immediate op2 = (Immediate) binExpr.getOp2();
 		if (!s.containsInvokeExpr()) {
 			System.err.println("Unexpected: handleModelledInvokeExpr with non-invoke stmt: " + s.toString());
 			return;
@@ -306,26 +300,18 @@ public class Instrumentor extends AbstractStmtSwitch {
         	return;
         }
         
-		//TODO Consider negate?
+		//TODO Consider negate
 		
-//        Immediate op1 = (Immediate) 
         JVirtualInvokeExpr rightOp = (JVirtualInvokeExpr) s.getRightOp();
         
         System.out.println(rightOp);
         Immediate op1 = (Immediate) rightOp.getBase();
         Immediate op2 = (Immediate) s.getInvokeExpr().getArg(0);
         
-//		Type op1Type = op1.getType();
-//		op1Type = op1Type instanceof RefLikeType ? RefType.v("java.lang.String") : Type.toMachineType(op1Type);
-//
-//		Type op2Type = op2.getType();
-//		op2Type = op2Type instanceof RefLikeType ? RefType.v("java.lang.String") : Type.toMachineType(op2Type);
-
 		Immediate symOp1 = op1 instanceof Constant ? NullConstant.v() : localsMap.get((Local) op1);
 		Immediate symOp2 = op2 instanceof Constant ? NullConstant.v() : localsMap.get((Local) op2);
 		
 		String methodName = G.binopSymbolToMethodName.get(s.getInvokeExpr().getMethod().getSignature()); //TODO add java.lang.string.contains to binopsymboltomethodname
-		System.out.println("Method sig: " + methodName);
 		String methodSig = G.EXPRESSION_CLASS_NAME + " " + methodName + "(" + G.EXPRESSION_CLASS_NAME + "," + 
 				G.EXPRESSION_CLASS_NAME + "," + RefType.v("java.lang.String") + "," + RefType.v("java.lang.String") + ")";
 		SootMethodRef ref = G.symOpsClass.getMethod(methodSig).makeRef();
@@ -522,20 +508,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 				continue;
 			}
 			else {
-				//Check if method has @Symbolic annotation
-				boolean isSymbolic = Annotation.isSymbolicMethod(currentMethod);
-
-				//If method is marked @Symbolic, create a symbolic injector for it.
-				//JULIAN: Looks like we don't need this
-//				if (isSymbolic) {
-//					System.out.println("symbolic = " + isSymbolic);
-//					SootMethod injector = InputMethodsHandler.addInjector(currentMethod);
-//					List ps = new ArrayList(params);
-//					if (!currentMethod.isStatic()) {
-//						ps.remove(0);
-//					}
-//					units.insertBefore(G.jimple.newInvokeStmt(G.staticInvokeExpr(injector.makeRef(), ps)), s);
-//				}
 				Local symArgsArray = G.jimple.newLocal(new String("a3targs$symargs"), ArrayType.v(G.EXPRESSION_TYPE, 1));
 				body.getLocals().addFirst(symArgsArray);
 				int subsigId = methSubsigNumberer.getOrMakeId(currentMethod);
@@ -629,15 +601,20 @@ public class Instrumentor extends AbstractStmtSwitch {
 	}
 	
 
+	/**
+	 * Converts field name to symbolic variable name.
+	 * 
+	 * @param fld
+	 * @return
+	 */
 	private String toSymbolicVarName(SootField fld) {
 		String t = fld.getType().toString();
 		if (t.equals("java.lang.String"))
 			t = "X";
 		String name = fld.getSignature();
-		System.out.println("Field Signature is " + name);
-		name = name.replace(".", "_");
-		name = name.replace(": ", "_");
-		name = name.replace(" ", "_");
+		name = name.replace('.', '_');
+		name = name.replace(':', '_');
+		name = name.replace(' ', '_');
 		name = name.replace(',', '_');
 		name = name.replace("<","").replace(">","");
 		return "$"+t+"sym_"+name;
@@ -863,6 +840,71 @@ public class Instrumentor extends AbstractStmtSwitch {
 		//}
 	}
 	
+	
+	/**
+	 * Create symbolic counterpart of fields, even if not part of application.
+	 * 
+	 * @param fld
+	 * @return
+	 */
+	private SootField retrieveSymbolicStringField(SootField fld) {
+		SootClass c = null;
+		if (!Scene.v().containsClass("models."+fld.getDeclaringClass().getName())) {
+			//Create fld class, if necessary
+			c = new SootClass("models."+fld.getDeclaringClass().getName());
+			c.setApplicationClass();					
+		} else {
+			c = Scene.v().getSootClass("models."+fld.getDeclaringClass().getName());
+		}
+		SootField symField = new SootField(fld.getName()+"$sym", G.EXPRESSION_TYPE, fld.getModifiers());
+		c.addField(symField);
+		
+		//Assign non-clinit Method value to field
+		SootMethod clinitMethod = null;
+		  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
+			//Add static initializer
+		    clinitMethod = new soot.SootMethod("<clinit>", new ArrayList(), soot.VoidType.v(), soot.Modifier.STATIC, new ArrayList<SootClass>());                
+		    clinitMethod.setActiveBody(Jimple.v().newBody(clinitMethod));
+		    c.addMethod(clinitMethod);
+		} else {
+		    clinitMethod = c.getMethod("<clinit>", new ArrayList(), soot.VoidType.v());
+		}		  
+		Body initializer = clinitMethod.retrieveActiveBody();
+		PatchingChain<Unit> units = initializer.getUnits();
+
+		//Initialize field in static initializer
+		if (symField.isStatic()) {				
+			RefType fieldType = RefType.v("acteve.symbolic.integer.Expression");
+			RefType fieldSpecificType = RefType.v("acteve.symbolic.string.SymbolicString");
+			
+			Local loc = Jimple.v().newLocal(toSymbolicVarName(fld),fieldType);
+			initializer.getLocals().add(loc);
+			
+			SootMethodRef ctorRef = fieldSpecificType.getSootClass().getMethod("void <init>(java.lang.String)").makeRef();
+
+			AssignStmt newStrCnstStmt = Jimple.v().newAssignStmt(loc, Jimple.v().newNewExpr(RefType.v("acteve.symbolic.string.SymbolicString")));
+			InvokeStmt invokeCnstrctrStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(loc, ctorRef,StringConstant.v(toSymbolicVarName(fld))));
+			AssignStmt assignToSymFld = Jimple.v().newAssignStmt(Jimple.v().newStaticFieldRef(symField.makeRef()), loc);
+		
+			Iterator<Unit> it = units.iterator();
+			Unit insertPoint = null;
+			if (units.size()>0) {
+				while (it.hasNext() && !((insertPoint = it.next()) instanceof JReturnVoidStmt)) { /* fast forward until return ... */ }
+			} else {
+				insertPoint = Jimple.v().newReturnVoidStmt();
+				units.add(insertPoint);
+			}
+			units.insertBefore(newStrCnstStmt, insertPoint);
+			units.insertBefore(invokeCnstrctrStmt, insertPoint);
+			units.insertBefore(assignToSymFld, insertPoint);
+		
+		} else {
+			System.err.println("Field is not static " + fld);
+		}		
+		return symField;
+	}
+	
+	
 	void handleLoadStmt(Local leftOp, FieldRef rightOp) 
 	{
 		Immediate base;
@@ -881,64 +923,11 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 		System.out.println("Tracing field "+fld.getDeclaration());
 		if(addSymLocationFor(fld.getType())) {
-			//BY JULIAN: Create symbolic counterpart of fields, even if not part of application
+			
 			if (!fieldsMap.containsKey(fld)) {
-				//Create new field
-				SootClass c = null;
-				if (!Scene.v().containsClass("models."+fld.getDeclaringClass().getName())) {
-					c = new SootClass("models."+fld.getDeclaringClass().getName());
-					c.setApplicationClass();					
-				} else {
-					c = Scene.v().getSootClass("models."+fld.getDeclaringClass().getName());
-				}
-				SootField symField = new SootField(fld.getName()+"$sym",
-												   G.EXPRESSION_TYPE, fld.getModifiers());
-				c.addField(symField);
-				
-				//Assign non-clinitMethod value to field
-					SootMethod clinitMethod = null;
-				  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
-				    clinitMethod = new soot.SootMethod("<clinit>", new ArrayList(), soot.VoidType.v(), soot.Modifier.STATIC, new ArrayList<SootClass>());                
-				    clinitMethod.setActiveBody(Jimple.v().newBody(clinitMethod));
-				    c.addMethod(clinitMethod);
-				}
-				else {
-				    clinitMethod = c.getMethod("<clinit>", new ArrayList(), soot.VoidType.v());
-				}		  
-				Body initializer = clinitMethod.retrieveActiveBody();
-				PatchingChain<Unit> units = initializer.getUnits();
-				//Initialize field
-				if (symField.isStatic()) {				
-					RefType fieldType = RefType.v("acteve.symbolic.integer.Expression");
-					RefType fieldSpecificType = RefType.v("acteve.symbolic.string.SymbolicString");
-					
-					Local loc = Jimple.v().newLocal(toSymbolicVarName(fld),fieldType);
-					initializer.getLocals().add(loc);
-					
-					SootMethodRef ctorRef = fieldSpecificType.getSootClass().getMethod("void <init>(java.lang.String)").makeRef();
-
-					AssignStmt newStrCnstStmt = Jimple.v().newAssignStmt(loc, Jimple.v().newNewExpr(RefType.v("acteve.symbolic.string.SymbolicString")));
-					InvokeStmt invokeCnstrctrStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(loc, ctorRef,StringConstant.v(toSymbolicVarName(fld))));
-					AssignStmt assignToSymFld = Jimple.v().newAssignStmt(Jimple.v().newStaticFieldRef(symField.makeRef()), loc);
-				
-					Iterator<Unit> it = units.iterator();
-					Unit insertPoint = null;
-					if (units.size()>0) {
-						while (it.hasNext() && !((insertPoint = it.next()) instanceof JReturnVoidStmt)) { /* fast forward until return ... */ }
-					} else {
-						insertPoint = Jimple.v().newReturnVoidStmt();
-						units.add(insertPoint);
-					}
-					units.insertBefore(newStrCnstStmt, insertPoint);
-					units.insertBefore(invokeCnstrctrStmt, insertPoint);
-					units.insertBefore(assignToSymFld, insertPoint);
-				
-				} else {
-					System.err.println("Field is not static " + fld);
-				}
-				
+				//Create new symbolic field
+				SootField symField = retrieveSymbolicStringField(fld);
 				fieldsMap.put(fld, symField);
-				System.out.println("Field not contained. Creating a new one: " + symField);
 			}
 			
 			SootField fld_sym = fieldsMap.get(fld);
