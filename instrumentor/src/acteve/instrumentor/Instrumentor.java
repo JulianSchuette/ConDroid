@@ -597,7 +597,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			t = "I";
 		} //TODO handle more types.
 		
-		return "$"+t+"sym_"+name;
+		return "$"+t+"$sym_"+name;
 	}
 	
 
@@ -617,7 +617,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		name = name.replace(' ', '_');
 		name = name.replace(',', '_');
 		name = name.replace("<","").replace(">","");
-		return "$"+t+"sym_"+name;
+		return "$"+t+"$sym_"+name;
 	}
 
 	

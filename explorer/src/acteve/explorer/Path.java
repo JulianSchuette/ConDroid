@@ -188,7 +188,7 @@ public class Path
 	        System.out.println("Z3 Err file " + z3ErrFile.getAbsolutePath());
 	        new Z3Task().exec(z3OutFile, z3ErrFile, smtFile.getAbsolutePath());
 	        
-	        Z3Model model = Z3ModelReader.read(z3OutFile);
+	        Z3Model model = Z3StrModelReader.read(z3OutFile);
 	        if(model != null){
 	        	//TODO By Julian: This is where we received a solution to our path constraint. I.e., the values of the solution must now be injected at the appropriate places and the app must be started again, this time running with the modified values.
 	        	// Acteve only deals with tap events, so their way of setting new input values is a monkey script. 

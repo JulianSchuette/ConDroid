@@ -37,6 +37,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import acteve.symbolic.array.SymbolicDoubleArray;
 import acteve.symbolic.array.SymbolicFloatArray;
@@ -833,30 +835,45 @@ public class Util
 				latestSolution  = solutionFile.lastModified();
 				solutionMap.clear();
 				try {
-					BufferedReader fr = new BufferedReader(new FileReader(solutionFile));
-					String line = null;
-					String currentVar = "";
-					String currentValue = null;
-					while ((line = fr.readLine()) != null) {
-						int i = line.indexOf("define-fun ");
-						int j = line.lastIndexOf("(");
-						if (i>=0) {
-							currentVar = line.substring(i+11, j).trim();
-							currentValue = null;
-							//$I$0 -> $I0
-							if (currentVar.charAt(2)=='$')
-								currentVar = currentVar.substring(0,2) + currentVar.substring(3, currentVar.length());
-							else
-								System.err.println("Unexpected line in solution.txt: " + line);
-						} else if (line.endsWith(")") && line.trim().length()>1) {
-							currentValue = line.substring(0,line.length()-1).trim();
-						}
-						
-						if (currentVar!="" && currentValue!=null) {
-							System.out.println("Solution: " + currentVar + " : " + currentValue);
-							solutionMap.put(currentVar,  currentValue);
+					BufferedReader br = new BufferedReader(new FileReader(solutionFile));
+					
+					String line = "";
+					
+//					* v-ok
+//					************************
+//					>> SAT
+//					------------------------
+//					$Xsym_android_os_Build__java_lang_String_BOARD : string -> "q"
+//					$I$0 : int -> -18
+//					$I$1 : int -> 0
+//					$L$sym_java_lang_System_currentTimeMillis__J : int -> -18
+//					************************
+//					
+					while ((line = br.readLine())!=null) {
+						if (line.startsWith("*") || line.startsWith("-"))
+							continue;
+						else if (line.startsWith(">>")) {
+							if (!line.equals(">> SAT")) {
+								System.err.println("Not SAT: ("+solutionFile.getName()+")" + line);
+								br.close();
+								return;
+							}				
+						} else if (line.contains("->")) {
+							Pattern pat = Pattern.compile("([^\\s]*?)\\s+:\\s+(.*?)->\\s+(.*)");
+							Matcher mat = pat.matcher(line);
+							if (!mat.matches() || mat.groupCount()!=3) {
+								br.close();
+								throw new Error("Unexpected line format: " + line);
+							}
+							String varname = mat.group(1);
+							String vartype = mat.group(2);
+							//TODO handle array and float types
+							String varvalue = mat.group(3);
+							solutionMap.put(varname, varvalue);
 						}
 					}
+					br.close();
+					return;
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
 				}

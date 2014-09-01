@@ -83,7 +83,7 @@ public final class Config {
         appPkgName = props.getProperty("a3t.pkg", null);
         mainActivity = props.getProperty("a3t.mainact", null);
 		activityArgs = props.getProperty("a3t.actargs");
-        z3Path = props.getProperty("env.Z3_BIN", "/opt/z3/bin/z3");
+        z3Path = props.getProperty("env.Z3_BIN", "/opt/Z3-str_20140720/Z3-str.py");
         maxExecs = Integer.valueOf(props.getProperty("a3t.max.iters", String.valueOf(DEFAULT_MAX_EXECS)));
         outDir = props.getProperty("a3t.results.dir", "./results/");
         emulatorPort = props.getProperty("a3t.port", DEFAULT_EMU_PORT);
