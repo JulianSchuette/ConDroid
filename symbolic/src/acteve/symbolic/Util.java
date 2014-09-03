@@ -781,7 +781,6 @@ public class Util
 	
 	/**
 	 * Returns the value which must be enforced for the given variable, according to the current solution.
-	 * TODO Variable name is not globally unique.
 	 * 
 	 */
 	public static int getSolution_int(Object local) {
@@ -814,6 +813,21 @@ public class Util
 		}
 	}
 
+	
+	public static java.lang.String getSolution_string(Object local) {
+		System.out.println("request for new solution for "+local);
+		readLatestSolution();
+		if (solutionMap.containsKey(local.toString())) {
+			System.out.println(local + " -> " + solutionMap.get(local.toString()));
+			return solutionMap.get(local.toString());
+		} else {
+			System.err.println("Hm. Solution for " + local + " required but not available. This is the current solutionMap: ");
+			for (String key: solutionMap.keySet()) {
+				System.out.println("   " + key + " : " + solutionMap.get(key));
+			}
+			return "";	
+		}
+	}
 	
 	/**
 	 * Check if /sdcard/solution.txt has been modified since last time and reload solutions.

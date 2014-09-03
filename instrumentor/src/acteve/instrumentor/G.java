@@ -138,6 +138,7 @@ public class G
     static final SootMethodRef only_write;
     static final SootMethodRef getSolution_int;	//Method which returns a new solution for a given variable
     static final SootMethodRef getSolution_long;	//Method which returns a new solution for a given variable
+    static final SootMethodRef getSolution_string;	//Method which returns a new solution for a given variable
 
     static private final java.io.PrintWriter printer = new java.io.PrintWriter(System.out);
 
@@ -224,6 +225,7 @@ public class G
 		only_write = symUtilClass.getMethod("void only_write(int)").makeRef();
 		getSolution_int = symUtilClass.getMethod("int getSolution_int("+OBJECT_CLASS_NAME+")").makeRef();
 		getSolution_long = symUtilClass.getMethod("long getSolution_long("+OBJECT_CLASS_NAME+")").makeRef();
+		getSolution_string = symUtilClass.getMethod("java.lang.String getSolution_string("+OBJECT_CLASS_NAME+")").makeRef();
 
 		symOpsClass = SymOpsClassGenerator.generate();
     }

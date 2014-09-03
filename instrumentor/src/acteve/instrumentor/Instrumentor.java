@@ -803,6 +803,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			G.assign(leftOp_sym, symLocalfor(rightOp));
 		} 
 
+		//Fields defined in application will be considered by symbolic rw/ww ops
 		if (doRW(fld)) {
 			int fld_id = fieldSigNumberer.getOrMakeId(fld);
 			if (rwKind == RWKind.ID_FIELD_WRITE) {
@@ -916,7 +917,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 		SootField fld = rightOp.getField();
 		Local leftOp_sym = localsMap.get(leftOp);
-		if (!Main.isInstrumented(fld.getDeclaringClass()) && ! fld.getDeclaringClass().getName().contains("android.os")) {
+		if (!Main.isInstrumented(fld.getDeclaringClass()) && !fld.getDeclaringClass().getName().contains("android.os")) { //TODO Remove android.os specific test
 			if(leftOp_sym != null)
 				G.assign(leftOp_sym, NullConstant.v());
 			return;
@@ -961,6 +962,13 @@ public class Instrumentor extends AbstractStmtSwitch {
 			} else if (rwKind == RWKind.EXPLICIT_WRITE) {
 				// TODO
 			}
+        }
+
+		//Overwrite concrete value with solution
+		System.out.println("Should be field solution name :" + toSymbolicVarName(fld));
+		if (fld.getName().contains("BOARD")) { //TODO Limit here to a) fields to be instrumented, b) of type String
+			System.out.println("Overwriting BOARD name: " + fld.getName());
+			G.editor.insertStmtAfter(Jimple.v().newAssignStmt(leftOp, G.staticInvokeExpr(G.getSolution_string, StringConstant.v(toSymbolicVarName(fld)))));
 		}
 	}
 
