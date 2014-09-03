@@ -173,6 +173,8 @@ public class Path
 	            line = reader.readLine();
 	            c = line.charAt(0);
 	        }
+	        
+	        //Invert last condition
 	        smtWriter.println("(assert (not "+line+"))");
 	
 	        smtWriter.println("(check-sat)");

@@ -92,6 +92,4 @@ public class StringConstant extends StringExpression implements Constant
 		System.out.println("CONTAINSCONTAINS. StringConstant._contains called with expression " + e.getClass().getName() + " , " + e.exprString() + " , " + e.toYicesString());
 		return new BinaryBooleanExpression(new BooleanBinaryOperator("Contains"), this, e);
 	}
-
-
 }

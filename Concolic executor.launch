@@ -7,5 +7,6 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="acteve.explorer.Main"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/home/julian/workspace/acteve/sootOutput/concolicexample.apk"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="acteve"/>
 </launchConfiguration>

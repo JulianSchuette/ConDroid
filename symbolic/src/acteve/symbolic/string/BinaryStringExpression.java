@@ -23,9 +23,7 @@ public class BinaryStringExpression extends StringExpression implements String
     
     public java.lang.String toYicesString()
     {
-    	System.err.println("toYicesString in BinaryStringExpr " + op.toYicesString() + " " + left.toString() + " " + right.toString());
-    	return "!!";
-//		return super.toYicesString(op.toYicesString(left.exprString(), right.exprString())); // +"[" + seed + "]";
+    	return op.toYicesString(left.exprString(), right.exprString());
     }
 
 	@Override
