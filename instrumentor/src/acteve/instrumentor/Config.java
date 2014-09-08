@@ -31,9 +31,14 @@
 
 package acteve.instrumentor;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 
 public final class Config {
@@ -49,6 +54,7 @@ public final class Config {
 	public final String fldsBlacklist;
 	public final String methsWhitelist;
 	public final boolean instrAllFields;
+	public final Set<String> fieldsToModel;
 
 	private static Config config;
 
@@ -89,6 +95,19 @@ public final class Config {
 		methsWhitelist = props.getProperty("a3t.whitemeths.file", null);
 		instrAllFields = Boolean.getBoolean(props.getProperty("a3t.instrflds.all"));
 
+		fieldsToModel = new HashSet<String>();
+		File fieldModels = new File("fieldsToModel.txt");
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(fieldModels));
+			String line = "";
+			while ((line = br.readLine())!=null) {
+				fieldsToModel.add(line);
+			}
+			br.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+				
 		if (Main.DEBUG) {
 			System.out.println("a3t.in.jars=" + inJars);
 			System.out.println("a3t.out.jar=" + outJar);

@@ -1,0 +1,17 @@
+public class com.example.de.fhg.aisec.concolicexample.Test$VERSION extends java.lang.Object
+{
+    public static final java.lang.String bla;
+    final com.example.de.fhg.aisec.concolicexample.Test this$0;
+
+    public void <init>(com.example.de.fhg.aisec.concolicexample.Test)
+    {
+        com.example.de.fhg.aisec.concolicexample.Test$VERSION $r0;
+        com.example.de.fhg.aisec.concolicexample.Test $r1;
+
+        $r0 := @this: com.example.de.fhg.aisec.concolicexample.Test$VERSION;
+        $r1 := @parameter0: com.example.de.fhg.aisec.concolicexample.Test;
+        $r0.<com.example.de.fhg.aisec.concolicexample.Test$VERSION: com.example.de.fhg.aisec.concolicexample.Test this$0> = $r1;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+}

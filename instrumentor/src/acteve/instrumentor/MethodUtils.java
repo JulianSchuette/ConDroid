@@ -28,6 +28,7 @@
 */
 package acteve.instrumentor;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,17 +38,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import soot.Body;
 import soot.Kind;
 import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.jimple.Jimple;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.tagkit.AnnotationTag;
 import soot.tagkit.GenericAttribute;
+import soot.tagkit.InnerClassTag;
 import soot.tagkit.Tag;
 import soot.tagkit.VisibilityAnnotationTag;
 import soot.util.HashChain;
@@ -583,4 +587,59 @@ public class MethodUtils {
 		}
 		dg.plot(prefix + "_cg.dot");
 	}
+	
+    /**
+     * Creates a new class with empty static initializer block, adds it to Scene and returns it.s
+     * @param name Name of the class.
+     * @return
+     */
+    public static SootClass createClass(String name) {
+		System.out.println("Creating class " + name);
+    	String outerName = null;
+    	SootClass outerClass = null;
+		if (name.contains("$")) {
+    		outerName = name.substring(0,name.lastIndexOf("$"));
+    		outerClass = createClass(outerName);
+    	}
+			
+    	SootClass c = Scene.v().loadClassAndSupport(name);
+    	c.setSuperclass(Scene.v().getSootClass("java.lang.Object"));
+    	c.setModifiers(Modifier.PUBLIC);
+    	
+    	//TODO Generate method bodies. see com.example.de.fhg.aisec.concolicexample.Test$VERSION.jimple
+//		SootMethod clinitMethod = null;
+//		  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
+//			//Add static initializer
+//		    clinitMethod = new soot.SootMethod("<clinit>", new ArrayList(), soot.VoidType.v(), soot.Modifier.STATIC, new ArrayList<SootClass>());                
+//		    clinitMethod.setActiveBody(Jimple.v().newBody(clinitMethod));
+//		    c.addMethod(clinitMethod);
+//		} else {
+//		    clinitMethod = c.getMethod("<clinit>", new ArrayList(), soot.VoidType.v());
+//		}		  
+//		
+//		SootMethod initMethod = null;
+//		  if (!c.declaresMethod("<init>", new ArrayList(), soot.VoidType.v())) {
+//			//Add static initializer
+//			  initMethod = new soot.SootMethod("<init>", new ArrayList(), soot.VoidType.v(), soot.Modifier.PUBLIC, new ArrayList<SootClass>());                
+//			  initMethod.setActiveBody(Jimple.v().newBody(initMethod));
+//		    c.addMethod(initMethod);
+//		} else {
+//			initMethod = c.getMethod("<init>", new ArrayList(), soot.VoidType.v());
+//		}		  
+			
+			
+		
+    	
+    	if (outerName!=null && outerClass!=null) {
+    		outerClass.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
+    		c.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
+    	}
+    	c.setApplicationClass();	
+		
+		Scene.v().addBasicClass(c.getName(), SootClass.BODIES);
+		Scene.v().forceResolve(c.getName(), SootClass.BODIES);
+		
+
+		return c;
+    }
 }

@@ -46,7 +46,6 @@ import java.util.Map;
 
 import soot.ArrayType;
 import soot.Body;
-import soot.BooleanType;
 import soot.Immediate;
 import soot.IntType;
 import soot.Local;
@@ -101,8 +100,8 @@ import soot.tagkit.SourceFileTag;
 import soot.tagkit.SourceLineNumberTag;
 import soot.tagkit.SourceLnPosTag;
 import soot.tagkit.StringTag;
+import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
-import soot.toolkits.graph.pdg.EnhancedUnitGraph;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.util.Chain;
 
@@ -850,17 +849,17 @@ public class Instrumentor extends AbstractStmtSwitch {
 	 */
 	private SootField retrieveSymbolicStringField(SootField fld) {
 		SootClass c = null;
-		if (!Scene.v().containsClass("models."+fld.getDeclaringClass().getName())) {
-			//Create fld class, if necessary
-			c = new SootClass("models."+fld.getDeclaringClass().getName());
-			c.setApplicationClass();					
+		String modelledClassName = "models."+fld.getDeclaringClass().getName();
+		
+		if (!Scene.v().containsClass(modelledClassName)) {
+			c = MethodUtils.createClass(modelledClassName);
 		} else {
-			c = Scene.v().getSootClass("models."+fld.getDeclaringClass().getName());
+			c = Scene.v().getSootClass(modelledClassName);
 		}
 		SootField symField = new SootField(fld.getName()+"$sym", G.EXPRESSION_TYPE, fld.getModifiers());
 		c.addField(symField);
 		
-		//Assign non-clinit Method value to field
+		//Assign non-clinit Method value to field TODO Possibly unneeded. Already created by G.createClass()
 		SootMethod clinitMethod = null;
 		  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
 			//Add static initializer
@@ -917,7 +916,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 		SootField fld = rightOp.getField();
 		Local leftOp_sym = localsMap.get(leftOp);
-		if (!Main.isInstrumented(fld.getDeclaringClass()) && !fld.getDeclaringClass().getName().contains("android.os")) { //TODO Remove android.os specific test
+		if (!Main.isInstrumented(fld.getDeclaringClass()) && !Config.g().fieldsToModel.contains(fld.getDeclaringClass().getName())) {
 			if(leftOp_sym != null)
 				G.assign(leftOp_sym, NullConstant.v());
 			return;
@@ -1272,7 +1271,7 @@ public class Instrumentor extends AbstractStmtSwitch {
     }
 	
 	private List<Unit> generateUseDefChain(Body body, Unit u, Local l) {
-		UnitGraph unitGraph = new EnhancedUnitGraph(body);
+		UnitGraph unitGraph = new BriefUnitGraph(body);
 		SimpleLocalDefs simpleLocalDefs = new SimpleLocalDefs(unitGraph);
 		List<Unit> defUnits = simpleLocalDefs.getDefsOfAt(l, u);
 		return defUnits;
