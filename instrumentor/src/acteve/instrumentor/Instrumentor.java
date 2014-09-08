@@ -608,8 +608,11 @@ public class Instrumentor extends AbstractStmtSwitch {
 	 */
 	private String toSymbolicVarName(SootField fld) {
 		String t = fld.getType().toString();
-		if (t.equals("java.lang.String"))
+		if (t.equals("java.lang.String")) {
 			t = "X";
+		}  else if (t.equals("int")) {
+			t = "I";
+		} //TODO handle more types
 		String name = fld.getSignature();
 		name = name.replace('.', '_');
 		name = name.replace(':', '_');
