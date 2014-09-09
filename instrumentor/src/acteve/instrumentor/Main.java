@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.ZipException;
 
@@ -72,7 +73,7 @@ import soot.util.Chain;
 
 public class Main extends SceneTransformer {
 	private static Config config;
-	private static List<SootClass> classesToInstrument = new ArrayList<SootClass>();
+	private static Set<SootClass> classesToInstrument = new HashSet<SootClass>();
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	static boolean DEBUG = true;
@@ -327,7 +328,7 @@ public class Main extends SceneTransformer {
 				}
 			}
 			
-			classesToInstrument = new ArrayList<SootClass>();
+			classesToInstrument = new HashSet<SootClass>();
 			for (List<SootClass> path:pathsToGoal.values()) {
 				classesToInstrument.addAll(path);
 			}			

@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 
 import soot.ArrayType;
 import soot.Body;
@@ -181,7 +182,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		instrAllFields = _instrAllFields;
 	}
 
-	public void instrument(List<SootClass> classes) {
+	public void instrument(Set<SootClass> classes) {
 		for (SootClass klass : classes) {
 			klass.setApplicationClass();
 			addSymbolicFields(klass);
@@ -225,7 +226,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 			if(addSymLocationFor(origField.getType())) {
 				SootField symField = new SootField(origField.getName()+"$sym",
 												   G.EXPRESSION_TYPE, origField.getModifiers());
-				c.addField(symField);
+				if (!c.declaresFieldByName(symField.getName()))
+					c.addField(symField);
 				fieldsMap.put(origField, symField);
 			}
 
@@ -233,7 +235,8 @@ public class Instrumentor extends AbstractStmtSwitch {
             if(rwKind == RWKind.ID_FIELD_WRITE && doRW(origField)){
 				SootField idField = new SootField(origField.getName()+"$a3tid", IntType.v(), origField.getModifiers());
 				System.out.println("Adding field " + idField.getName() + " for " + origField.getName() + " in " + c.getName());
-				c.addField(idField);
+				if (!c.declaresFieldByName(idField.getName()))
+					c.addField(idField);
 				idFieldsMap.put(origField, idField);
             }
 		}
