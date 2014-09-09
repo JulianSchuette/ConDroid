@@ -234,7 +234,6 @@ public class SymOpsClassGenerator
 		}
 		SootMethod method = new SootMethod(opMethodName, paramTypesList, G.EXPRESSION_TYPE, mod);
 		System.out.println("Adding " + method.getName());
-		Thread.dumpStack();
 		klass.addMethod(method);	
 		G.addBody(method);
 

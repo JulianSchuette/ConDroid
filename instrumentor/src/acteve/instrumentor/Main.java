@@ -205,12 +205,12 @@ public class Main extends SceneTransformer {
 
 		Scene.v().setEntryPoints(Collections.singletonList(dummyMain));
 		Scene.v().addBasicClass(dummyMain.getDeclaringClass().getName(), SootClass.BODIES);
-
 		// All packages which are not already in the app's transitive hull but
 		// are required by the injected code need to be marked as dynamic.
 		Options.v().set_dynamic_package(
-				Arrays.asList(new String[] { "acteve.symbolic.", "models.","com.android", "org.json", "org.apache", "org.w3c",
+				Arrays.asList(new String[] { "acteve.symbolic.", "com.android", "models.", "org.json", "org.apache", "org.w3c",
 						"org.xml", "junit", "javax", "javax.crypto"}));
+
 
 		Scene.v().loadNecessaryClasses();
 		
@@ -266,9 +266,6 @@ public class Main extends SceneTransformer {
 			
 			PackManager.v().getPack("cg").apply();
 
-			
-			HashSet<SootClass> classesAlongTheWay = new HashSet<SootClass>();
-			
 			//1)
 			HashSet<SootMethod> entryPoints = new HashSet<SootMethod>(MethodUtils.getCalleesOf(dummyMain));	
 			
@@ -286,43 +283,57 @@ public class Main extends SceneTransformer {
 				}
 			}
 
-			for (SootMethod m : entryPoints){
-				System.out.println("Entrypoint: " + m.getSignature());
+			if (DEBUG) {
+				for (SootMethod m : entryPoints){
+					System.out.println("Entrypoint: " + m.getSignature());
+				}
 			}
 
 			//2)
 			List<SootMethod> goalMethods = MethodUtils.findReflectiveLoadingMethods(entryPoints);
-			System.out.println("Found the following goal methods:");
-			for (SootMethod m : goalMethods){
-				System.out.println("Signature: " + m.getSignature());
+			if (DEBUG) {
+				System.out.println("Found the following goal methods:");
+				for (SootMethod m : goalMethods){
+					System.out.println("Signature: " + m.getSignature());
+				}
 			}
 			
 			//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
+			HashMap<SootMethod, List<SootClass>> pathsToGoal = new HashMap<SootMethod, List<SootClass>>();
 			for (SootMethod goalMeth : goalMethods){
+				List<SootClass> path = new ArrayList<SootClass>();
 				//add the declaring class because developers might inherit & extend from base class loaders
 				if(!excludePat.matcher(goalMeth.getDeclaringClass().getName()).matches())
-					classesAlongTheWay.add(goalMeth.getDeclaringClass());
+					path.add(goalMeth.getDeclaringClass());
 				//and all the classes on the way to the call:
 				CallGraph subGraph = MethodUtils.findTransitiveCallersOf(goalMeth);
 				Iterator<MethodOrMethodContext> methodsAlongThePath = subGraph.sourceMethods();
 				while (methodsAlongThePath.hasNext()) {
 					SootMethod methodAlongThePath = methodsAlongThePath.next().method();
 					if(!excludePat.matcher(methodAlongThePath.getDeclaringClass().getName()).matches()){
-						classesAlongTheWay.add(methodAlongThePath.getDeclaringClass());
+						path.add(methodAlongThePath.getDeclaringClass());
+					}
+				}
+				pathsToGoal.put(goalMeth, path);
+			}
+			
+			if (DEBUG) {
+				for (SootMethod goal:pathsToGoal.keySet()) {
+					System.out.println(pathsToGoal.get(goal).size() + " Classes along path to " + goal.getSignature());
+					List<SootClass> along = pathsToGoal.get(goal);
+					for (SootClass c:along) {
+						System.out.println("  " + c.getName());
 					}
 				}
 			}
 			
-			classesToInstrument = new ArrayList<SootClass>(classesAlongTheWay);		
-//			classesToInstrument.add(Scene.v().getSootClass("android.os.Build"));
-			
-			if(DEBUG){
-				System.out.println("Found " + classesAlongTheWay.size() + " classes that declare methods on the path to reflection, i.e. that need to be instrumented.");
-				for (SootClass c : classesToInstrument)
-					System.out.println("Class: " + c.getName());
-			}
+			classesToInstrument = new ArrayList<SootClass>();
+			for (List<SootClass> path:pathsToGoal.values()) {
+				classesToInstrument.addAll(path);
+			}			
 		}
 		// -------------------------------- END RAFAEL ----------------------------------------------
+
 		
 		if (!SKIP_ALL_INSTRUMENTATION) {
 			try {

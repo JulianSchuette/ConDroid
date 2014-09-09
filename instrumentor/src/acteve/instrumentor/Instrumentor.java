@@ -859,9 +859,15 @@ public class Instrumentor extends AbstractStmtSwitch {
 		} else {
 			c = Scene.v().getSootClass(modelledClassName);
 		}
-		SootField symField = new SootField(fld.getName()+"$sym", G.EXPRESSION_TYPE, fld.getModifiers());
-		c.addField(symField);
-		
+		String fldName = fld.getName()+"$sym";
+		SootField symField = null;
+		if (c.declaresFieldByName(fldName)) {
+			symField = c.getFieldByName(fldName);
+		} else {
+			symField = new SootField(fldName, G.EXPRESSION_TYPE, fld.getModifiers());
+			c.addField(symField);
+		}		
+			
 		//Assign non-clinit Method value to field TODO Possibly unneeded. Already created by G.createClass()
 		SootMethod clinitMethod = null;
 		  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
