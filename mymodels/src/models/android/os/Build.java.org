@@ -5,6 +5,7 @@ import acteve.symbolic.integer.*;
 public class Build
 {
 	public static String BOARD = "gotcha";
+	public static String HOST = "bla";
 	
 	class VERSION
 	{

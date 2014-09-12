@@ -34,16 +34,25 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import soot.Body;
 import soot.Kind;
+import soot.Local;
 import soot.MethodOrMethodContext;
+import soot.MethodSource;
+import soot.PatchingChain;
+import soot.RefType;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.Type;
+import soot.Unit;
+import soot.VoidType;
+import soot.javaToJimple.LocalGenerator;
 import soot.jimple.Jimple;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.callgraph.CallGraph;
@@ -54,6 +63,7 @@ import soot.tagkit.GenericAttribute;
 import soot.tagkit.InnerClassTag;
 import soot.tagkit.Tag;
 import soot.tagkit.VisibilityAnnotationTag;
+import soot.util.Chain;
 import soot.util.HashChain;
 import soot.util.dot.DotGraph;
 import soot.util.dot.DotGraphEdge;
@@ -602,10 +612,16 @@ public class MethodUtils {
     		outerClass = createClass(outerName);
     	}
 			
+    	Scene.v().addBasicClass(name);
     	SootClass c = Scene.v().loadClassAndSupport(name);
     	c.setSuperclass(Scene.v().getSootClass("java.lang.Object"));
     	c.setModifiers(Modifier.PUBLIC);
+		if (name.contains("$")) {
+			c.setOuterClass(outerClass);
+		}    	
+    	Body constr = createDefaultConstructor(c);    	
     	
+    	System.out.println("Created constr: " + constr.toString());
     	//TODO Generate method bodies. see com.example.de.fhg.aisec.concolicexample.Test$VERSION.jimple
 //		SootMethod clinitMethod = null;
 //		  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
@@ -641,5 +657,92 @@ public class MethodUtils {
 		
 
 		return c;
+    }
+    
+    /**
+     * 
+     * Default:
+     * public class com.example.de.fhg.aisec.concolicexample.Test extends java.lang.Object
+{
+
+    public void <init>()
+    {
+        com.example.de.fhg.aisec.concolicexample.Test $r0;
+
+        $r0 := @this: com.example.de.fhg.aisec.concolicexample.Test;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+}
+
+     * 
+     * 
+     * Default Inner:
+     * public class com.example.de.fhg.aisec.concolicexample.Test$VERSION extends java.lang.Object
+{
+    public static final java.lang.String bla;
+    final com.example.de.fhg.aisec.concolicexample.Test this$0;
+
+    public void <init>(com.example.de.fhg.aisec.concolicexample.Test)
+    {
+        com.example.de.fhg.aisec.concolicexample.Test$VERSION $r0;
+        com.example.de.fhg.aisec.concolicexample.Test $r1;
+
+        $r0 := @this: com.example.de.fhg.aisec.concolicexample.Test$VERSION;
+        $r1 := @parameter0: com.example.de.fhg.aisec.concolicexample.Test;
+        $r0.<com.example.de.fhg.aisec.concolicexample.Test$VERSION: com.example.de.fhg.aisec.concolicexample.Test this$0> = $r1;
+        specialinvoke $r0.<java.lang.Object: void <init>()>();
+        return;
+    }
+}
+
+     * @return
+     */
+    
+    public static Body createDefaultConstructor(SootClass c) {
+    	List<Type> params = new LinkedList<Type>();
+    	if (c.isInnerClass()) {
+    		params.add(RefType.v(c.getOuterClass()));
+    	}
+    	SootMethod m; 
+    	if (c.declaresMethod("<init>", params)) {
+    		m = c.getMethod("<init>", params);
+    	} else {
+        	m = new SootMethod("<init>", params, VoidType.v(), Modifier.PUBLIC);
+    		c.addMethod(m);
+    	}
+    	final Body b = Jimple.v().newBody(m);
+    	if (m.getSource()==null) {
+        	m.setSource(new MethodSource() {
+        		public Body getBody(SootMethod m, String phaseName) {
+            		m.setActiveBody(b);
+            		return m.getActiveBody();
+            	}
+        	});
+    	}
+//    	m.setActiveBody(b);
+    	PatchingChain<Unit> units = b.getUnits();
+    	Chain<Local> locals = b.getLocals();
+    	LocalGenerator locGen = new LocalGenerator(b);
+
+    	// com.example.de.fhg.aisec.concolicexample.Test $r0;
+    	Local locThis = locGen.generateLocal(RefType.v(c));
+    	
+    	// $r0 := @this: com.example.de.fhg.aisec.concolicexample.Test;
+    	units.add(Jimple.v().newIdentityStmt(locThis, Jimple.v().newThisRef(RefType.v(c))));
+    	
+    	if (c.isInnerClass()) {
+    		SootClass co = c.getOuterClass();
+    		Local locOuterThis = locGen.generateLocal(RefType.v(co));
+    		units.add(Jimple.v().newIdentityStmt(locOuterThis, Jimple.v().newParameterRef(RefType.v(c), 0)));
+    	}
+    	
+    	// specialinvoke $r0.<java.lang.Object: void <init>()>();
+    	units.add(Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(locThis, c.getSuperclass().getMethod("<init>", new ArrayList<Type>()).makeRef())));
+    	
+    	// return
+    	units.add(Jimple.v().newReturnVoidStmt());
+    	    	
+    	return b;
     }
 }

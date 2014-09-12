@@ -380,8 +380,6 @@ public class Instrumentor extends AbstractStmtSwitch {
         for (Unit u : units) {
             if (u instanceof IfStmt) {
                 conds.add((IfStmt) u);
-                System.out.println("Adding condition to handle " + u.toString());
-                System.out.println("methodSigAndFileStr is " + methodSigAndFileStr);
                 String str = getStr(u, methodSigAndFileStr);
                 condIdStrList.add(str);
             } else if (u instanceof LookupSwitchStmt || u instanceof TableSwitchStmt) {
@@ -390,7 +388,7 @@ public class Instrumentor extends AbstractStmtSwitch {
         }
 
         if (conds.size() <= 0) {
-            //no branches in the method
+            //no branches in method -> done
             return;
         }
 
@@ -403,7 +401,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 				System.out.println("Only constants are compared. No need for symbolic tracing " + condExp.toString() + ". Skipping");
 				continue;
 			}
-			//Check UD chain for references to String methods
+			//Check UD chain for references to String methods TODO UD chain is only intraprocedural. Extend to interproc. backwards propagation
 			Value realV = null;
 			if (condExp.getOp1() instanceof Local) {
 				List<Unit> defs = generateUseDefChain(body, ifStmt, (Local) condExp.getOp1());
