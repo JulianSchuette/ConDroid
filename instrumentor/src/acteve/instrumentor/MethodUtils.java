@@ -646,10 +646,10 @@ public class MethodUtils {
 			
 		
     	
-    	if (outerName!=null && outerClass!=null) {
-    		outerClass.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
-    		c.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
-    	}
+//    	if (outerName!=null && outerClass!=null) {
+//    		outerClass.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
+//    		c.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
+//    	}
     	c.setApplicationClass();	
 		
 		Scene.v().addBasicClass(c.getName(), SootClass.BODIES);
