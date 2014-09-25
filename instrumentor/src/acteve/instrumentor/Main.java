@@ -216,14 +216,26 @@ public class Main extends SceneTransformer {
 		Scene.v().loadNecessaryClasses();
 		
 		//Register all application classes for instrumentation
-		//System.out.println("Application classes");
 		Chain<SootClass> appclasses = Scene.v().getApplicationClasses();
-		for (SootClass c:appclasses) {
-			//System.out.println("   class: " + c.getName() + " - " + c.resolvingLevel());
-			classesToInstrument.add(c);
-		}
+		classesToInstrument.addAll(appclasses);
 
-		PackManager.v().getPack("cg").apply();
+		// ------------- FOR DEBUGGING ONLY --------------------------
+//		Collection<Pack> allPacks = PackManager.v().allPacks();
+//		Pack cgPack = PackManager.v().getPack("cg");
+//		Iterator<Transform> cgPackIt = cgPack.iterator();
+//		while (cgPackIt.hasNext()) {
+//			Transform t = cgPackIt.next();
+//			System.out.println("    " +  t.getTransformer());
+//		}
+//		
+//		for (Pack p: allPacks) {
+//			System.out.println(p.getPhaseName());
+//		}
+//		if (1>0)
+//			return;
+		// ------------- FOR DEBUGGING ONLY --------------------------
+		
+//		PackManager.v().getPack("cg").apply();
 		
 		//Collect additional classes which will be injected into the app
 		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
@@ -243,8 +255,8 @@ public class Main extends SceneTransformer {
 		
 		assert lcMethodToExtend!=null:"No default activity found";
 		
-		if (!SKIP_CG_EXTENTION) {
-			PackManager.v().getPack("cg").add(new Transform("cg.android", new AndroidCGExtender()));
+		if (!SKIP_CG_EXTENTION) {			
+			PackManager.v().getPack("wjtp").add(new Transform("wjtp.android", new AndroidCGExtender()));
 		}
 
 		if (!SKIP_CONCOLIC_INSTRUMENTATION && !SKIP_ALL_INSTRUMENTATION) {

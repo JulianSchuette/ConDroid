@@ -25,7 +25,7 @@
   The views and conclusions contained in the software and documentation are those
   of the authors and should not be interpreted as representing official policies, 
   either expressed or implied, of the FreeBSD Project.
-*/
+ */
 package acteve.instrumentor;
 
 import java.io.IOException;
@@ -62,8 +62,7 @@ import soot.jimple.toolkits.callgraph.Edge;
 public class AndroidCGExtender extends SceneTransformer {
 
 	@Override
-	protected void internalTransform(String phaseName,
-			Map<String, String> options) {
+	protected void internalTransform(String phaseName, Map<String, String> options) {
 		CallGraph cg = Scene.v().getCallGraph();
 
 		assert cg != null : "Call Graph not available";
@@ -72,87 +71,52 @@ public class AndroidCGExtender extends SceneTransformer {
 				if (me.hasActiveBody()) {
 					Body b = me.getActiveBody();
 					for (Unit u : b.getUnits()) {
-						if (u.toString().contains(
-								"android.view.View findViewById(int)")) {
-							System.out.println("Found a call to findViewById: "
-									+ u.toString());
+						if (u.toString().contains("android.view.View findViewById(int)")) {
+							System.out.println("Found a call to findViewById: " + u.toString());
 
 							// Extract constant parameter from findViewByID
 							if (u instanceof AssignStmt) {
-								Value val = ((AssignStmt) u).getInvokeExpr()
-										.getArg(0);
+								Value val = ((AssignStmt) u).getInvokeExpr().getArg(0);
 								if (val instanceof IntConstant) {
 									int id = ((IntConstant) val).value;
 
-									System.out
-											.println("Now we need to find out which class is registered for "
-													+ "0x"
-													+ Integer.toHexString(id)
-													+ " ("
-													+ id
-													+ "). Is referenced from "
-													+ b.getMethod()
-															.getSignature());
+									System.out.println("Now we need to find out which class is registered for " + "0x" + Integer.toHexString(id) + " (" + id + "). Is referenced from "
+											+ b.getMethod().getSignature());
 
 									// retrieve class mapped to id
 									try {
-										HashMap<Integer, SootClass> id2cls = Main.ih
-												.getClassOfViewId();
-										SootClass clazz = id2cls
-												.get(new Integer(id));
-										System.out.println("This is my class: "
-												+ clazz);
+										HashMap<Integer, SootClass> id2cls = Main.ih.getClassOfViewId();
+										SootClass clazz = id2cls.get(new Integer(id));
+										System.out.println("This is my class: " + clazz);
 										if (clazz != null) {
 											// insert implicit edge into CG
 											SootMethod constr = null;
 											Edge newEdge = null;
 											try {
-												constr = clazz
-														.getMethod("void <init>(android.content.Context,android.util.AttributeSet,int)");
-												newEdge = new Edge(
-														b.getMethod(), u,
-														constr, Kind.CLINIT);
-												System.out
-														.println("Extending CG by "
-																+ b.getMethod()
-																		.getSignature()
-																+ " --> "
-																+ constr.getSignature());
+												constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet,int)");
+												newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
+												System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
 												cg.addEdge(newEdge);
 											} catch (RuntimeException rte) {
 												// Method does not exist
 
 											}
 											try {
-												constr = clazz
-														.getMethod("void <init>(android.content.Context,android.util.AttributeSet)");
-												newEdge = new Edge(
-														b.getMethod(), u,
-														constr, Kind.CLINIT);
-												System.out
-														.println("Extending CG by "
-																+ b.getMethod()
-																		.getSignature()
-																+ " --> "
-																+ constr.getSignature());
+												constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet)");
+												newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
+												System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
 												cg.addEdge(newEdge);
 											} catch (RuntimeException rte) {
 												// method does not exist
 											}
 										} else {
-											System.err
-													.println("Could not find class for view id "
-															+ ((IntConstant) val).value);
+											System.err.println("Could not find class for view id " + ((IntConstant) val).value);
 										}
-									} catch (XPathExpressionException
-											| SAXException | IOException
-											| ParserConfigurationException e) {
+									} catch (XPathExpressionException | SAXException | IOException | ParserConfigurationException e) {
 										e.printStackTrace();
 									}
 								} else {
-									System.err
-											.println("Don't know how to handle non-constant parameter :"
-													+ u.toString());
+									System.err.println("Don't know how to handle non-constant parameter :" + u.toString());
 								}
 							}
 						}

@@ -678,28 +678,19 @@ public class InstrumentationHelper {
 	}
 	
 	public SootMethod getDefaultOnCreate() {
-		List<SootMethod> entrypoints = Scene.v().getEntryPoints();
-		SootMethod result = null;
-		List<SootMethod> realEntryPoints = new ArrayList<SootMethod>();
-		realEntryPoints.addAll(entrypoints);
-		ListIterator<SootMethod> entryIt = realEntryPoints.listIterator();
-		while (entryIt.hasNext()){
-			SootMethod m = entryIt.next();
-			if (m.getSignature().equals("<dummyMainClass: void dummyMainMethod()>")) {
-				//When in dummyMain, add "real" entrypoints
-				for (SootMethod more:MethodUtils.getCalleesOf(m)) {
-					entryIt.add(more);
-					entryIt.previous();
+		SootMethod defaultOnCreate = null;		
+		for (String mainAct:mainActivities) {
+			if (Scene.v().containsClass(mainAct)) {
+				SootClass mainClass = Scene.v().getSootClass(mainAct);
+				if (mainClass.declaresMethod("void onCreate(android.os.Bundle)")) {
+					return mainClass.getMethod("void onCreate(android.os.Bundle)");
 				}
-			}
-			if (isMainActivity(m.getDeclaringClass().getName()) && m.getSubSignature().equals("void onCreate(android.os.Bundle)"))
-			{
-				result = m;
-				break;
+			} else {
+				throw new RuntimeException("Unexpected: Main activity class not present in Scene: " + mainAct);
 			}
 		}
 		
-		return result;
+		return defaultOnCreate;
 	}
 	
 	/**
