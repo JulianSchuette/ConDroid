@@ -40,6 +40,7 @@ public class BooleanBinaryOperator extends BinaryOperator
     public Expression apply(Expression left, Expression right)
     {
 		if(left instanceof Constant && right instanceof Constant){
+			System.out.println("Going wrong! " + this + " called with two constants: " + left + " & " + right);
 			assert false;
 		}
 		return new BinaryBooleanExpression(this, left, right);

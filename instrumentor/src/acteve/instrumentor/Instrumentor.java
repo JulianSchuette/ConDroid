@@ -397,6 +397,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			IfStmt ifStmt = conds.get(i);
 			int absCondId = entryCondId + i;
 			ConditionExpr condExp = (ConditionExpr) ifStmt.getCondition();
+			System.out.println("Condition id " + absCondId + " : " + condExp.toString());
 			if (condExp.getOp1() instanceof Constant && condExp.getOp2() instanceof Constant) {
 				System.out.println("Only constants are compared. No need for symbolic tracing " + condExp.toString() + ". Skipping");
 				continue;
@@ -440,6 +441,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			System.out.println("Value v: " + v.toString());
 			Stmt symAsgnStmt = G.jimple.newAssignStmt(symVar, v);
 
+			System.out.println("Assume with symVar " + symVar + " condId " + condId);
 			Stmt assumeFlsStmt, assumeTruStmt;
 			assumeFlsStmt = G.jimple.newInvokeStmt(G.staticInvokeExpr(G.assume,
 				Arrays.asList(new Immediate[]{symVar, condId, IntConstant.v(0)})));
@@ -1186,8 +1188,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 		Immediate op1 = (Immediate) binExpr.getOp1();
         Immediate op2 = (Immediate) binExpr.getOp2();
 		
-		if(!(op1.getType() instanceof PrimType))
-			return null;
+        //Also support complex objects:
+//		if(!(op1.getType() instanceof PrimType))
+//			return null;
 
 		String binExprSymbol = binExpr.getSymbol().trim();
 		if (negate) {
@@ -1203,8 +1206,14 @@ public class Instrumentor extends AbstractStmtSwitch {
 		Type op2Type = op2.getType();
 		op2Type = op2Type instanceof RefLikeType ? RefType.v("java.lang.Object") : Type.toMachineType(op2Type);
 
-		Immediate symOp1 = op1 instanceof Constant ? NullConstant.v() : localsMap.get((Local) op1);
-		Immediate symOp2 = op2 instanceof Constant ? NullConstant.v() : localsMap.get((Local) op2);
+		Immediate symOp1 = op1 instanceof Constant || op1==null ? NullConstant.v() : localsMap.get((Local) op1);
+		Immediate symOp2 = op2 instanceof Constant || op2==null ? NullConstant.v() : localsMap.get((Local) op2);
+		
+		//TODO There are no symbolics for fields at this point.
+		if (symOp1==null)
+			symOp1 = NullConstant.v();
+		if (symOp2==null)
+			symOp2 = NullConstant.v();
 		
 		String methodName = G.binopSymbolToMethodName.get(binExprSymbol);
 		String methodSig = G.EXPRESSION_CLASS_NAME + " " + methodName + "(" + G.EXPRESSION_CLASS_NAME + "," + 

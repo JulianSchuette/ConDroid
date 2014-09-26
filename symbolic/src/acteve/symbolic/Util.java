@@ -587,7 +587,7 @@ public class Util
 			return;
 		}
 
-		Mylog.e("PRE_A3T_BRANCH", e.toYicesString() + " " + b);
+		Mylog.e("PRE_A3T_BRANCH", e.toYicesString() + "  " + branchId + "  " + b);
 
 		if(!readConfTxt())
 			return;

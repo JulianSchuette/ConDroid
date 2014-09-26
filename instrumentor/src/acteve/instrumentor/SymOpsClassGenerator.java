@@ -250,8 +250,6 @@ public class SymOpsClassGenerator
 		//BY JULIAN
 		Local locString = G.newLocal( RefType.v("java.lang.String"));
 		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " called")));
-//		G.assign(locString,G.virtualInvokeExpr(op1,"<java.lang.Object: java.lang.String toString()>"));
-//		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),locString));
 		// END BY JULIAN
 
 		
