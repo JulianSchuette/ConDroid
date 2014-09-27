@@ -883,6 +883,10 @@ public class Util
 							String vartype = mat.group(2);
 							//TODO handle array and float types
 							String varvalue = mat.group(3);
+							if (varvalue=="\"null@0\"") {
+								varvalue = null;
+								System.out.println("There is a null string in solution map");
+							}
 							solutionMap.put(varname, varvalue);
 						}
 					}

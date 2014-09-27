@@ -33,7 +33,10 @@ public abstract class StringExpression extends Expression implements String, Equ
     public Expression _eq(Expression e)
     {
 		System.out.println("Equals. StringExpression._eq called with expression " + e.toYicesString());
-		return new BinaryBooleanExpression(new BooleanBinaryOperator("=="), this, e);
+		if (e.toYicesString().equals("null@0")) {
+			e = StringConstant.get(e.toYicesString());
+		}
+		return new BinaryBooleanExpression(new BooleanBinaryOperator("="), this, e);
     }
     
 	@Override
