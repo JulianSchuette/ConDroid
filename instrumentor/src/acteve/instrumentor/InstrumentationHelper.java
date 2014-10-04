@@ -709,6 +709,142 @@ public class InstrumentationHelper {
 		return returns;
 	}
 	
+<<<<<<< HEAD
+=======
+	/*
+	 * constructs an instance of an object which fulfills all conditions downstream
+	 * of this statement
+	 */
+	public static void generateObject(Local local, Unit unit, SootMethod meth){	
+		//TODO JS: To support testing, return unit chain of stmts here instead of injecting them immediately before unit.
+		assert local.getType() instanceof RefType:"No object generation for primitive types.";
+		String className = ((RefType) local.getType()).getClassName();
+		
+		//check if we can construct this object from primitive types:
+		SootMethod primitiveCtor = getPrimitiveConstructor(className);
+		
+		Body body = meth.getActiveBody();
+		LocalGenerator generator = new LocalGenerator(body);
+		
+		if (primitiveCtor != null){
+			//we need this one to have classes instantiated for us TODO JS: Äh, ja? Da steckt ja noch dieses android.content.Context-Heuristik drin..
+			CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
+			AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, meth.getActiveBody(), local, generator, unit);
+			
+		} else {
+			//we need to make the private ctor w/o any arguments public
+			makePrivateCtorPublic(className, unit, meth, generator);
+		}
+		
+		//1. now gather all conditions which have to be fulfilled by this object from here on
+		//   - Get all uses of the object in downstream code (better: in next basic blocks, as two basic blocks may expect different object instances, even different types).
+		//   - Check uses for references to methods (in invoke-stmts), static fields (in load/store-stmts) or instance fields (aka attributes).
+		 
+		//2. set all fields accordingly via sun.misc.unsafe JS <-- Why via unsafe? java.lang.reflect should do
+		// Add class of generated object instance to the modelled classes (as if it would have been stated in models.dat). This way, ConDroid will generate solutions for its concrete values.
+		// (Make sure that this instrumentation here is done BEFORE the remaining instrumentation with the solution injection
+		//TODO
+	}
+	
+	/**
+	 * This method inserts code before unit to make the private, no-argument
+	 * constructor of a class publically accessible.
+	 * @param className
+	 * @param unit
+	 * @param meth
+	 */
+	public static void makePrivateCtorPublic(String className, Unit before, SootMethod meth, LocalGenerator gen){
+		if (gen == null)
+			gen = new LocalGenerator(meth.getActiveBody());
+		
+		PatchingChain<Unit> methodUnits = meth.getActiveBody().getUnits();
+		
+		/*
+		 * Constructor<Foo> constructor= (Constructor<Foo>) Foo.class.getDeclaredConstructors()[0];
+		 * constructor.setAccessible(true); 
+		 */
+		Local classObjToCallOn = gen.generateLocal(RefType.v("java.lang.Class"));
+		Local ctorLocal = gen.generateLocal(RefType.v("java.lang.reflect.Constructor"));
+		Local ctorArray = gen.generateLocal(RefType.v("java.lang.reflect.Constructor[]"));
+		AssignStmt getClass = Jimple.v().newAssignStmt(classObjToCallOn, Jimple.v().newVirtualInvokeExpr(classObjToCallOn, Scene.v().getSootClass(className).getMethod("java.lang.Class getClass()").makeRef()));
+		methodUnits.insertBefore(getClass, before);
+		
+		//now that we have the class object, make the call to getDeclaredConstructors:
+		AssignStmt getCtors = Jimple.v().newAssignStmt(ctorArray, Jimple.v().newVirtualInvokeExpr(classObjToCallOn, Scene.v().getSootClass("java.lang.Class").getMethod("java.lang.reflect.Constructor[] getDeclaredConstructors()").makeRef()));
+		methodUnits.insertAfter(getCtors, getClass);
+		
+		//now get index 0 for the no-argument ctor:
+		((ArrayRef) ctorArray).getIndex();
+		AssignStmt getCtorZero = Jimple.v().newAssignStmt(ctorLocal, ((ArrayRef) ctorArray).getBase()); //TODO: is this the right way to get [0]?
+		methodUnits.insertAfter(getCtorZero, getCtors);
+		
+		//now make accessible:	
+		VirtualInvokeExpr setAccessible = Jimple.v().newVirtualInvokeExpr(ctorLocal, Scene.v().getSootClass("java.lang.reflect.Constructor").getMethod("void setAccessible(boolean)").makeRef(), IntConstant.v(1));
+		methodUnits.insertAfter(Jimple.v().newInvokeStmt(setAccessible), getCtorZero);
+	}
+	
+	/**
+	 * This method checks recursively if there is a public ctor for a class
+	 * which can be invoked using only primitive types. If the ctor expects
+	 * another object, this method is called recursively on this ctor.
+	 * 
+	 *  If we find a ctor, we return it. We try to return the constructor
+	 *  with the minimum number of objects that need to be passed.
+	 * @param className
+	 * @return
+	 */
+	public static SootMethod getPrimitiveConstructor(String className){
+		SootClass sc = Scene.v().getSootClass(className);
+		
+		//get all publicly accessible constructors:
+		List<SootMethod> ctors = new ArrayList<SootMethod>();
+		for (SootMethod sm : sc.getMethods()){
+			if (sm.isConstructor() && sm.isPublic())
+				ctors.add(sm);
+		}
+		
+		int minNumNonPrimitiveTypes = Integer.MAX_VALUE;
+		SootMethod candidateCtor = null;
+		
+		for (SootMethod ctor : ctors){
+			
+			//all object parameters to this ctor can be constructed from primitive types
+			boolean allObjectParamsArgumentsPrimitive = true;
+			
+			int numNonPrimitiveArgs = 0;
+			
+			for (Type t : ctor.getParameterTypes()){
+				if (!(t instanceof IntType || t instanceof ByteType || t instanceof CharType
+					|| t instanceof ShortType || t instanceof DoubleType || t instanceof FloatType
+					|| t instanceof LongType || t instanceof BooleanType))
+				{
+					numNonPrimitiveArgs++;
+					/*
+					 * okay, apparently an object needs to be passed. lets see if we can
+					 * construct that object from primitive types:
+					 */
+					if (t instanceof RefType){ //this should now hold anyway
+						String argClassName = ((RefType) t).getClassName();
+						if (getPrimitiveConstructor(argClassName) == null)
+							allObjectParamsArgumentsPrimitive = false;
+					} else {
+						allObjectParamsArgumentsPrimitive = false; //no RefType - don't know how to construct
+					}
+				}
+			}
+			if (numNonPrimitiveArgs == 0){ //best possible outcome, trivial to instantiate -- return directly
+				return ctor;
+			}
+			else if (allObjectParamsArgumentsPrimitive && numNonPrimitiveArgs < minNumNonPrimitiveTypes){
+				minNumNonPrimitiveTypes = numNonPrimitiveArgs;
+				candidateCtor = ctor;
+			}
+
+		}
+		return candidateCtor;
+	}
+	
+>>>>>>> One more comment
 	/**
 	 * Inserts calls to all lifecycle methods at the end of the onCreate()
 	 * method.
