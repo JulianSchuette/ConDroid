@@ -123,7 +123,7 @@ public class MethodUtils {
 		aHashSet.addAll( Arrays.asList(new String[] {
 				"<java.lang.Class: T newInstance()>",
 				 "<java.lang.Class: newInstance()>",
-				 "<java.lang.Object newInstance()>",
+				 "<java.lang.Object: newInstance()>",
 				 "<java.lang.Class: T newInstance(java.lang.Object...)>",
 				 "<java.lang.Class: newInstance(java.lang.Object...)>",
 				 "<java.lang.Class: java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)>",
@@ -150,7 +150,7 @@ public class MethodUtils {
 				 "<java.security.SecureClassLoader: void <init>()>",
 				 "<java.security.SecureClassLoader: void <init>(java.lang.ClassLoader)>",
 				 
-				"<dalvik.system.BaseDexClassLoader: void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)",
+				"<dalvik.system.BaseDexClassLoader: void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)>",
 
 				"<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>",
 
@@ -172,10 +172,12 @@ public class MethodUtils {
 	public static boolean isReflectiveLoading(SootMethod method){
 		SootClass declaringClass = method.getDeclaringClass();
 		for (String key : TARGET_METHODS) {
-			SootMethod target = Scene.v().getMethod(key);			
-			if (isOrExtendsClass(declaringClass.getName(), target.getDeclaringClass().getName()))				
-					if(method.getSubSignature().equals(target))
-						return true;
+			if (Scene.v().containsMethod(key)) {
+				SootMethod target = Scene.v().getMethod(key);			
+				if (isOrExtendsClass(declaringClass.getName(), target.getDeclaringClass().getName()))				
+						if(method.getSubSignature().equals(target))
+							return true;
+			}
 		}
 		return false;
 	}
