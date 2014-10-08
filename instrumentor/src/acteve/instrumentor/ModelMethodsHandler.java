@@ -31,42 +31,47 @@
 
 package acteve.instrumentor;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
-import soot.SootClass;
+import soot.ArrayType;
 import soot.Local;
 import soot.Modifier;
+import soot.PrimType;
 import soot.RefType;
 import soot.Scene;
 import soot.SootClass;
+import soot.SootField;
 import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Type;
 import soot.VoidType;
-import soot.PrimType;
-import soot.ArrayType;
-import soot.jimple.InvokeExpr;
 import soot.jimple.IntConstant;
+import soot.jimple.InvokeExpr;
 import soot.jimple.NullConstant;
 
 public class ModelMethodsHandler {
 	private static final Set<SootMethod> methodsWithModels = new HashSet();
 	private static final Map<SootClass, Set<String>> klassToModelMethodSubsigs = new HashMap<SootClass, Set<String>>();
+	private static final Set<SootField> fieldsWithModels = new HashSet();
 
 	static boolean modelExistsFor(SootMethod method) {
 		return methodsWithModels.contains(method);
+	}
+	
+	static boolean modelExistsFor(SootField field) {
+		return fieldsWithModels.contains(field);
 	}
 
 	public static SootMethod getModelInvokerFor(SootMethod method) {
@@ -417,12 +422,15 @@ public class ModelMethodsHandler {
 						System.out.println("will not model class: " + line);
 					}
 					else {
-						String methodSig = line.substring(index+1).trim();
+						String subsig = line.substring(index+1).trim();
 						SootClass declClass = Scene.v().getSootClass(className);
-						if (declClass.declaresMethod(methodSig)) {
-							SootMethod method = declClass.getMethod(methodSig);
+						if (declClass.declaresMethod(subsig)) {
+							SootMethod method = declClass.getMethod(subsig);
 							methodsWithModels.add(method);
 							System.out.println("model method requested for: " + declClass.getName() + "." + method.getSignature() + " which is available in scene");
+						} else if (declClass.declaresField(subsig)) {
+							SootField field = declClass.getField(subsig);
+							fieldsWithModels .add(field);
 						}
 						else {
 							System.out.println("will not model method: " + line);

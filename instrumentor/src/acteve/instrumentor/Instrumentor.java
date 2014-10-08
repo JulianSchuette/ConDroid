@@ -977,9 +977,13 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 		//Overwrite concrete value with solution
 		System.out.println("Should be field solution name :" + toSymbolicVarName(fld));
-		if (fld.getName().contains("BOARD")) { //TODO Limit here to a) fields to be instrumented, b) of type String
-			System.out.println("Overwriting BOARD name: " + fld.getName());
+		if (ModelMethodsHandler.modelExistsFor(fld)) { //Modelled?
+			if (fld.getType() instanceof PrimType || fld.getType().toString().equals("java.lang.String")) { //Supported type?
+			System.out.println("Overwriting field: " + fld.getName());
 			G.editor.insertStmtAfter(Jimple.v().newAssignStmt(leftOp, G.staticInvokeExpr(G.getSolution_string, StringConstant.v(toSymbolicVarName(fld)))));
+			} else {
+				System.err.println("Modelled field of non-supported type: " + fld.getName() + " : " + fld.getType());
+			}
 		}
 	}
 

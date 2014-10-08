@@ -30,8 +30,9 @@ package acteve.instrumentor;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -60,7 +61,6 @@ import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.tagkit.AnnotationTag;
 import soot.tagkit.GenericAttribute;
-import soot.tagkit.InnerClassTag;
 import soot.tagkit.Tag;
 import soot.tagkit.VisibilityAnnotationTag;
 import soot.util.Chain;
@@ -116,103 +116,50 @@ public class MethodUtils {
 		"void onInterceptTouchEvent(android.view.MotionEvent)",
 	};
 	
-	private static final String[] REFLECTIVE_LOADING_SIGS = {
-		"<java.lang.Class: T newInstance()>", //how to deal with generics in signatures? TODO
-		"<java.lang.Class: newInstance()>", //afaik dynamic types are "type-erased" at runtime, so removing the type ought to yield the correct signature
-		"<java.lang.Class: java.lang.Object newInstance()>",
-		"<java.lang.Class: T newInstance(java.lang.Object...)>",
-		"<java.lang.Class: newInstance(java.lang.Object...)>",
-		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
-		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>",
-		"<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String,boolean)>",
-		"<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>",
-		"<java.lang.ClassLoader: void <init>()>", //constructors are a bit of a problem because we cannot know the signatures of all Classloaders that might be created by developers, e.g. by inheriting from ClassLoader
-		"<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>",
-		"<java.lang.ClassLoader: java.lang.ClassLoader getSystemClassLoader()>",
-		"<java.lang.Class: java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)>",
-		"<java.lang.Class: java.lang.reflect.Constructor getConstructor(java.lang.Class...)>",
-		"<java.lang.Class: java.lang.reflect.Constructor<?>[] getConstructors()>",
-		"<java.lang.Class: java.lang.reflect.Constructor[] getConstructors()>",
-		"<java.lang.Class: java.lang.reflect.Constructor<?>[] getDeclaredConstructors()>",
-		"<java.lang.Class: java.lang.reflect.Constructor[] getDeclaredConstructors()>",
-		"<java.net.URLClassLoader: void <init>(java.net.URL[])>",
-		"<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader)>",
-		"<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)>",
-		"<java.security.SecureClassLoader: void <init>()>",
-		"<java.security.SecureClassLoader: void <init>(java.lang.ClassLoader)>",
-		"<java.lang.Class: java.lang.Class<T> forName(java.lang.String)>",
-		"<java.lang.Class: java.lang.Class forName(java.lang.String)>",
-		"<dalvik.system.BaseDexClassLoader: void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)>",
-		"<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>",
-		"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,java.lang.ClassLoader)>",
-		"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)>"
-	};
 	
-	private static HashMap<String,String[]> REFLECTIVE_LOADING_MAP = new HashMap<String,String[]>();
+	private static HashSet<String> TARGET_METHODS = new HashSet<String>();
 	static {
-		HashMap<String,String[]> aHashSet = new HashMap<String,String[]>();
-		aHashSet.put("java.lang.Class", new String[]
-				{"T newInstance()",
-				 "newInstance()",
-				 "java.lang.Object newInstance()",
-				 "T newInstance(java.lang.Object...)",
-				 "newInstance(java.lang.Object...)",
-				 "java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)",
-				 "java.lang.reflect.Constructor getConstructor(java.lang.Class...)",
-				 "java.lang.reflect.Constructor<?>[] getConstructors()",
-				 "java.lang.reflect.Constructor[] getConstructors()",
-				 "java.lang.reflect.Constructor<?>[] getDeclaredConstructors()",
-				 "java.lang.reflect.Constructor[] getDeclaredConstructors()",
-				 "java.lang.Class<T> forName(java.lang.String)",
-				 "java.lang.Class forName(java.lang.String)"
-				});
-		aHashSet.put("java.lang.ClassLoader", new String[]
-				{"java.lang.Class<T> loadClass(java.lang.String)",
-				 "java.lang.Class loadClass(java.lang.String)",
-				 "java.lang.Class<T> loadClass(java.lang.String,boolean)",
-				 "java.lang.Class loadClass(java.lang.String,boolean)",
-				 "void <init>()",
-				 "void <init>(java.lang.ClassLoader)",
-				 "java.lang.ClassLoader getSystemClassLoader()"
-				});
-		aHashSet.put("java.net.URLClassLoader", new String[]
-				{"void <init>(java.net.URL[])",
-				 "void <init>(java.net.URL[],java.lang.ClassLoader)",
-				 "void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)"
-				});
-		aHashSet.put("java.security.SecureClassLoader", new String[]
-				{"void <init>()",
-				 "void <init>(java.lang.ClassLoader)"
-				});
-		aHashSet.put("dalvik.system.BaseDexClassLoader", new String[]
-				{"void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)"
-				});
-		aHashSet.put("dalvik.system.DexClassLoader", new String[]
-				{"void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)"
-				});
-		aHashSet.put("dalvik.system.PathClassLoader", new String[]
-				{"void <init>(Java.lang.String,java.lang.ClassLoader)",
-				 "void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)"
-				});
-		REFLECTIVE_LOADING_MAP = aHashSet;
+		HashSet<String> aHashSet = new HashSet<String>();
+		aHashSet.addAll( Arrays.asList(new String[] {
+				"<java.lang.Class: T newInstance()>",
+				 "<java.lang.Class: newInstance()>",
+				 "<java.lang.Object newInstance()>",
+				 "<java.lang.Class: T newInstance(java.lang.Object...)>",
+				 "<java.lang.Class: newInstance(java.lang.Object...)>",
+				 "<java.lang.Class: java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)>",
+				 "<java.lang.Class: java.lang.reflect.Constructor getConstructor(java.lang.Class...)>",
+				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getConstructors()>",
+				 "<java.lang.Class: java.lang.reflect.Constructor[] getConstructors()>",
+				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getDeclaredConstructors()>",
+				 "<java.lang.Class: java.lang.reflect.Constructor[] getDeclaredConstructors()>",
+				 "<java.lang.Class: java.lang.Class<T> forName(java.lang.String)>",
+				 "<java.lang.Class: java.lang.Class forName(java.lang.String)>",
+
+				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
+				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>",
+				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String,boolean)>",
+				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>",
+				 "<java.lang.ClassLoader: void <init>()>",
+				 "<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>",
+				 "<java.lang.ClassLoader: java.lang.ClassLoader getSystemClassLoader()>",
+
+				 "<java.net.URLClassLoader: void <init>(java.net.URL[])>",
+				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader)>",
+				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)>",
+
+				 "<java.security.SecureClassLoader: void <init>()>",
+				 "<java.security.SecureClassLoader: void <init>(java.lang.ClassLoader)>",
+				 
+				"<dalvik.system.BaseDexClassLoader: void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)",
+
+				"<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>",
+
+				"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,java.lang.ClassLoader)>",
+				 "<dalvik.system.PathClassLoader: void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)>"
+				}));
+		TARGET_METHODS = aHashSet;
 	};
-	
-	/**
-	 * Tests whether a method's signature is among the well-known method
-	 * signatures for reflective class loading defined in the JRE classes.
-	 * However, it does NOT recognize methods gained by inheritance from these
-	 * JRE classes. Use {@link isReflectiveLoading} instead.
-	 * @param method
-	 * @return
-	 */
-	@Deprecated
-	public static boolean isReflectiveLoadingOld(SootMethod method){
-		for (String s : REFLECTIVE_LOADING_SIGS)
-			if (method.getSignature().equals(s))
-				return true;
-		return false;
-	}
-	
+
 	/**
 	 * Supersedes {@link isReflectiveLoadingOld}. Tests whether a method
 	 * has a signature as defined in {@link REFLECTIVE_LOADING_MAP},
@@ -224,11 +171,12 @@ public class MethodUtils {
 	 */
 	public static boolean isReflectiveLoading(SootMethod method){
 		SootClass declaringClass = method.getDeclaringClass();
-		for (String key : REFLECTIVE_LOADING_MAP.keySet())
-			if (isOrExtendsClass(declaringClass.getName(), key))
-				for (String meth : REFLECTIVE_LOADING_MAP.get(key))
-					if(method.getSubSignature().equals(meth))
+		for (String key : TARGET_METHODS) {
+			SootMethod target = Scene.v().getMethod(key);			
+			if (isOrExtendsClass(declaringClass.getName(), target.getDeclaringClass().getName()))				
+					if(method.getSubSignature().equals(target))
 						return true;
+		}
 		return false;
 	}
 	
