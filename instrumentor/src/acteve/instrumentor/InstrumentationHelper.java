@@ -91,13 +91,17 @@ import soot.SootMethodRef;
 import soot.SourceLocator;
 import soot.Type;
 import soot.Unit;
+import soot.UnitBox;
 import soot.Value;
+import soot.ValueBox;
 import soot.VoidType;
 import soot.baf.PlaceholderInst;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.javaToJimple.LocalGenerator;
 import soot.jimple.AssignStmt;
 import soot.jimple.ClassConstant;
+import soot.jimple.Constant;
+import soot.jimple.FieldRef;
 import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
@@ -119,7 +123,13 @@ import soot.jimple.parser.parser.ParserException;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.tagkit.StringConstantValueTag;
+import soot.toolkits.graph.UnitGraph;
+import soot.toolkits.graph.pdg.EnhancedUnitGraph;
+import soot.toolkits.scalar.CombinedAnalysis;
+import soot.toolkits.scalar.CombinedDUAnalysis;
+import soot.toolkits.scalar.UnitValueBoxPair;
 import soot.util.Chain;
+import soot.util.HashChain;
 
 /**
  * Helper class for instrumenting bytecode artifacts.
@@ -717,38 +727,105 @@ public class InstrumentationHelper {
 	 */
 	public static void generateObject(Local local, Unit unit, SootMethod meth){	
 		//TODO JS: To support testing, return unit chain of stmts here instead of injecting them immediately before unit.
+		// RF: problem is we need locals in the body which need to be inserted anyway
 		assert local.getType() instanceof RefType:"No object generation for primitive types.";
+		
+		//PatchingChain<Unit> chain = new PatchingChain<Unit>(new HashChain<Unit>());
+		
 		String className = ((RefType) local.getType()).getClassName();
 		
 		//check if we can construct this object from primitive types:
 		SootMethod primitiveCtor = getPrimitiveConstructor(className);
+		boolean noPrimitiveCtorFound = (primitiveCtor == null);
 		
 		Body body = meth.getActiveBody();
 		LocalGenerator generator = new LocalGenerator(body);
 		
-		if (primitiveCtor != null){
-			//we need this one to have classes instantiated for us TODO JS: Äh, ja? Da steckt ja noch dieses android.content.Context-Heuristik drin..
-			CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
-			AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, meth.getActiveBody(), local, generator, unit);
-			
-		} else {
+		SootMethod prototypeCtor = null;
+		if (primitiveCtor == null){
 			//we need to make the private ctor w/o any arguments public
 			makePrivateCtorPublic(className, unit, meth, generator);
+			
+			//now reassign the primitiveCtor variable to the formerly private ctor:
+			primitiveCtor = Scene.v().getSootClass(className).getMethod("<init>()");
+			
+			// will be needed later:
+			for (Unit u : body.getUnits()){
+				if (u instanceof InvokeStmt){
+					if (((InvokeStmt) u).getInvokeExpr().getMethod().getSignature().contains("<init>(") )
+						prototypeCtor = ((InvokeStmt) u).getInvokeExpr().getMethod();
+				}
+			}
 		}
 		
-		//1. now gather all conditions which have to be fulfilled by this object from here on
-		//   - Get all uses of the object in downstream code (better: in next basic blocks, as two basic blocks may expect different object instances, even different types).
-		//   - Check uses for references to methods (in invoke-stmts), static fields (in load/store-stmts) or instance fields (aka attributes).
-		 
-		//2. set all fields accordingly via sun.misc.unsafe JS <-- Why via unsafe? java.lang.reflect should do
-		// Add class of generated object instance to the modelled classes (as if it would have been stated in models.dat). This way, ConDroid will generate solutions for its concrete values.
-		// (Make sure that this instrumentation here is done BEFORE the remaining instrumentation with the solution injection
-		//TODO
+		// for correct program flow, we would need to fulfill certain explicit
+		// and also implicit constrains on objects. However, as we cannot deduce
+		// programmer intention from statements (e.g., a programmer might WANT
+		// a null pointer exception to appear so he can carry out actions in
+		// a catch-stmt or similarly stupid things), we pursue the following
+		// approach for now:
+		// 1. instantiate object in memory
+		// -> primitive fields will be instantiated automatically no matter
+		//    what was stored memory region before. Certain expected values
+		//    for these fields will be inserted by Z3.
+		// 2. Run code correctly BUT translate exceptions into path constraints
+		//    and solve these using ConDroid/Z3.
+		// As a consequence, we will construct each object 8and its fields)
+		// such that they once fulfill implicit and/or explicit constraints,
+		// and once such that they don't. This makes sure that the execution
+		// path the programmer intended is followed at least once, no matter
+		// whether an exception was his intention or not.
+		//
+		// our alternative, old and - for now - abandoned approach:
+		/// 1. gather all conditions which have to be fulfilled by this object from here on
+		///   - Get all uses of the object in downstream code (better: in next basic blocks, as two basic blocks may expect different object instances, even different types).
+		///   - Check uses for references to methods (in invoke-stmts), static fields (in load/store-stmts) or instance fields (aka attributes).
+		/// 
+		/// 2. set all fields accordingly via sun.misc.unsafe JS <-- Why via unsafe? java.lang.reflect should do
+		/// Add class of generated object instance to the modelled classes (as if it would have been stated in models.dat). This way, ConDroid will generate solutions for its concrete values.
+		/// (Make sure that this instrumentation here is done BEFORE the remaining instrumentation with the solution injection
+		//
+		
+		// now call ctor to construct object. ctor can now either be a valid
+		// one or the formerly private one we made public:
+		CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
+		AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, meth.getActiveBody(), local, generator, unit);
+		
+		// if there was no public ctor to instantiate: 
+		// VERY simple heuristic for getting closer to a well-formed program:
+		// pick one public constructor and scan it for initializations of
+		// primitive fields. It would be useful to do the same initializations
+		// as the constructor that is called inside the method where we
+		// instantiate the object -- if there is one. These initializations
+		// then need to be carried out on our new object.
+		/*
+		if (noPrimitiveCtorFound){
+			if (prototypeCtor == null) //if we didnt find one in the method before inserting our own:
+				for (SootMethod methy :  Scene.v().getSootClass(className).getMethods()){
+					if (meth.getSubSignature().startsWith("<init>(")){
+						prototypeCtor = methy;
+						break;
+					}
+				}
+			
+			//scan ctor for initializations with constants:
+			for (Unit ctorUnit : prototypeCtor.getActiveBody().getUnits()){
+				if (ctorUnit instanceof AssignStmt){
+					if (((AssignStmt) ctorUnit).getLeftOp() instanceof FieldRef) //if we initialize a field... 
+						if (( (FieldRef) ((AssignStmt) ctorUnit).getLeftOp()).getField().getDeclaringClass().getName().equals(className) && isPrimitive(( (FieldRef) ((AssignStmt) ctorUnit).getLeftOp()).getField().getType()) ){ // ... in this class which is primitive ...
+							if (((AssignStmt) ctorUnit).getRightOp() instanceof Constant){ //... with a constant primitive
+								
+							} 
+						}
+				}
+			}
+		}*/ //abandoned for now
+		
 	}
 	
 	/**
 	 * This method inserts code before unit to make the private, no-argument
-	 * constructor of a class publically accessible.
+	 * constructor of a class publicly accessible.
 	 * @param className
 	 * @param unit
 	 * @param meth
@@ -765,7 +842,7 @@ public class InstrumentationHelper {
 		 */
 		Local classObjToCallOn = gen.generateLocal(RefType.v("java.lang.Class"));
 		Local ctorLocal = gen.generateLocal(RefType.v("java.lang.reflect.Constructor"));
-		Local ctorArray = gen.generateLocal(RefType.v("java.lang.reflect.Constructor[]"));
+		Local ctorArray = gen.generateLocal(ArrayType.v(RefType.v("java.lang.reflect.Constructor"), 1));
 		AssignStmt getClass = Jimple.v().newAssignStmt(classObjToCallOn, Jimple.v().newVirtualInvokeExpr(classObjToCallOn, Scene.v().getSootClass(className).getMethod("java.lang.Class getClass()").makeRef()));
 		methodUnits.insertBefore(getClass, before);
 		
@@ -774,8 +851,8 @@ public class InstrumentationHelper {
 		methodUnits.insertAfter(getCtors, getClass);
 		
 		//now get index 0 for the no-argument ctor:
-		((ArrayRef) ctorArray).getIndex();
-		AssignStmt getCtorZero = Jimple.v().newAssignStmt(ctorLocal, ((ArrayRef) ctorArray).getBase()); //TODO: is this the right way to get [0]?
+		((ArrayRef) ctorArray).setIndex(IntConstant.v(0)); //TODO: is this the right way to get [0]?
+		AssignStmt getCtorZero = Jimple.v().newAssignStmt(ctorLocal, ((ArrayRef) ctorArray)); 
 		methodUnits.insertAfter(getCtorZero, getCtors);
 		
 		//now make accessible:	
@@ -783,10 +860,16 @@ public class InstrumentationHelper {
 		methodUnits.insertAfter(Jimple.v().newInvokeStmt(setAccessible), getCtorZero);
 	}
 	
+	public static boolean isPrimitive(Type t){
+		return (t instanceof IntType || t instanceof ByteType || t instanceof CharType
+				|| t instanceof ShortType || t instanceof DoubleType || t instanceof FloatType
+				|| t instanceof LongType || t instanceof BooleanType);
+	}
+	
 	/**
 	 * This method checks recursively if there is a public ctor for a class
 	 * which can be invoked using only primitive types. If the ctor expects
-	 * another object, this method is called recursively on this ctor.
+	 * another object, this method is called recursively on this object's ctor.
 	 * 
 	 *  If we find a ctor, we return it. We try to return the constructor
 	 *  with the minimum number of objects that need to be passed.
@@ -814,9 +897,7 @@ public class InstrumentationHelper {
 			int numNonPrimitiveArgs = 0;
 			
 			for (Type t : ctor.getParameterTypes()){
-				if (!(t instanceof IntType || t instanceof ByteType || t instanceof CharType
-					|| t instanceof ShortType || t instanceof DoubleType || t instanceof FloatType
-					|| t instanceof LongType || t instanceof BooleanType))
+				if (!isPrimitive(t))
 				{
 					numNonPrimitiveArgs++;
 					/*
