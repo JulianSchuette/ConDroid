@@ -72,6 +72,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import acteve.symbolic.integer.IntegerConstant;
+
 import soot.ArrayType;
 import soot.Body;
 import soot.CharType;
@@ -101,6 +103,7 @@ import soot.javaToJimple.LocalGenerator;
 import soot.jimple.AssignStmt;
 import soot.jimple.ClassConstant;
 import soot.jimple.Constant;
+import soot.jimple.DoubleConstant;
 import soot.jimple.FieldRef;
 import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
@@ -122,6 +125,10 @@ import soot.jimple.parser.lexer.LexerException;
 import soot.jimple.parser.parser.ParserException;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
+import soot.tagkit.DoubleConstantValueTag;
+import soot.tagkit.FloatConstantValueTag;
+import soot.tagkit.IntegerConstantValueTag;
+import soot.tagkit.LongConstantValueTag;
 import soot.tagkit.StringConstantValueTag;
 import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.graph.pdg.EnhancedUnitGraph;
@@ -720,7 +727,78 @@ public class InstrumentationHelper {
 	}
 	
 <<<<<<< HEAD
-=======
+	public static void initializeFieldIfNotInitialized(SootField field, SootMethod sm){
+		Type type = field.getType();
+		PatchingChain<Unit> units = new PatchingChain<Unit>(new HashChain<Unit>());
+		Local thisLocal = sm.getActiveBody().getThisLocal();
+		LocalGenerator gen = new LocalGenerator(sm.getActiveBody());
+		Body body = sm.getActiveBody(); 
+		
+		//check all units in method to see if field is written to. if so, return.
+		for (Unit u : sm.getActiveBody().getUnits()){
+			if (u instanceof AssignStmt)
+				if (((AssignStmt) u).getLeftOp() instanceof FieldRef)
+					if (( (FieldRef) ((AssignStmt) u).getLeftOp()).getField().getSignature().equals(field.getSignature()))
+						return;
+		}
+		
+		if (type instanceof soot.IntType || type instanceof soot.ByteType || type instanceof ShortType || type instanceof BooleanType || type instanceof soot.CharType) {
+			field.addTag(new IntegerConstantValueTag(1));
+			units.addLast(Jimple.v().newAssignStmt(
+					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
+					soot.jimple.IntConstant.v(1)));        	
+		}
+		else if (type instanceof soot.DoubleType) {
+			field.addTag(new DoubleConstantValueTag(3.14));
+			units.addLast(Jimple.v().newAssignStmt(
+					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
+					soot.jimple.DoubleConstant.v(3.14d))); 
+		}
+		else if (type instanceof soot.FloatType) {
+			field.addTag(new FloatConstantValueTag(3.14f));
+			units.addLast(Jimple.v().newAssignStmt(
+					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
+					soot.jimple.FloatConstant.v(3.14f))); 
+		}
+		else if (type instanceof soot.LongType) {
+			field.addTag(new LongConstantValueTag(1));
+			units.addLast(Jimple.v().newAssignStmt(
+					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
+					soot.jimple.LongConstant.v(1))); 
+		}
+        else if (type instanceof soot.RefType) {
+        	RefType fieldType = (RefType) type;
+            SootClass fieldClass = fieldType.getSootClass();
+            String className = fieldClass.getName();
+        	if (fieldClass.getName().equals("java.lang.String")){
+        		field.addTag(new StringConstantValueTag("Lorem ipsum"));
+        		units.addLast(Jimple.v().newAssignStmt(
+    					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
+    					soot.jimple.StringConstant.v("Lorem ipsum"))); 
+        	} else {
+        		SootMethod primitiveCtor = getPrimitiveConstructor(className);
+        		
+        		if (primitiveCtor == null){
+        			//we need to make the private ctor w/o any arguments public
+        			makePrivateCtorPublic(className, units.getLast(), sm, gen);
+        			
+        			//now reassign the primitiveCtor variable to the formerly private ctor:
+        			primitiveCtor = Scene.v().getSootClass(className).getMethod("<init>()");
+        		}
+        		
+        		CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
+        		Local tmp = gen.generateLocal(type);
+        		units.addLast(aep.buildMethodCall(primitiveCtor, body, tmp, gen, units.getLast()));
+        		units.addLast(Jimple.v().newAssignStmt(
+    					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
+    					tmp)); 
+        		
+        	}
+        	
+        }
+		insertAtBeginOfMethod(sm.getActiveBody(), units);
+	}
+	
 	/*
 	 * constructs an instance of an object which fulfills all conditions downstream
 	 * of this statement
@@ -791,6 +869,10 @@ public class InstrumentationHelper {
 		CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
 		AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, meth.getActiveBody(), local, generator, unit);
 		
+		//now add initializations to the ctor we just made public:
+		for (SootField field : Scene.v().getSootClass(className).getFields())
+			initializeFieldIfNotInitialized(field, primitiveCtor);
+		
 		// if there was no public ctor to instantiate: 
 		// VERY simple heuristic for getting closer to a well-formed program:
 		// pick one public constructor and scan it for initializations of
@@ -842,7 +924,7 @@ public class InstrumentationHelper {
 		 */
 		Local classObjToCallOn = gen.generateLocal(RefType.v("java.lang.Class"));
 		Local ctorLocal = gen.generateLocal(RefType.v("java.lang.reflect.Constructor"));
-		Local ctorArray = gen.generateLocal(ArrayType.v(RefType.v("java.lang.reflect.Constructor"), 1));
+		Local ctorArray = gen.generateLocal(RefType.v("java.lang.reflect.Constructor").makeArrayType());
 		AssignStmt getClass = Jimple.v().newAssignStmt(classObjToCallOn, Jimple.v().newVirtualInvokeExpr(classObjToCallOn, Scene.v().getSootClass(className).getMethod("java.lang.Class getClass()").makeRef()));
 		methodUnits.insertBefore(getClass, before);
 		
