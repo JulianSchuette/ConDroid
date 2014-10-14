@@ -45,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -66,13 +65,14 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import acteve.symbolic.integer.IntegerConstant;
 
 import soot.ArrayType;
 import soot.Body;
@@ -93,17 +93,15 @@ import soot.SootMethodRef;
 import soot.SourceLocator;
 import soot.Type;
 import soot.Unit;
-import soot.UnitBox;
+import soot.UnknownType;
 import soot.Value;
-import soot.ValueBox;
 import soot.VoidType;
 import soot.baf.PlaceholderInst;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.javaToJimple.LocalGenerator;
+import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.ClassConstant;
-import soot.jimple.Constant;
-import soot.jimple.DoubleConstant;
 import soot.jimple.FieldRef;
 import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
@@ -130,11 +128,6 @@ import soot.tagkit.FloatConstantValueTag;
 import soot.tagkit.IntegerConstantValueTag;
 import soot.tagkit.LongConstantValueTag;
 import soot.tagkit.StringConstantValueTag;
-import soot.toolkits.graph.UnitGraph;
-import soot.toolkits.graph.pdg.EnhancedUnitGraph;
-import soot.toolkits.scalar.CombinedAnalysis;
-import soot.toolkits.scalar.CombinedDUAnalysis;
-import soot.toolkits.scalar.UnitValueBoxPair;
 import soot.util.Chain;
 import soot.util.HashChain;
 
@@ -727,11 +720,23 @@ public class InstrumentationHelper {
 	}
 	
 <<<<<<< HEAD
-	public static void initializeFieldIfNotInitialized(SootField field, SootMethod sm){
+	/**
+	 * Returns chain of units which should be inserted at the according position.
+	 * These units take care of field initialization and a good place to put them
+	 * is a constructor.
+	 * 
+	 * Side effect: for a method call, ONE local will be injected by us and one
+	 * by GenerateMethodCall into the SootMethod sm's locals. All other locals
+	 * will be inserted into the return pair.
+	 * @param field
+	 * @param sm
+	 * @return
+	 */
+	public static Pair<PatchingChain<Unit>, Chain<Local>> generateUnitsToInitializeFieldIfNotInitialized(SootField field, SootMethod sm){
 		Type type = field.getType();
-		PatchingChain<Unit> units = new PatchingChain<Unit>(new HashChain<Unit>());
+		PatchingChain<Unit> newUnits = new PatchingChain<Unit>(new HashChain<Unit>());
+		HashChain<Local> newLocals = new HashChain<Local>();
 		Local thisLocal = sm.getActiveBody().getThisLocal();
-		LocalGenerator gen = new LocalGenerator(sm.getActiveBody());
 		Body body = sm.getActiveBody(); 
 		
 		//check all units in method to see if field is written to. if so, return.
@@ -739,30 +744,30 @@ public class InstrumentationHelper {
 			if (u instanceof AssignStmt)
 				if (((AssignStmt) u).getLeftOp() instanceof FieldRef)
 					if (( (FieldRef) ((AssignStmt) u).getLeftOp()).getField().getSignature().equals(field.getSignature()))
-						return;
+						return new ImmutablePair<PatchingChain<Unit>, Chain<Local>>(newUnits, newLocals);
 		}
 		
 		if (type instanceof soot.IntType || type instanceof soot.ByteType || type instanceof ShortType || type instanceof BooleanType || type instanceof soot.CharType) {
 			field.addTag(new IntegerConstantValueTag(1));
-			units.addLast(Jimple.v().newAssignStmt(
+			newUnits.addLast(Jimple.v().newAssignStmt(
 					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
 					soot.jimple.IntConstant.v(1)));        	
 		}
 		else if (type instanceof soot.DoubleType) {
 			field.addTag(new DoubleConstantValueTag(3.14));
-			units.addLast(Jimple.v().newAssignStmt(
+			newUnits.addLast(Jimple.v().newAssignStmt(
 					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
 					soot.jimple.DoubleConstant.v(3.14d))); 
 		}
 		else if (type instanceof soot.FloatType) {
 			field.addTag(new FloatConstantValueTag(3.14f));
-			units.addLast(Jimple.v().newAssignStmt(
+			newUnits.addLast(Jimple.v().newAssignStmt(
 					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
 					soot.jimple.FloatConstant.v(3.14f))); 
 		}
 		else if (type instanceof soot.LongType) {
 			field.addTag(new LongConstantValueTag(1));
-			units.addLast(Jimple.v().newAssignStmt(
+			newUnits.addLast(Jimple.v().newAssignStmt(
 					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
 					soot.jimple.LongConstant.v(1))); 
 		}
@@ -772,7 +777,7 @@ public class InstrumentationHelper {
             String className = fieldClass.getName();
         	if (fieldClass.getName().equals("java.lang.String")){
         		field.addTag(new StringConstantValueTag("Lorem ipsum"));
-        		units.addLast(Jimple.v().newAssignStmt(
+        		newUnits.addLast(Jimple.v().newAssignStmt(
     					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
     					soot.jimple.StringConstant.v("Lorem ipsum"))); 
         	} else {
@@ -780,35 +785,45 @@ public class InstrumentationHelper {
         		
         		if (primitiveCtor == null){
         			//we need to make the private ctor w/o any arguments public
-        			makePrivateCtorPublic(className, units.getLast(), sm, gen);
+        			Pair<PatchingChain<Unit>, Chain<Local>> tPair = makePrivateCtorPublic(className, sm);
+        			//insert units and locals:
+        			newUnits.insertAfter(tPair.getLeft(), newUnits.getLast());
+        			newLocals.addAll(tPair.getRight());
         			
         			//now reassign the primitiveCtor variable to the formerly private ctor:
         			primitiveCtor = Scene.v().getSootClass(className).getMethod("<init>()");
         		}
         		
         		CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
-        		Local tmp = gen.generateLocal(type);
-        		units.addLast(aep.buildMethodCall(primitiveCtor, body, tmp, gen, units.getLast()));
-        		units.addLast(Jimple.v().newAssignStmt(
+        		Local tmp = generateLocalAndDontInsert(body, type);
+        		//need to insert tmp now so method call can be built:
+        		body.getLocals().add(tmp);
+        		newUnits.addLast(aep.buildMethodCall(primitiveCtor, body, tmp, new LocalGenerator(body), newUnits.getLast()));
+        		newUnits.addLast(Jimple.v().newAssignStmt(
     					Jimple.v().newInstanceFieldRef(thisLocal, field.makeRef()),
     					tmp)); 
         		
         	}
         	
         }
-		insertAtBeginOfMethod(sm.getActiveBody(), units);
+		return new ImmutablePair<PatchingChain<Unit>, Chain<Local>>(newUnits, newLocals);
 	}
 	
 	/*
 	 * constructs an instance of an object which fulfills all conditions downstream
 	 * of this statement
+	 * 
+	 * After calling this function, you should also call
+	 * generateUnitsToInitializeFieldIfNotInitialized and insert its units and locals
+	 * into the primitive ctor which 
 	 */
-	public static void generateObject(Local local, Unit unit, SootMethod meth){	
+	public static Pair<PatchingChain<Unit>, Chain<Local>> generateObjectInstance(Local local, Unit unit, SootMethod meth){	
 		//TODO JS: To support testing, return unit chain of stmts here instead of injecting them immediately before unit.
 		// RF: problem is we need locals in the body which need to be inserted anyway
 		assert local.getType() instanceof RefType:"No object generation for primitive types.";
 		
-		//PatchingChain<Unit> chain = new PatchingChain<Unit>(new HashChain<Unit>());
+		PatchingChain<Unit> newUnits = new PatchingChain<Unit>(new HashChain<Unit>());
+		HashChain<Local> newLocals = new HashChain<Local>();
 		
 		String className = ((RefType) local.getType()).getClassName();
 		
@@ -817,12 +832,13 @@ public class InstrumentationHelper {
 		boolean noPrimitiveCtorFound = (primitiveCtor == null);
 		
 		Body body = meth.getActiveBody();
-		LocalGenerator generator = new LocalGenerator(body);
 		
 		SootMethod prototypeCtor = null;
 		if (primitiveCtor == null){
 			//we need to make the private ctor w/o any arguments public
-			makePrivateCtorPublic(className, unit, meth, generator);
+			Pair<PatchingChain<Unit>, Chain<Local>> tPair = makePrivateCtorPublic(className, meth);
+			newUnits.addAll(tPair.getLeft());
+			newLocals.addAll(tPair.getRight());
 			
 			//now reassign the primitiveCtor variable to the formerly private ctor:
 			primitiveCtor = Scene.v().getSootClass(className).getMethod("<init>()");
@@ -867,11 +883,17 @@ public class InstrumentationHelper {
 		// now call ctor to construct object. ctor can now either be a valid
 		// one or the formerly private one we made public:
 		CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
-		AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, meth.getActiveBody(), local, generator, unit);
+		AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, body, local, new LocalGenerator(body), unit);
+		newUnits.addLast(assignStmt);
 		
 		//now add initializations to the ctor we just made public:
-		for (SootField field : Scene.v().getSootClass(className).getFields())
-			initializeFieldIfNotInitialized(field, primitiveCtor);
+		//TODO @ JS: decide whether you want to call it separately!
+		for (SootField field : Scene.v().getSootClass(className).getFields()){
+			Pair<PatchingChain<Unit>, Chain<Local>> tPair2 = generateUnitsToInitializeFieldIfNotInitialized(field, primitiveCtor);
+			primitiveCtor.getActiveBody().getUnits().addAll(tPair2.getLeft());
+			primitiveCtor.getActiveBody().getLocals().addAll(tPair2.getRight());
+			
+		}
 		
 		// if there was no public ctor to instantiate: 
 		// VERY simple heuristic for getting closer to a well-formed program:
@@ -902,7 +924,53 @@ public class InstrumentationHelper {
 				}
 			}
 		}*/ //abandoned for now
+		return new ImmutablePair<PatchingChain<Unit>, Chain<Local>>(newUnits, newLocals);
 		
+	}
+	
+	public static Local generateLocalAndDontInsert(Body body, Type type){
+		String namePrefix;
+		if (type instanceof IntType)
+			namePrefix = "$i";
+		else if (type instanceof CharType)
+			namePrefix = "$c";
+		else if (type instanceof VoidType)
+			namePrefix = "$v";
+		else if (type instanceof ByteType)
+			namePrefix = "$b";
+		else if (type instanceof ShortType)
+			namePrefix = "$s";
+		else if (type instanceof BooleanType)
+			namePrefix = "$b";
+		else if (type instanceof DoubleType)
+			namePrefix = "$d";
+		else if (type instanceof FloatType)
+			namePrefix = "$f";
+		else if (type instanceof LongType)
+			namePrefix = "$l";
+		else if (type instanceof RefLikeType)
+			namePrefix = "$r";
+		else if (type instanceof UnknownType)
+			namePrefix = "$u";
+		else
+			namePrefix = "$WTF";
+		
+		Chain<Local> existingLocals = body.getLocals();
+		String name;
+		while (true){
+			boolean nameAlreadyTaken = false;
+			name = namePrefix + RandomStringUtils.random(20);
+			for (Local l : existingLocals){
+				if (l.getName().equals(name)){
+					nameAlreadyTaken = true;
+				}
+			}
+			if (!nameAlreadyTaken)
+				break;
+		}
+		//name now unique
+				
+		return soot.jimple.Jimple.v().newLocal(name, type);
 	}
 	
 	/**
@@ -912,34 +980,39 @@ public class InstrumentationHelper {
 	 * @param unit
 	 * @param meth
 	 */
-	public static void makePrivateCtorPublic(String className, Unit before, SootMethod meth, LocalGenerator gen){
-		if (gen == null)
-			gen = new LocalGenerator(meth.getActiveBody());
-		
-		PatchingChain<Unit> methodUnits = meth.getActiveBody().getUnits();
+	public static Pair<PatchingChain<Unit>, Chain<Local>> makePrivateCtorPublic(String className, SootMethod meth){
+		Body body = meth.getActiveBody();
+
+		PatchingChain<Unit> resultUnits = new PatchingChain<Unit>(new HashChain<Unit>());
+		HashChain<Local> resultLocals = new HashChain<Local>();
 		
 		/*
 		 * Constructor<Foo> constructor= (Constructor<Foo>) Foo.class.getDeclaredConstructors()[0];
 		 * constructor.setAccessible(true); 
 		 */
-		Local classObjToCallOn = gen.generateLocal(RefType.v("java.lang.Class"));
-		Local ctorLocal = gen.generateLocal(RefType.v("java.lang.reflect.Constructor"));
-		Local ctorArray = gen.generateLocal(RefType.v("java.lang.reflect.Constructor").makeArrayType());
+		Local classObjToCallOn = generateLocalAndDontInsert(body, RefType.v("java.lang.Class"));
+		resultLocals.add(classObjToCallOn);
+		Local ctorLocal = generateLocalAndDontInsert(body, RefType.v("java.lang.reflect.Constructor"));
+		resultLocals.add(ctorLocal);
+		Local ctorArray = generateLocalAndDontInsert(body, RefType.v("java.lang.reflect.Constructor").makeArrayType());
+		resultLocals.add(ctorArray);
 		AssignStmt getClass = Jimple.v().newAssignStmt(classObjToCallOn, Jimple.v().newVirtualInvokeExpr(classObjToCallOn, Scene.v().getSootClass(className).getMethod("java.lang.Class getClass()").makeRef()));
-		methodUnits.insertBefore(getClass, before);
+		resultUnits.addLast(getClass);
 		
 		//now that we have the class object, make the call to getDeclaredConstructors:
 		AssignStmt getCtors = Jimple.v().newAssignStmt(ctorArray, Jimple.v().newVirtualInvokeExpr(classObjToCallOn, Scene.v().getSootClass("java.lang.Class").getMethod("java.lang.reflect.Constructor[] getDeclaredConstructors()").makeRef()));
-		methodUnits.insertAfter(getCtors, getClass);
+		resultUnits.addLast(getCtors);
 		
 		//now get index 0 for the no-argument ctor:
 		((ArrayRef) ctorArray).setIndex(IntConstant.v(0)); //TODO: is this the right way to get [0]?
 		AssignStmt getCtorZero = Jimple.v().newAssignStmt(ctorLocal, ((ArrayRef) ctorArray)); 
-		methodUnits.insertAfter(getCtorZero, getCtors);
+		resultUnits.addLast(getCtorZero);
 		
 		//now make accessible:	
 		VirtualInvokeExpr setAccessible = Jimple.v().newVirtualInvokeExpr(ctorLocal, Scene.v().getSootClass("java.lang.reflect.Constructor").getMethod("void setAccessible(boolean)").makeRef(), IntConstant.v(1));
-		methodUnits.insertAfter(Jimple.v().newInvokeStmt(setAccessible), getCtorZero);
+		resultUnits.addLast(Jimple.v().newInvokeStmt(setAccessible));
+		
+		return new ImmutablePair<PatchingChain<Unit>, Chain<Local>>(resultUnits, resultLocals);
 	}
 	
 	public static boolean isPrimitive(Type t){
