@@ -88,7 +88,7 @@ public final class Config {
         outDir = props.getProperty("a3t.results.dir", "./results/");
         emulatorPort = props.getProperty("a3t.port", DEFAULT_EMU_PORT);
         userWait = Integer.valueOf(props.getProperty("a3t.userwait", String.valueOf(4)));
-        K = Integer.valueOf(props.getProperty("a3t.K",String.valueOf(2)));
+        K = Integer.valueOf(props.getProperty("a3t.K",String.valueOf(5)));
         checkIndep = Boolean.valueOf(props.getProperty("a3t.indep"));
 		checkReadOnly = Boolean.valueOf(props.getProperty("a3t.readonly"));
         condMapFile = props.getProperty("a3t.condmap.file", "bin/a3t/condmap.txt");

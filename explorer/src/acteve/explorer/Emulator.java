@@ -147,6 +147,18 @@ public class Emulator extends Task
 		execute(clearHistory);
 		execute(pushSettingsFile);
 		execute(pushMonkeyScript);
+		try {	
+			int start = this.pushNewSolution.getCmd().indexOf("push ")+5;
+			String solutionFile = this.pushNewSolution.getCmd().substring(start, this.pushNewSolution.getCmd().indexOf(' ', start));
+			if (new File(solutionFile).exists()) {
+				execute(this.pushNewSolution);
+			} else {
+				System.err.println("Solution file " + solutionFile + " does not exist. Nothing to push.");
+			}
+		} catch (Exception e) {	
+			//Execution fails if no model solution has been computed, e.g. at first iteration. That's okay.
+			e.printStackTrace();
+		}
 		killActivity.prepare();
 		pullLogCat.prepare();
 		execute(startActivity);
@@ -160,18 +172,6 @@ public class Emulator extends Task
 		execute(killActivity);
 		execute(pullLogCat);
 		execute(logcatEnd);
-		try {	
-			int start = this.pushNewSolution.getCmd().indexOf("push ")+5;
-			String solutionFile = this.pushNewSolution.getCmd().substring(start, this.pushNewSolution.getCmd().indexOf(' ', start));
-			if (new File(solutionFile).exists()) {
-				execute(this.pushNewSolution);
-			} else {
-				System.err.println("Solution file " + solutionFile + " does not exist. Nothing to push.");
-			}
-		} catch (Exception e) {	
-			//Execution fails if no model solution has been computed, e.g. at first iteration. That's okay.
-			e.printStackTrace();
-		}
 	}
 
 	public void exec(int executingId, MonkeyScript script)

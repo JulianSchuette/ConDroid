@@ -110,6 +110,7 @@ public class Path
 	 */
     private Path(int seedId, int depth)
     {
+    	System.out.println("New path "+seedId+"of depth " + depth);
 		this.seedId = seedId;
 		this.depth = depth;
         this.id = PathsRepo.nextPathId();
@@ -129,8 +130,6 @@ public class Path
     MonkeyScript generateScript() throws IOException
     {
     	File scriptToRun = Main.newOutFile(Emulator.SCRIPT_TXT+"."+id);    	
-//		if(scriptToRun.exists()) {
-//		System.out.println("Script does not exist: " + scriptToRun.getAbsolutePath());
 
         File pcDeclFile = Main.newOutFile(pcDeclFileNameFor(seedId));
         File smtFile = Main.newOutFile(smtFileNameFor(id));
@@ -148,6 +147,7 @@ public class Path
         System.out.println("pc file     : " + Main.newOutFile(pcFileNameFor(seedId)).exists() + " - " + new File(pcFileNameFor(seedId)).getAbsolutePath());
         System.out.println("pcDecl file     : " + pcDeclFile.exists() + " - " + pcDeclFile.getAbsolutePath());
         System.out.println("scriptToRun file: " + scriptToRun.exists() + " - " + scriptToRun.getAbsolutePath());
+        System.out.println("Depth: " + depth);
         
         if (pcDeclFile.exists())
         	copy(pcDeclFile, smtFile);
@@ -175,6 +175,7 @@ public class Path
 	        }
 	        
 	        //Invert last condition
+	        System.out.println("Inverting " + line);
 	        smtWriter.println("(assert (not "+line+"))");
 	
 	        smtWriter.println("(check-sat)");
@@ -192,10 +193,6 @@ public class Path
 	        
 	        Z3Model model = Z3StrModelReader.read(z3OutFile);
 	        if(model != null){
-	        	//TODO By Julian: This is where we received a solution to our path constraint. I.e., the values of the solution must now be injected at the appropriate places and the app must be started again, this time running with the modified values.
-	        	// Acteve only deals with tap events, so their way of setting new input values is a monkey script. 
-	        	// If path conditions depend on API calls like System.currentTimeMillis() however, there is currently no way of modifying their return values.
-	        	// This should be solved by injecting methods which read the values from the solved model
 	        	System.out.println("** Solved model **");
 	        	model.print();
 	            File seedMonkeyScript = Main.newOutFile(Emulator.SCRIPT_TXT+"."+seedId);
@@ -291,10 +288,13 @@ public class Path
         String line;
         if(!(logCatFile.length() > 0)) throw new Error("Empty trace file");
         System.out.println("    Reading from logcat file " + logCatFile.getAbsolutePath() + " into tracefile " + traceFileNameFor(id));
+        
+        declWriter.printComment("Iteration " + id + " Count " + count + " Path depth" + pathTxtSize);
+        
         BufferedReader reader = Main.newReader(logCatFile);
         while ((line = reader.readLine()) != null) {
             if (line.startsWith(BRANCH_MARKER)) {
-            	System.out.println("Found brach marker! " + line);
+            	System.out.println("     Found branch marker! " + line);
                 int i = line.indexOf(':');
                 String bid = line.substring(i+2).trim();
                 if (!diverged && count < pathTxtSize) {
@@ -313,7 +313,7 @@ public class Path
                 //covMonitor.process(line);
             } else if (line.startsWith(PC_MARKER)) {
                 line = line.substring(line.indexOf(':')+2).trim();
-                System.out.println("    Writing PC_MARKER to PC file " + pcFileNameFor(id) + " and decl file " + pcDeclFileNameFor(id));
+//                System.out.println("    Writing PC_MARKER to PC file " + pcFileNameFor(id) + " and decl file " + pcDeclFileNameFor(id));
                 pcWriter.println(line);
                 declWriter.process(line);
 				//panelDetector.process(pc);

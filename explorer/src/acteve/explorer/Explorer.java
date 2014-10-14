@@ -52,6 +52,15 @@ public class Explorer
 	private List<Integer> currentRoundRunIds = new ArrayList();
 	private int currentK = 1;
 
+	/**
+	 * Explores paths.
+	 * 
+	 * @param K Maximum path depth
+	 * @param monkeyScript Initial monkey script.
+	 * @param checkReadOnly Prune RO events.
+	 * @param checkIndep
+	 * @param pruneAfterLastStep
+	 */
 	void perform(int K, String monkeyScript, boolean checkReadOnly, boolean checkIndep, boolean pruneAfterLastStep)
 	{
 		MonkeyScript seedScript = new ElementaryMonkeyScript(new File(monkeyScript));
@@ -66,6 +75,8 @@ public class Explorer
 	{
 		if(!vanillaSymEx()) 
 			return;
+		System.out.println("First symbolic exec finished. Continue?");
+		try { System.in.read();		} catch (IOException e) { e.printStackTrace(); }
 		currentK++;
 		for (; currentK <= K ; currentK++) {
 			List<Integer> prefixes = currentRoundRunIds;
@@ -77,7 +88,10 @@ public class Explorer
 				extend(prefixId);
 			}
 			currentRoundRunIds = new ArrayList();
-			if(!vanillaSymEx()) {
+			boolean more = vanillaSymEx();
+			System.out.println("Symbolic exec finished. Continue?");
+			try { System.in.read();		} catch (IOException e) { e.printStackTrace(); }
+			if(!more) {
 				return;
 			}
 		}
@@ -107,6 +121,7 @@ public class Explorer
 
 	private List<Integer> prune(int numEvents, List<Integer> prefixes, boolean checkReadOnly, boolean checkIndep)
 	{
+		System.out.println("Pruning.");
 		if(numEvents == 1)
 			return prune1(numEvents, prefixes, checkReadOnly);
 
@@ -178,101 +193,11 @@ public class Explorer
 	}
 
     private boolean vanillaSymEx() {
-		
+		System.out.println("Vanilla symex with currentRoundRunIds " + currentRoundRunIds.toArray().toString());
 		return Executor.v().exec(currentRoundRunIds);
 
-		/*
-		int submitted = 0;
-		int maxExecs = Config.g().maxExecs;
-		Executor executor = Executor.v();
-        while(numExecs < maxExecs) {
-            Path path = PathsRepo.getNextPath();
-            if(path == null)
-				break;
 
-			MonkeyScript script;
-			try{
-				script = path.generateScript();
-			}catch(IOException e){
-				throw new Error(e);
-			}
-			if(script == null) {
-				//infeasible path
-				numExecs++;
-				continue;
-			}
-			
-			//does not block
-			executor.submit(path, script);
-			submitted++;
-		}
-		
-		while(submitted > 0) {
-			Path path = executor.pollDoneQueue();
-			submitted--;
-			ExecResult result;
-			try{
-				result = path.postProcess();
-			}catch(IOException e){
-				throw new Error(e);
-			}
-			switch(result) {			
-			case DIVERGED:
-				divergenceCount++;
-				feasibleCount++;
-				numExecs++;
-				break;
-			case OK:
-				currentRoundRunIds.add(path.id());
-				feasibleCount++;
-				numExecs++;
-				break;
-			case SWB:
-				System.out.println("******** Shutting down because something went bad! ***********");
-				saveState(path);
-				return false;
-			}
-        }
-		
-		return numExecs < maxExecs;
-		*/
     }
-	
-	/*
-	void saveState(Path swbPath) {
-		Properties props = new Properties();
-		props.setProperty("numexecs", String.valueOf(numExecs));
-		props.setProperty("feasiblecount", String.valueOf(feasibleCount));
-		props.setProperty("divergencecount", String.valueOf(divergenceCount));
-		props.setProperty("currentk", String.valueOf(currentK));
 
-		StringBuilder builder = new StringBuilder();
-		for(Integer id : currentRoundRunIds) {
-			builder.append(id+" ");
-		}
-		props.setProperty("currentroundrunids", builder.toString());
-		
-		PathsRepo.saveState(props, swbPath);
-		Main.saveProperties(props);
-	}
-
-	void restoreState(Properties props) {
-		try{
-			this.numExecs = Integer.parseInt(props.getProperty("numexecs"));
-			this.feasibleCount = Integer.parseInt(props.getProperty("feasiblecount"));
-			this.divergenceCount = Integer.parseInt(props.getProperty("divergencecount"));
-			this.currentK = Integer.parseInt(props.getProperty("currentk"));
-			
-			String str = props.getProperty("currentroundrunids").trim();
-			if(!str.equals("")) {
-				for(String s : str.split(" ")) {
-					currentRoundRunIds.add(Integer.parseInt(s));
-				}
-			}
-		}catch(Exception e){
-			throw new Error(e);
-		}
-	}
-	*/
 }
 

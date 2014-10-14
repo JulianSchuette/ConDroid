@@ -833,8 +833,12 @@ public class InstrumentationHelper {
 		
 		Body body = meth.getActiveBody();
 		
-		SootMethod prototypeCtor = null;
-		if (primitiveCtor == null){
+		if (primitiveCtor != null){
+			//we need this one to have classes instantiated for us
+			CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
+			AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, meth.getActiveBody(), local, generator, unit);
+			
+		} else {
 			//we need to make the private ctor w/o any arguments public
 			Pair<PatchingChain<Unit>, Chain<Local>> tPair = makePrivateCtorPublic(className, meth);
 			newUnits.addAll(tPair.getLeft());

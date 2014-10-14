@@ -57,6 +57,10 @@ public class Z3DeclWriter
 			throw new Error(e);
 		}
 	}
+	
+	void printComment(String comment) {
+		pcDeclWriter.println(";"+comment);
+	}
 
 	void process(String pc)
 	{

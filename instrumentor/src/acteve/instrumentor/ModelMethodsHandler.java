@@ -387,7 +387,37 @@ public class ModelMethodsHandler {
 		}	
 		return sb.toString();
 	}
+	
+	public static void readModeledFields(String fileName) {
+		if(fileName == null)
+			return;
 
+		File file = new File(fileName);
+		if (!file.exists()) {
+			System.out.println("model methods file not found. " + fileName);
+			return;
+		}
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			String line = reader.readLine();
+			while (line != null) {
+				if (!line.startsWith("#")) {	//Skip comments
+					String className = line.trim();									
+					if (Scene.v().containsField(className)) {
+						fieldsWithModels.add(Scene.v().getField(className));
+					}
+				}
+			line = reader.readLine();
+			}
+			reader.close();
+		}
+		catch(IOException e){
+			throw new Error(e);
+		}
+
+	}
+
+		
 	/**
 	 * Reads model definitions from a file.
 	 * 
@@ -401,7 +431,7 @@ public class ModelMethodsHandler {
 	 * 
 	 * @param fileName
 	 */
-	public static void readModelMethods(String fileName)
+	public static void readModeledMethods(String fileName)
 	{
 		if(fileName == null)
 			return;
@@ -418,10 +448,7 @@ public class ModelMethodsHandler {
 				int index = line.indexOf(' ');
 				if (!line.startsWith("#") && index >=0) {	//Skip comments
 					String className = line.substring(0, index);				
-					if (!Scene.v().containsClass(className)) {
-						System.out.println("will not model class: " + line);
-					}
-					else {
+					if (Scene.v().containsClass(className)) {
 						String subsig = line.substring(index+1).trim();
 						SootClass declClass = Scene.v().getSootClass(className);
 						if (declClass.declaresMethod(subsig)) {
@@ -429,15 +456,14 @@ public class ModelMethodsHandler {
 							methodsWithModels.add(method);
 							System.out.println("model method requested for: " + declClass.getName() + "." + method.getSignature() + " which is available in scene");
 						} else if (declClass.declaresField(subsig)) {
-							SootField field = declClass.getField(subsig);
-							fieldsWithModels .add(field);
+							fieldsWithModels.add(declClass.getField(subsig));
 						}
 						else {
 							System.out.println("will not model method: " + line);
 						}
 					}
 				}
-				line = reader.readLine();
+			line = reader.readLine();
 			}
 			reader.close();
 		}

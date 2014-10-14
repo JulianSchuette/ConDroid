@@ -1,2 +1,2 @@
-android.os.Build
-android.os.Build$VERSION
+<android.os.Build: java.lang.String BOARD>
+<android.os.Build: java.lang.String HOST>

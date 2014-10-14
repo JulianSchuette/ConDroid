@@ -451,25 +451,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 			Stmt oldTarget = ifStmt.getTarget();
 			
 			//Insert symbolic condition before concrete if-statement
-			System.out.println("Inserting before: " + symAsgnStmt.toString());
 			units.insertBefore(symAsgnStmt, ifStmt);
-			
-			//TODO At this point we need to insert a staticinvoke to some helper method which sets op1 and op2 and determined by the solver to enforce a specific path
-//			if (condExp.getOp1() instanceof Immediate) {
-//				if (condExp.getOp1().getType() instanceof soot.IntType) {
-//					System.out.println("Enforcing value in " + body.getMethod().getName() + ": " + condExp.getOp1());
-//					units.insertBefore(G.jimple.newAssignStmt(condExp.getOp1(),
-//					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(condExp.getOp1().toString().toUpperCase()))), ifStmt);
-//				} else {
-//					System.out.println("not an integer type: " + condExp.getOp1() + " - " + condExp.getOp1().getType().toString());
-//				}
-//				//				uniqueVarCounter++;
-//			} else {
-//				System.out.println("Is not an immediate: " + condExp.getOp1());
-//			}
-			
+						
 			//Insert symbolic "false" assumption immediately after concrete if-statement
-			System.out.println("Inserting after: " + assumeFlsStmt.toString());
 			units.insertAfter(assumeFlsStmt, ifStmt);
 			
 			/* 
@@ -677,27 +661,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 		} else {
 			System.out.println("Unhandled assign stmt: " + as);
 		}
-
-		//BY JULIAN: Enforce specific solution values to tracked variables TODO: Unfinished.
-//		if (leftOp instanceof Local && localsMap.containsKey(leftOp)) {
-//			Type t = leftOp.getType();
-//			if (t instanceof IntType) {
-//				G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp,
-//					G.staticInvokeExpr(G.getSolution_int, StringConstant.v(leftOp.toString().toUpperCase()+uniqueVarCounter))));
-//				uniqueVarCounter++;
-//			} else if (t instanceof FloatType) {
-//				//TODO support floats
-//				System.out.println("Not yet implemented: Enforcing a solution value for float " + as.toString());
-//			} else if (t instanceof BooleanType) {
-//				//TODO support booleans
-//				System.out.println("Not yet implemented: Enforcing a solution value for boolean " + as.toString());
-//
-//			} // ...
-//		} else {
-//			//TODO Handle assignment to array entries and fields
-//			System.out.println("Not yet implemented: Enforcing a solution value for field/array " + as.toString());
-//		
-//		}
 	}
 
 	@Override
@@ -928,12 +891,12 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 		SootField fld = rightOp.getField();
 		Local leftOp_sym = localsMap.get(leftOp);
-		if (!Main.isInstrumented(fld.getDeclaringClass()) && !Config.g().fieldsToModel.contains(fld.getDeclaringClass().getName())) {
+		if (!Main.isInstrumented(fld.getDeclaringClass()) && !Config.g().fieldsToModel.contains(fld.toString())) {
 			if(leftOp_sym != null)
 				G.assign(leftOp_sym, NullConstant.v());
 			return;
 		}
-		System.out.println("Tracing field "+fld.getDeclaration());
+		System.out.println("Tracing field "+fld.toString());
 		if(addSymLocationFor(fld.getType())) {
 			
 			if (!fieldsMap.containsKey(fld)) {
@@ -984,6 +947,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 			} else {
 				System.err.println("Modelled field of non-supported type: " + fld.getName() + " : " + fld.getType());
 			}
+		} else {
+			System.out.println("Not modelled: " + fld.toString());
 		}
 	}
 

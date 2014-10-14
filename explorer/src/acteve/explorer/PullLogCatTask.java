@@ -98,16 +98,16 @@ public class PullLogCatTask extends Task
 		} else {
 			System.out.println("");
 			pullLogCatFile.execute();
-			try {
-				BufferedReader r = new BufferedReader(new FileReader(tmpLogCatFile));
-				String line = null;
-				System.out.println("Logcat file follows. Does it contain BRANCH?");
-				while ((line=r.readLine())!=null) {
-					System.out.println("   " + line);
-				}
-			} catch (NullPointerException | IOException npe) {
-				npe.printStackTrace();
-			}
+//			try {
+//				BufferedReader r = new BufferedReader(new FileReader(tmpLogCatFile));
+//				String line = null;
+//				System.out.println("Logcat file follows. Does it contain BRANCH?");
+//				while ((line=r.readLine())!=null) {
+//					System.out.println("   " + line);
+//				}
+//			} catch (NullPointerException | IOException npe) {
+//				npe.printStackTrace();
+//			}
 		}
 		
 	}

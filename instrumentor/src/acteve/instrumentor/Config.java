@@ -47,6 +47,7 @@ public final class Config {
 	public final String libJars;
 	public final String inputMethsFile;
     public final String modelMethsFile;
+    public final String modelFieldsFile;
 	public final String outDir;
 	public final String sdkDir;
     public final RWKind rwKind;
@@ -71,14 +72,15 @@ public final class Config {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		inJars = props.getProperty("a3t.android.jar", "libs/android-14.jar");
-		outJar = props.getProperty("a3t.out.jar", "instrumented.jar");
-        libJars = props.getProperty("a3t.lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
-		inputMethsFile = props.getProperty("a3t.inputmeths.file", "inputs.dat");
-		modelMethsFile = props.getProperty("a3t.modelmeths.file", "models.dat");
-		outDir = props.getProperty("a3t.out.dir", "out");
-		sdkDir = props.getProperty("a3t.sdk.dir", "out");
-		String s = props.getProperty("a3t.rw.kind", "id_field_write");
+		inJars = props.getProperty("android.jar", "libs/android-14.jar");
+		outJar = props.getProperty("out.jar", "instrumented.jar");
+        libJars = props.getProperty("lib.jars", "jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar");
+		inputMethsFile = props.getProperty("inputmeths.file", "inputs.dat");
+		modelMethsFile = props.getProperty("modelmeths.file", "models.dat");
+		modelFieldsFile = props.getProperty("modelfields.file", "fieldsToModel.txt");
+		outDir = props.getProperty("out.dir", "out");
+		sdkDir = props.getProperty("sdk.dir", "out");
+		String s = props.getProperty("rw.kind", "id_field_write");
 		if (s.equals("none")) 
 			rwKind = RWKind.NONE;
 		else if (s.equals("id_field_write"))
@@ -88,12 +90,12 @@ public final class Config {
 		else if (s.equals("only_write"))
 			rwKind = RWKind.ONLY_WRITE;
 		else
-			throw new RuntimeException("Unknown value for a3t.rw.kind: " + s);
+			throw new RuntimeException("Unknown value for rw.kind: " + s);
 		
-		fldsWhitelist = props.getProperty("a3t.whiteflds.file", null);
-		fldsBlacklist = props.getProperty("a3t.blackflds.file", null);
-		methsWhitelist = props.getProperty("a3t.whitemeths.file", null);
-		instrAllFields = Boolean.getBoolean(props.getProperty("a3t.instrflds.all"));
+		fldsWhitelist = props.getProperty("whiteflds.file", null);
+		fldsBlacklist = props.getProperty("blackflds.file", null);
+		methsWhitelist = props.getProperty("whitemeths.file", null);
+		instrAllFields = Boolean.getBoolean(props.getProperty("instrflds.all"));
 
 		fieldsToModel = new HashSet<String>();
 		File fieldModels = new File("fieldsToModel.txt");
@@ -109,18 +111,18 @@ public final class Config {
 		}
 				
 		if (Main.DEBUG) {
-			System.out.println("a3t.in.jars=" + inJars);
-			System.out.println("a3t.out.jar=" + outJar);
-			System.out.println("a3t.lib.jars=" + libJars);
-			System.out.println("a3t.inputmeths.file=" + inputMethsFile);
-			System.out.println("a3t.modelmeths.file=" + modelMethsFile);
-			System.out.println("a3t.out.dir=" + outDir);
-			System.out.println("a3t.sdk.dir=" + sdkDir + " (SDK if null)");
-			System.out.println("a3t.rw.kind=" + rwKind);
-			System.out.println("a3t.whiteflds.file=" + fldsWhitelist);
-			System.out.println("a3t.blackflds.file=" + fldsBlacklist);
-			System.out.println("a3t.whitemeths.file=" + methsWhitelist);
-			System.out.println("a3t.instrflds.all="+ instrAllFields);
+			System.out.println("in.jars=" + inJars);
+			System.out.println("out.jar=" + outJar);
+			System.out.println("lib.jars=" + libJars);
+			System.out.println("inputmeths.file=" + inputMethsFile);
+			System.out.println("modelmeths.file=" + modelMethsFile);
+			System.out.println("out.dir=" + outDir);
+			System.out.println("sdk.dir=" + sdkDir + " (SDK if null)");
+			System.out.println("rw.kind=" + rwKind);
+			System.out.println("whiteflds.file=" + fldsWhitelist);
+			System.out.println("blackflds.file=" + fldsBlacklist);
+			System.out.println("whitemeths.file=" + methsWhitelist);
+			System.out.println("instrflds.all="+ instrAllFields);
 		}
 	}
 

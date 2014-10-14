@@ -91,6 +91,14 @@ public class Executor
 		this.wildEmusThreshold = wildEmusThreshold;
 	}
 
+	/**
+	 * Starts plain symbolic execution.
+	 * 
+	 * Returns true if all emulators are free and paths are done.
+	 * 
+	 * @param currentRoundRunIds
+	 * @return
+	 */
 	public boolean exec(List<Integer> currentRoundRunIds) {
 		this.currentRoundRunIds = Collections.synchronizedList(currentRoundRunIds);
 		int maxExecs = Config.g().maxExecs;
@@ -132,7 +140,9 @@ public class Executor
 			}
 			if(numExecs.get() >= maxExecs)
 				break;
-			new Worker(emu, path, script).start();
+			
+			Worker w = new Worker(emu, path, script);
+			w.start();
 		}
 		return false;
 	}
@@ -156,7 +166,7 @@ public class Executor
 		}
 
 		public void run() {
-			System.out.println("Starting new worker thread (path.id="+path.id()+", no of events in script=" + script.length()+")");
+			System.out.println("\n\n\nStarting new worker thread (path.id="+path.id()+", no of events in script=" + script.length()+")");
 			ExecResult result = execute();
 			switch(result) {			
 			case DIVERGED:
@@ -217,6 +227,7 @@ public class Executor
 				e.printStackTrace();
 				result = ExecResult.SWB;
 			}
+			System.out.println("Result of path " + path.id() + " execution is " + result);
 			return result;
 		}
 		

@@ -864,6 +864,7 @@ public class Util
 //					************************
 //					
 					while ((line = br.readLine())!=null) {
+						System.out.println("SOLUTION: " + line);
 						if (line.startsWith("*") || line.startsWith("-"))
 							continue;
 						else if (line.startsWith(">>")) {
@@ -883,6 +884,7 @@ public class Util
 							String vartype = mat.group(2);
 							//TODO handle array and float types
 							String varvalue = mat.group(3);
+							System.out.println("Varvalue is " + varvalue);
 							if (varvalue=="\"null@0\"") {
 								varvalue = null;
 								System.out.println("There is a null string in solution map");
