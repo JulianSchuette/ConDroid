@@ -76,7 +76,12 @@ import org.xml.sax.SAXException;
 
 import soot.ArrayType;
 import soot.Body;
+import soot.BooleanType;
+import soot.ByteType;
 import soot.CharType;
+import soot.DoubleType;
+import soot.FloatType;
+import soot.IntType;
 import soot.JimpleClassSource;
 import soot.Local;
 import soot.MethodOrMethodContext;
@@ -86,6 +91,7 @@ import soot.Printer;
 import soot.RefLikeType;
 import soot.RefType;
 import soot.Scene;
+import soot.ShortType;
 import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
@@ -96,7 +102,7 @@ import soot.Unit;
 import soot.UnknownType;
 import soot.Value;
 import soot.VoidType;
-import soot.baf.PlaceholderInst;
+import soot.LongType;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.javaToJimple.LocalGenerator;
 import soot.jimple.ArrayRef;
@@ -112,6 +118,7 @@ import soot.jimple.ReturnStmt;
 import soot.jimple.ReturnVoidStmt;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StringConstant;
+import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.infoflow.entryPointCreators.CAndroidEntryPointCreator;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JIdentityStmt;
@@ -719,7 +726,6 @@ public class InstrumentationHelper {
 		return returns;
 	}
 	
-<<<<<<< HEAD
 	/**
 	 * Returns chain of units which should be inserted at the according position.
 	 * These units take care of field initialization and a good place to put them
@@ -833,12 +839,8 @@ public class InstrumentationHelper {
 		
 		Body body = meth.getActiveBody();
 		
-		if (primitiveCtor != null){
-			//we need this one to have classes instantiated for us
-			CAndroidEntryPointCreator aep = new CAndroidEntryPointCreator(new ArrayList<String>());
-			AssignStmt assignStmt = (AssignStmt) aep.buildMethodCall(primitiveCtor, meth.getActiveBody(), local, generator, unit);
-			
-		} else {
+		SootMethod prototypeCtor = null;
+		if (primitiveCtor == null){
 			//we need to make the private ctor w/o any arguments public
 			Pair<PatchingChain<Unit>, Chain<Local>> tPair = makePrivateCtorPublic(className, meth);
 			newUnits.addAll(tPair.getLeft());
@@ -1084,7 +1086,6 @@ public class InstrumentationHelper {
 		return candidateCtor;
 	}
 	
->>>>>>> One more comment
 	/**
 	 * Inserts calls to all lifecycle methods at the end of the onCreate()
 	 * method.

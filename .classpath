@@ -26,5 +26,6 @@
 	<classpathentry kind="lib" path="libs/axml-2.0.jar"/>
 	<classpathentry kind="lib" path="libs/axml-1.0.jar"/>
 	<classpathentry kind="lib" path="libs/asm-debug-all-5.0.3.jar"/>
+	<classpathentry kind="lib" path="libs/commons-lang3-3.3.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
