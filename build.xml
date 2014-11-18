@@ -119,6 +119,10 @@
 			</classpath>
 		</java>
 	</target>
+	
+	<target name="test" depends="build-symbolic">
+	    <!-- Nothing here yet -->
+	</target>
 
 	<target name="clean">
 		<delete dir="explorer/classes"/>
