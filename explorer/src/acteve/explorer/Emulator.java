@@ -31,20 +31,22 @@
 
 package acteve.explorer;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.File;
-import java.io.PrintWriter;
 import java.io.IOException;
-import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Emulator extends Task
 {
+	private static final Logger log = LoggerFactory.getLogger(Emulator.class);
 	private final Project project;
 
 	private static final String WORK_DIR = "a3t_workdir";
@@ -163,13 +165,13 @@ public class Emulator extends Task
 		killActivity.prepare();
 		pullLogCat.prepare();
 		execute(startActivity);
-		System.out.println("Waiting for activity to settle...");
+		log.debug("Waiting for activity to settle...");
 		try {	Thread.sleep(4000); } catch (InterruptedException e1) {	}
 
-		System.out.println("Running monkey script");
+		log.debug("Running monkey script");
 		execute(runMonkey);
 		
-		System.out.println("Killing activity");
+		log.debug("Killing activity");
 		execute(killActivity);
 		execute(pullLogCat);
 		execute(logcatEnd);
@@ -194,7 +196,7 @@ public class Emulator extends Task
 		logcatEnd.setOutput(syslogFile);
 		
 		File z3ModelFile = Main.newOutFile(Path.Z3_OUT+executingId);
-		System.out.println("Pushing " + z3ModelFile.getAbsolutePath() + " to " +  DEVICE_DIR + "/" + SOLUTION_TXT);
+		log.debug("Pushing " + z3ModelFile.getAbsolutePath() + " to " +  DEVICE_DIR + "/" + SOLUTION_TXT);
 		this.pushNewSolution = new AdbTask(port,  "push " + z3ModelFile.getAbsolutePath() + " " + DEVICE_DIR + "/" + SOLUTION_TXT);
 		this.pushNewSolution.setProject(new Project());
 //		this.pushNewSolution.execute();

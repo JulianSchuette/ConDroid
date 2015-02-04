@@ -31,16 +31,20 @@
 
 package acteve.explorer;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.io.IOException;
-import java.io.BufferedReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConcolicExecutor
 {
+	private static final Logger log = LoggerFactory.getLogger(ConcolicExecutor.class);
 	private static ConcolicExecutor v;
 
 	private final BlockingQueue<Emulator> availableEmus = new LinkedBlockingQueue<Emulator>();
@@ -82,7 +86,7 @@ public class ConcolicExecutor
 		String[] ports = emuPorts.split(",");
 		numEmus = ports.length;
 		for(String p : ports) {
-			System.out.println("using emulator running on port " + p);
+			log.debug("using emulator running on port " + p);
 			Emulator emu = new Emulator(Integer.parseInt(p), fileName, appPkgName, mainActivity, activityArgs);
 			availableEmus.add(emu);
 		}
@@ -121,7 +125,7 @@ public class ConcolicExecutor
 			MonkeyScript script = null;
 			if (Config.g().useMonkeyScript) {
 				try{
-					System.out.println("Generating new script");
+					log.debug("Generating new script");
 					script = path.generateScript();
 				}catch(IOException e){
 					throw new Error(e);
@@ -151,9 +155,9 @@ public class ConcolicExecutor
 	}
 
 	void printStats() {
-        System.out.println("(stat) Number of feasible runs = " + feasibleCount.get());
-        System.out.println("(stat) Number of divergent runs = " + divergenceCount.get());
-        System.out.println("(stat) Total number of runs = " + numExecs.get());
+        log.info("(stat) Number of feasible runs = " + feasibleCount.get());
+        log.info("(stat) Number of divergent runs = " + divergenceCount.get());
+        log.info("(stat) Total number of runs = " + numExecs.get());
 	}
 
 	private final class Worker extends Thread {
@@ -175,7 +179,7 @@ public class ConcolicExecutor
 		}
 
 		public void run() {
-			System.out.println("\n\n\nStarting new worker thread (path.id="+path.id()+")");
+			log.info("\n\n\nStarting new worker thread (path.id="+path.id()+")");
 			ExecResult result = executePath();
 			switch(result) {			
 			case DIVERGED:
@@ -187,7 +191,7 @@ public class ConcolicExecutor
 				} else {
 					//ignore this path because it diverged too many times
 					ignoredCount.incrementAndGet();
-					System.out.println("Ignored path: " + path.id());
+					log.debug("Ignored path: " + path.id());
 				}
 				break;
 			case OK:
@@ -214,29 +218,25 @@ public class ConcolicExecutor
 		
 		private ExecResult executePath()
 		{
-			System.out.println("Executing path " + path.id() + " on " + emu);
+			log.debug("Executing path " + path.id() + " on " + emu);
 			ExecResult result = null;
 			try{
 				emu.exec(path.id(), script);
-				System.out.println("Finished executing path " + path.id() + " on " + emu);
+				log.info("Finished executing path " + path.id() + " on " + emu);
 			}catch(EmuGoneWildException e) {
-				System.out.println("Emulator gone wild: " + e.port());
+				log.error("Emulator gone wild: {}", e.port());
 				result = ExecResult.SWB;
 			}catch(Exception e){
-				System.out.println("Error occurred while executing " + path.id() + " on " + emu);
-				System.out.println("msg: " + e.getMessage());
-				e.printStackTrace();
+				log.error("Error occurred while executing " + path.id() + " on " + emu, e);
 				result = ExecResult.SWB;
 			}
 			try{
 				result = path.postProcess();
 			}catch(IOException e){
-				System.out.println("Error occurred while post-processing " + path.id() + " on " + emu);
-				System.out.println("msg: " + e.getMessage());
-				e.printStackTrace();
+				log.error("Error occurred while post-processing " + path.id() + " on " + emu,e);
 				result = ExecResult.SWB;
 			}
-			System.out.println("Result of path " + path.id() + " execution is " + result);
+			log.info("Result of path " + path.id() + " execution is " + result);
 			return result;
 		}
 		
@@ -266,7 +266,7 @@ public class ConcolicExecutor
 				reader.close();
 				return count;
 			}catch(Throwable e){
-				e.printStackTrace();
+				log.error(e.getMessage(),e );
 			}
 			return 0;
 		}

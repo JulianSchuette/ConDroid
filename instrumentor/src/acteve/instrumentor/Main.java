@@ -153,7 +153,7 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		soot.G.reset();
 		config = Config.g();
-		Utils.deleteDir(new File(Options.v().output_dir()));
+		Utils.deleteDir(new File("sootOutput"));
 		
 		if (args.length<=0 || !new File(args[0]).exists()) {
 			printUsage();

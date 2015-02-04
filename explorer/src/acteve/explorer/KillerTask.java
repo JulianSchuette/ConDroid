@@ -72,8 +72,7 @@ public class KillerTask extends Task
 	{
 		try{
 			rm.execute();
-		}catch(Exception e) {
-			System.out.println("error occurred for " + port);
+		}catch(Exception e) {			
 			throw new Error(e);
 		}
 	}
