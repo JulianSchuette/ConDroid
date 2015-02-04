@@ -54,6 +54,8 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
+import acteve.explorer.Utils;
+import soot.G;
 import soot.JimpleClassSource;
 import soot.MethodOrMethodContext;
 import soot.Modifier;
@@ -148,6 +150,7 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		soot.G.reset();
 		config = Config.g();
+		Utils.deleteDir(new File(Options.v().output_dir()));
 		
 		if (args.length<=0 || !new File(args[0]).exists()) {
 			printUsage();
