@@ -40,6 +40,7 @@ public final class Config {
     private static final int DEFAULT_MAX_EXECS = 1000;
     private static final String DEFAULT_EMU_PORT = "5554";
 
+	public final boolean useMonkeyScript;
 	public final String monkeyScript;
 	public String appPkgName;
 	public String mainActivity;
@@ -78,27 +79,28 @@ public final class Config {
 			e.printStackTrace();
 		}
 		
-        fileName = props.getProperty("a3t.filename", null);
-        monkeyScript = props.getProperty("a3t.monkey", "monkey_script.txt");
-        appPkgName = props.getProperty("a3t.pkg", null);
-        mainActivity = props.getProperty("a3t.mainact", null);
-		activityArgs = props.getProperty("a3t.actargs");
+        fileName = props.getProperty("filename", null);
+        useMonkeyScript = Boolean.parseBoolean(props.getProperty("useMonkeyScript", "false"));
+        monkeyScript = props.getProperty("monkey", "monkey_script.txt");
+        appPkgName = props.getProperty("pkg", null);
+        mainActivity = props.getProperty("mainact", null);
+		activityArgs = props.getProperty("actargs");
         z3Path = props.getProperty("env.Z3_BIN", "/opt/Z3-str_20140720/Z3-str.py");
-        maxExecs = Integer.valueOf(props.getProperty("a3t.max.iters", String.valueOf(DEFAULT_MAX_EXECS)));
-        outDir = props.getProperty("a3t.results.dir", "./results/");
-        emulatorPort = props.getProperty("a3t.port", DEFAULT_EMU_PORT);
-        userWait = Integer.valueOf(props.getProperty("a3t.userwait", String.valueOf(4)));
-        K = Integer.valueOf(props.getProperty("a3t.K",String.valueOf(5)));
-        checkIndep = Boolean.valueOf(props.getProperty("a3t.indep"));
-		checkReadOnly = Boolean.valueOf(props.getProperty("a3t.readonly"));
-        condMapFile = props.getProperty("a3t.condmap.file", "bin/a3t/condmap.txt");
-		fieldSigsFile = props.getProperty("a3t.fieldsigs.file", "bin/a3t/fieldsigs.txt");
+        maxExecs = Integer.valueOf(props.getProperty("max.iters", String.valueOf(DEFAULT_MAX_EXECS)));
+        outDir = props.getProperty("results.dir", "./results/");
+        emulatorPort = props.getProperty("port", DEFAULT_EMU_PORT);
+        userWait = Integer.valueOf(props.getProperty("userwait", String.valueOf(4)));
+        K = Integer.valueOf(props.getProperty("K",String.valueOf(5)));
+        checkIndep = Boolean.valueOf(props.getProperty("indep"));
+		checkReadOnly = Boolean.valueOf(props.getProperty("readonly"));
+        condMapFile = props.getProperty("condmap.file", "bin/a3t/condmap.txt");
+		fieldSigsFile = props.getProperty("fieldsigs.file", "bin/a3t/fieldsigs.txt");
 		String a3tDir = props.getProperty("env.A3T_DIR");
-		blackListedFieldsFile = props.getProperty("a3t.blackfields.file", null);
-		restart = Boolean.valueOf(props.getProperty("a3t.restart"));
-		pruneAfterLastStep = Boolean.valueOf(props.getProperty("a3t.prune.last"));
-		divergenceThreshold = Integer.valueOf(props.getProperty("a3t.diverge.threshold", String.valueOf(3)));
-		wildEmusThreshold = Integer.valueOf(props.getProperty("a3t.wildemus.threshold", String.valueOf(6)));
+		blackListedFieldsFile = props.getProperty("blackfields.file", null);
+		restart = Boolean.valueOf(props.getProperty("restart"));
+		pruneAfterLastStep = Boolean.valueOf(props.getProperty("prune.last"));
+		divergenceThreshold = Integer.valueOf(props.getProperty("diverge.threshold", String.valueOf(3)));
+		wildEmusThreshold = Integer.valueOf(props.getProperty("wildemus.threshold", String.valueOf(6)));
 
         if (Main.DEBUG) {
 			System.out.println("a3t.monkey=" + monkeyScript);

@@ -79,6 +79,10 @@ public class Path
 
     private boolean extended;
 
+    public Path() {
+    	this(null, -1, 0);
+    }
+    
 	/**
 	   this constructor is used for generation-0 paths
 	 */
@@ -94,7 +98,7 @@ public class Path
     {
         this(seedId, depth);
 		this.extended = extended;
-        seedScript.saveAs(Main.newOutFile(Emulator.SCRIPT_TXT+"."+id));
+//        seedScript.saveAs(Main.newOutFile(Emulator.SCRIPT_TXT+"."+id));
     }
 
 	/**
@@ -113,7 +117,7 @@ public class Path
     	System.out.println("New path "+seedId+"of depth " + depth);
 		this.seedId = seedId;
 		this.depth = depth;
-        this.id = PathsRepo.nextPathId();
+        this.id = PathQueue.nextPathId();
     }
 
     public int id()
@@ -203,7 +207,7 @@ public class Path
 	        }
         } else {
         	System.out.println("No smt file exists, nothing to solve");
-        	MonkeyScript ms = new ElementaryMonkeyScript(scriptToRun);
+        	MonkeyScript ms = new ElementaryMonkeyScript();
 			ms.generate(Main.newOutFile(Emulator.SCRIPT_TXT));
 			return ms;
         }
@@ -285,7 +289,7 @@ public class Path
 
         int count = 0, numEvents = 0, pathTxtSize = pathTxtList.size();
         boolean diverged = false;
-        String line;
+        String line, prevLine="";
         if(!(logCatFile.length() > 0)) throw new Error("Empty trace file");
         System.out.println("    Reading from logcat file " + logCatFile.getAbsolutePath() + " into tracefile " + traceFileNameFor(id));
         
@@ -294,7 +298,7 @@ public class Path
         BufferedReader reader = Main.newReader(logCatFile);
         while ((line = reader.readLine()) != null) {
             if (line.startsWith(BRANCH_MARKER)) {
-            	System.out.println("     Found branch marker! " + line);
+            	System.out.println("     Found branch marker! " + line + " | " + prevLine);
                 int i = line.indexOf(':');
                 String bid = line.substring(i+2).trim();
                 if (!diverged && count < pathTxtSize) {
@@ -305,7 +309,7 @@ public class Path
                         diverged = true;
                     }
                 }
-                traceWriter.println(bid);
+                traceWriter.println(bid + "  // " + prevLine);
                 // XXX depInfo.process(did);
                 count++;
 				//} else if (line.startsWith(APP_MARKER)) {
@@ -340,6 +344,7 @@ public class Path
 				rwAnalyzer.awrite(line);
 				roltDetector.processArray(line);
 			}
+            prevLine = line;
         }
 
         if (!diverged && count < pathTxtSize) {
@@ -384,7 +389,7 @@ public class Path
         	System.out.println("in generateNextGenPaths: traceLength " + traceLength + " depth " + depth);
             Path newPath = new Path(id, i);
             System.out.println("new path: id = " + newPath.id + " depth = " + i);
-            PathsRepo.addPath(newPath);
+            PathQueue.addPath(newPath);
         }
     }
 
@@ -393,7 +398,7 @@ public class Path
 		String divergingScript = Emulator.SCRIPT_TXT+"."+id;
 		MonkeyScript seedScript = new ElementaryMonkeyScript(Main.newOutFile(divergingScript));
 		seedScript.addComment("Repeat of " + divergingScript);
-		PathsRepo.addPath(new Path(seedScript, seedId, depth));
+		PathQueue.addPath(new Path(seedScript, seedId, depth));
 	}
 
 	private boolean checkForSWB(File sysLog)

@@ -39,11 +39,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.io.IOException;
 import java.io.BufferedReader;
 
-public class Executor
+public class ConcolicExecutor
 {
-	private static Executor v;
+	private static ConcolicExecutor v;
 
-	private final BlockingQueue<Emulator> available = new LinkedBlockingQueue();
+	private final BlockingQueue<Emulator> availableEmus = new LinkedBlockingQueue<Emulator>();
 	private final int numEmus;
 	private final int divergenceThreshold;
 	private final int wildEmusThreshold;
@@ -63,15 +63,15 @@ public class Executor
 					  int divergenceThreshold,
 					  int wildEmusThreshold)
 	{
-		v = new Executor(emuPorts, fileName, appPkgName, mainActivity, activityArgs, divergenceThreshold, wildEmusThreshold);
+		v = new ConcolicExecutor(emuPorts, fileName, appPkgName, mainActivity, activityArgs, divergenceThreshold, wildEmusThreshold);
 	}
 
-	static Executor v()
+	static ConcolicExecutor v()
 	{
 		return v;
 	}
 	
-	private Executor(String emuPorts, 
+	private ConcolicExecutor(String emuPorts, 
 					  String fileName,
 					 String appPkgName, 
 					 String mainActivity, 
@@ -84,7 +84,7 @@ public class Executor
 		for(String p : ports) {
 			System.out.println("using emulator running on port " + p);
 			Emulator emu = new Emulator(Integer.parseInt(p), fileName, appPkgName, mainActivity, activityArgs);
-			available.add(emu);
+			availableEmus.add(emu);
 		}
 		Emulator.writeToFile(Main.newOutFile(Emulator.PKG_TXT), appPkgName);
 		this.divergenceThreshold = divergenceThreshold;
@@ -105,36 +105,39 @@ public class Executor
 		
 		while(maxExecs > 0)  {
 			Path path = null;
+			
+			//Wait for new path to be assigned to a free emulator
 			while(true) {
-				path = PathsRepo.getNextPath();
+				path = PathQueue.getNextPath();
 				if(path == null) {
-					int n = available.size();
-
-					//					System.out.println("remaining free available emus" + n);
+					int n = availableEmus.size();
 					if(n == numEmus)
 						return true;
 				} else {
 					break;
 				}
 			}
-			MonkeyScript script;
-			try{
-				System.out.println("Generating new script");
-				script = path.generateScript();
-			}catch(IOException e){
-				throw new Error(e);
-			}
-			if(script == null) {
-				//infeasible path
-				numExecs.incrementAndGet();
-				continue;
+
+			MonkeyScript script = null;
+			if (Config.g().useMonkeyScript) {
+				try{
+					System.out.println("Generating new script");
+					script = path.generateScript();
+				}catch(IOException e){
+					throw new Error(e);
+				}
+				if(script == null) {
+					//infeasible path
+					numExecs.incrementAndGet();
+					continue;
+				}
 			}
 			if(wildEmusCount.get() >= wildEmusThreshold)
-				break;
+			break;
 
 			Emulator emu;
 			try {
-				emu = available.take();
+				emu = availableEmus.take();
 			}catch(InterruptedException e){
 				throw new Error(e);
 			}
@@ -159,6 +162,12 @@ public class Executor
 		private Emulator emu;
 		private boolean emuGoneWild;
 
+		/**
+		 * 
+		 * @param emu
+		 * @param path
+		 * @param script May be null, if no monkey script is used.
+		 */
 		Worker(Emulator emu, Path path, MonkeyScript script) {
 			this.emu = emu;
 			this.path = path;
@@ -166,8 +175,8 @@ public class Executor
 		}
 
 		public void run() {
-			System.out.println("\n\n\nStarting new worker thread (path.id="+path.id()+", no of events in script=" + script.length()+")");
-			ExecResult result = execute();
+			System.out.println("\n\n\nStarting new worker thread (path.id="+path.id()+")");
+			ExecResult result = executePath();
 			switch(result) {			
 			case DIVERGED:
 				if(numDivergence(path.id()) <= divergenceThreshold){
@@ -197,13 +206,13 @@ public class Executor
 				}catch(InterruptedException e){
 					throw new Error("Error occurred while executing " + path.id() + " on " + emu, e);
 				}
-				available.add(emu);
+				availableEmus.add(emu);
 			} else {
 				wildEmusCount.incrementAndGet();
 			}
 		}	
 		
-		private ExecResult execute()
+		private ExecResult executePath()
 		{
 			System.out.println("Executing path " + path.id() + " on " + emu);
 			ExecResult result = null;
@@ -231,6 +240,12 @@ public class Executor
 			return result;
 		}
 		
+		/**
+		 * Returns the number of repetitions this path has already been tested.
+		 * 
+		 * @param pathId
+		 * @return
+		 */
 		private int numDivergence(int pathId)
 		{
 			try{
@@ -250,9 +265,10 @@ public class Executor
 				}
 				reader.close();
 				return count;
-			}catch(IOException e){
-				throw new Error(e);
+			}catch(Throwable e){
+				e.printStackTrace();
 			}
+			return 0;
 		}
 		
 	}

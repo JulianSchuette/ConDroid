@@ -69,7 +69,7 @@ public class Main
 		config.mainActivity = ih.getDefaultActivities().iterator().next();
 
         MonkeyScript.setup(config.userWait);
-        Executor.setup(config.emulatorPort, 
+        ConcolicExecutor.setup(config.emulatorPort, 
         			   config.fileName,
 					   config.appPkgName, 
 					   config.mainActivity, 
@@ -80,7 +80,8 @@ public class Main
         Z3Task.setup(config.z3Path);
 		BlackListedFields.setup(config.fieldSigsFile, config.blackListedFieldsFile);
 		
-		Explorer explorer = new Explorer();
+//		ExplorationStrategy explorer = new ActevePathsExplorer();
+		ExplorationStrategy explorer = new ConcolicPathsExplorer();
 		if(config.restart) {
 			//Properties props = loadProperties();
 			//PathsRepo.restoreState(props);
@@ -88,7 +89,8 @@ public class Main
 			throw new Error();
 		}
 
-		explorer.perform(config.K, config.monkeyScript, config.checkReadOnly, config.checkIndep, config.pruneAfterLastStep);
+//		explorer.perform(config.K, config.monkeyScript, config.checkReadOnly, config.checkIndep, config.pruneAfterLastStep);
+		explorer.perform(config);
 
 //         CoverageMonitor.printDangBranches(config.condMapFile);
 	}
@@ -111,6 +113,12 @@ public class Main
 		}
 	}
 
+	/**
+	 * Creates a new file in OUT directory.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static File newOutFile(String name) {
 		return new File(Config.g().outDir, name);
 	}

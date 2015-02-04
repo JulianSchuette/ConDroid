@@ -146,7 +146,8 @@ public class Emulator extends Task
 		}
 		execute(clearHistory);
 		execute(pushSettingsFile);
-		execute(pushMonkeyScript);
+		if (Config.g().useMonkeyScript)
+			execute(pushMonkeyScript);
 		try {	
 			int start = this.pushNewSolution.getCmd().indexOf("push ")+5;
 			String solutionFile = this.pushNewSolution.getCmd().substring(start, this.pushNewSolution.getCmd().indexOf(' ', start));
@@ -176,10 +177,13 @@ public class Emulator extends Task
 
 	public void exec(int executingId, MonkeyScript script)
 	{
-		script.generate(scriptFile);
-
 		StringBuilder builder = new StringBuilder();
-		builder.append("numevents="+script.length());
+		if (script!=null) {
+			script.generate(scriptFile);
+			builder.append("numevents="+script.length());
+		} else {
+			builder.append("numevents=0");
+		}
 		writeToFile(settingsFile, builder.toString());
 
 		//int executingId = path.id();

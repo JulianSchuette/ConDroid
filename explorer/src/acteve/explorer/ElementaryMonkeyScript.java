@@ -41,6 +41,8 @@ public class ElementaryMonkeyScript extends MonkeyScript
 	public ElementaryMonkeyScript(File script)
 	{
 		try{
+			if (!script.exists())
+				return;
 			BufferedReader reader = new BufferedReader(new FileReader(script));
 			String line = reader.readLine();
 			while(line != null){
@@ -63,7 +65,10 @@ public class ElementaryMonkeyScript extends MonkeyScript
 		}
 	}
 
-    private Event processLine(String line) 
+    public ElementaryMonkeyScript() {
+	}
+
+	private Event processLine(String line) 
 	{
         int index1 = line.indexOf('(');
         int index2 = line.indexOf(')');

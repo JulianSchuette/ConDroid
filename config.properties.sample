@@ -15,10 +15,13 @@ a3t.instrflds.all =
 
 # ---------- Explorer options -------------------
 # APK file to scan. If null, cli parameter is used. Default: null
-a3t.filename = null
+filename = null
 
-# File name of monkey script (not needed atm). Default: null
-a3t.monkey = monkey_script.txt
+# Use monkey scripts?
+useMonkeyScript = false
+
+# File name of monkey script. Default: null, not considered when useMonkeyScript=false.
+monkey = monkey_script.txt
 
 # Package name of APK file. TODO: Not needed, get it programmatically, remove.
 a3t.pkg = 
@@ -30,26 +33,26 @@ a3t.mainact =
 env.Z3_BIN = /opt/z3/bin/z3
 
 # Maximum number of iterations. Default: 1000
-a3t.max.iters = 1000
+max.iters = 1000
 
 # Output dir. Default: ./results
-a3t.results.dir = ./results/
+results.dir = ./results/
 
 # TCP port of Qemu. Default: 5554
-a3t.port = 5554
+port = 5554
 
 # Other stuff
-a3t.actargs = 
-a3t.userwait = 4
-a3t.K =2
-a3t.indep=
-a3t.readonly=
-a3t.condmap.file = ./out/condmap.txt
-a3t.writemap.file = ./out/writemap.txt
-a3t.fieldsigs.file = ./out/fieldsigs.txt
+actargs = 
+userwait = 4
+K =2
+indep=
+readonly=
+condmap.file = ./out/condmap.txt
+writemap.file = ./out/writemap.txt
+fieldsigs.file = ./out/fieldsigs.txt
 env.A3T_DIR=
-a3t.blackfields.file = null
-a3t.restart=
-a3t.prune.last=
-a3t.diverge.threshold = 3
-a3t.wildemus.threshold = 6
+blackfields.file = null
+restart=
+prune.last=
+diverge.threshold = 3
+wildemus.threshold = 6
