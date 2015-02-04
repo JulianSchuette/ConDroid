@@ -31,17 +31,17 @@
 
 package acteve.explorer;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /* 
    flip at the branch at the index depth in the trace 
@@ -54,6 +54,7 @@ import java.io.IOException;
 */
 public class Path
 {
+	private static final Logger log = LoggerFactory.getLogger(Path.class);
     private static final String TRACE = "trace";
     private static final String PC = "pc";
     private static final String BRANCH_MARKER = "E/A3T_BRANCH";
@@ -114,7 +115,7 @@ public class Path
 	 */
     private Path(int seedId, int depth)
     {
-    	System.out.println("New path "+seedId+"of depth " + depth);
+    	log.debug("New path "+seedId+"of depth " + depth);
 		this.seedId = seedId;
 		this.depth = depth;
         this.id = PathQueue.nextPathId();
@@ -147,11 +148,11 @@ public class Path
 //			return ms;
 //	    }
 
-        System.out.println("Smt file        : " + smtFile.exists() + " - " + smtFile.getAbsolutePath());
-        System.out.println("pc file     : " + Main.newOutFile(pcFileNameFor(seedId)).exists() + " - " + new File(pcFileNameFor(seedId)).getAbsolutePath());
-        System.out.println("pcDecl file     : " + pcDeclFile.exists() + " - " + pcDeclFile.getAbsolutePath());
-        System.out.println("scriptToRun file: " + scriptToRun.exists() + " - " + scriptToRun.getAbsolutePath());
-        System.out.println("Depth: " + depth);
+        log.debug("Smt file        : {} - {} ", smtFile.exists(), smtFile.getAbsolutePath());
+        log.debug("pc file         : {} - {} ", Main.newOutFile(pcFileNameFor(seedId)).exists(), new File(pcFileNameFor(seedId)).getAbsolutePath());
+        log.debug("pcDecl file     : {} - {} ", pcDeclFile.exists(), pcDeclFile.getAbsolutePath());
+        log.debug("scriptToRun file: {} - {} ", scriptToRun.exists(), scriptToRun.getAbsolutePath());
+        log.debug("Depth: {}", depth);
         
         if (pcDeclFile.exists())
         	copy(pcDeclFile, smtFile);
@@ -179,7 +180,7 @@ public class Path
 	        }
 	        
 	        //Invert last condition
-	        System.out.println("Inverting " + line);
+	        log.debug("Inverting " + line);
 	        smtWriter.println("(assert (not "+line+"))");
 	
 	        smtWriter.println("(check-sat)");
@@ -191,13 +192,13 @@ public class Path
         if (smtFile.exists()) {
 	        File z3OutFile = Main.newOutFile(Z3_OUT+id);
 	        File z3ErrFile = Main.newOutFile(Z3_ERR+id);
-	        System.out.println("Z3 Out file " + z3OutFile.getAbsolutePath());
-	        System.out.println("Z3 Err file " + z3ErrFile.getAbsolutePath());
+	        log.debug("Z3 Out file {}", z3OutFile.getAbsolutePath());
+	        log.debug("Z3 Err file {}", z3ErrFile.getAbsolutePath());
 	        new Z3Task().exec(z3OutFile, z3ErrFile, smtFile.getAbsolutePath());
 	        
 	        Z3Model model = Z3StrModelReader.read(z3OutFile);
 	        if(model != null){
-	        	System.out.println("** Solved model **");
+	        	log.info("** Solved model **");
 	        	model.print();
 	            File seedMonkeyScript = Main.newOutFile(Emulator.SCRIPT_TXT+"."+seedId);
 	            MonkeyScript newMonkeyScript = new FuzzedMonkeyScript(seedMonkeyScript, model);
@@ -206,7 +207,7 @@ public class Path
 				return newMonkeyScript;
 	        }
         } else {
-        	System.out.println("No smt file exists, nothing to solve");
+        	log.debug("No smt file exists, nothing to solve");
         	MonkeyScript ms = new ElementaryMonkeyScript();
 			ms.generate(Main.newOutFile(Emulator.SCRIPT_TXT));
 			return ms;
