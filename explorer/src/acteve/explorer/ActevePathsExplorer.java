@@ -31,24 +31,21 @@
 
 package acteve.explorer;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.Iterator;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ActevePathsExplorer implements ExplorationStrategy
 {
+	Logger log = LoggerFactory.getLogger(Config.class);
 	private List<Integer> currentRoundRunIds = new ArrayList<Integer>();
 	private int currentK = 1;
 
@@ -83,9 +80,9 @@ public class ActevePathsExplorer implements ExplorationStrategy
 		currentK++;
 		for (; currentK <= K ; currentK++) {
 			List<Integer> prefixes = currentRoundRunIds;
-			System.out.println("(stat) No. of tests generated in round " + (currentK-1) + " = " + prefixes.size());
+			log.info("(stat) No. of tests generated in round " + (currentK-1) + " = " + prefixes.size());
 			prefixes = prune(currentK-1, prefixes, checkReadOnly, checkIndep);
-			System.out.println("(stat) No. of tests to be extended in round " + currentK + " = " + prefixes.size());
+			log.info("(stat) No. of tests to be extended in round " + currentK + " = " + prefixes.size());
 			int count = 0;
 			for (Integer prefixId : prefixes) {
 				extend(prefixId);
@@ -98,11 +95,11 @@ public class ActevePathsExplorer implements ExplorationStrategy
 				return;
 			}
 		}
-		System.out.println("(stat) No. of tests generated in round " + (currentK-1) + " = " + currentRoundRunIds.size());
+		log.info("(stat) No. of tests generated in round {} = {}",(currentK-1), currentRoundRunIds.size());
 		if(pruneAfterLastStep) {
 			List<Integer> prefixes = currentRoundRunIds;
 			prefixes = prune(currentK-1, prefixes, checkReadOnly, checkIndep);
-			System.out.println("(stat) No. of tests to be extended in round " + currentK + " = " + prefixes.size());
+			log.info("(stat) No. of tests to be extended in round {} = {}",  currentK, prefixes.size());
 		}
 	}
 
@@ -112,19 +109,18 @@ public class ActevePathsExplorer implements ExplorationStrategy
 		for (Integer prefixId : prefixes) {
 			PathInfo pinfo = PathInfo.load(Main.newOutFile(PathInfo.fileName(prefixId)));
 			if(checkReadOnly && pinfo.endsWithPanelClick){
-				System.out.println("read-only pruning: " + prefixId);
+				log.debug("read-only pruning: {}", prefixId);
 				continue;
 			}
 			result.add(prefixId);
 		}
-		System.out.println("(stat) after read-only pruning = "
-						   + (prefixes.size()-result.size()));
+		log.debug("(stat) after read-only pruning = {}", (prefixes.size()-result.size()));
 		return result;
 	}
 
 	private List<Integer> prune(int numEvents, List<Integer> prefixes, boolean checkReadOnly, boolean checkIndep)
 	{
-		System.out.println("Pruning.");
+		log.debug("Pruning.");
 		if(numEvents == 1)
 			return prune1(numEvents, prefixes, checkReadOnly);
 
@@ -133,14 +129,13 @@ public class ActevePathsExplorer implements ExplorationStrategy
 		for (Integer prefixId : prefixes) {
 			PathInfo pinfo = PathInfo.load(Main.newOutFile(PathInfo.fileName(prefixId)));
 			if(checkReadOnly && pinfo.endsWithPanelClick) {
-				System.out.println("read-only pruning: " + prefixId);
+				log.debug("read-only pruning: {}", prefixId);
 				continue;
 			}
 			idToPInfo.put(prefixId, pinfo);
 			graph.newNode(prefixId);
 		}
-		System.out.println("(stat) No of tests pruned by read-only opt. = "
-						   + (prefixes.size()-idToPInfo.size()));		
+		log.info("(stat) No of tests pruned by read-only opt. = {}", (prefixes.size()-idToPInfo.size()));		
 
 		if(!checkIndep) {
 			List<Integer> result = new ArrayList();
@@ -171,17 +166,12 @@ public class ActevePathsExplorer implements ExplorationStrategy
 		}
 
 		List<Integer> result = new ArrayList(graph.findGreedyMinVertexCover());
-		//System.out.println("will extend:");
-		//for(Integer id : result)
-		//	System.out.println(id+" ");
-		//System.out.println("");
-		System.out.println("(stat) No of tests pruned by indep opt. = "
-						   + (idToPInfo.size()-result.size()));		
+		log.debug("(stat) No of tests pruned by indep opt. = {}", (idToPInfo.size()-result.size()));		
 		return result;
 	}
 
 	private void extend(int prefixRunId) {
-		System.out.println("extended exploration for Run " + prefixRunId);
+		log.debug("extended exploration for run {}", prefixRunId);
 		PathInfo pinfo = PathInfo.load(Main.newOutFile(PathInfo.fileName(prefixRunId)));
 		String prefixScript = Emulator.SCRIPT_TXT+"."+prefixRunId;
 		String suffixScript = Emulator.SCRIPT_TXT+".0";
@@ -196,7 +186,7 @@ public class ActevePathsExplorer implements ExplorationStrategy
 	}
 
     private boolean vanillaSymEx() {
-		System.out.println("Vanilla symex with currentRoundRunIds " + currentRoundRunIds.toArray().toString());
+		log.debug("Vanilla symex with currentRoundRunIds {}", currentRoundRunIds.toArray().toString());
 		return ConcolicExecutor.v().exec(currentRoundRunIds);
 
 

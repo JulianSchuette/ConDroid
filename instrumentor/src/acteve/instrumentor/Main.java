@@ -52,10 +52,10 @@ import java.util.zip.ZipException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import acteve.explorer.Utils;
-import soot.G;
 import soot.JimpleClassSource;
 import soot.MethodOrMethodContext;
 import soot.Modifier;
@@ -72,8 +72,10 @@ import soot.jimple.infoflow.android.data.AndroidMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 import soot.util.Chain;
+import acteve.explorer.Utils;
 
 public class Main extends SceneTransformer {
+	public static Logger log = LoggerFactory.getLogger(Main.class);
 	private static Config config;
 	private static Set<SootClass> classesToInstrument = new HashSet<SootClass>();
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
@@ -97,6 +99,7 @@ public class Main extends SceneTransformer {
 	//Exclude these classes from instrumentation
 	protected final static Pattern excludePat = Pattern
 			.compile("dummyMainClass|(acteve\\..*)|(java\\..*)|(dalvik\\..*)|(android\\.os\\.(Parcel|Parcel\\$.*))|(android\\.util\\.Slog)|(android\\.util\\.(Log|Log\\$.*))");
+	private static final boolean DUMP_CG_TO_DOT = false;
 	protected static InstrumentationHelper ih;
 	
 	@Override
@@ -300,18 +303,18 @@ public class Main extends SceneTransformer {
 				}
 			}
 
-			if (DEBUG) {
+			if (log.isDebugEnabled()) {
 				for (SootMethod m : entryPoints){
-					System.out.println("Entrypoint: " + m.getSignature());
+					log.debug("Entrypoint: {}", m.getSignature());
 				}
 			}
 
 			//2)
 			List<SootMethod> goalMethods = MethodUtils.findReflectiveLoadingMethods(entryPoints);
 			if (DEBUG) {
-				System.out.println("Found the following goal methods:");
+				log.debug("Found the following goal methods:");
 				for (SootMethod m : goalMethods){
-					System.out.println("Signature: " + m.getSignature());
+					log.debug("  Signature: {}", m.getSignature());
 				}
 			}
 			
@@ -334,12 +337,12 @@ public class Main extends SceneTransformer {
 				pathsToGoal.put(goalMeth, path);
 			}
 			
-			if (DEBUG) {
+			if (log.isDebugEnabled()) {
 				for (SootMethod goal:pathsToGoal.keySet()) {
-					System.out.println(pathsToGoal.get(goal).size() + " Classes along path to " + goal.getSignature());
+					log.debug("{} classes along the path to {}", pathsToGoal.get(goal).size(), goal.getSignature());
 					List<SootClass> along = pathsToGoal.get(goal);
 					for (SootClass c:along) {
-						System.out.println("  " + c.getName());
+						log.debug("  {}", c.getName());
 					}
 				}
 			}
@@ -356,8 +359,7 @@ public class Main extends SceneTransformer {
 			try {
 				ih.insertCallsToLifecycleMethods(lcMethodToExtend);
 			} catch (Exception e) {
-				System.out.println("Exception while inserting calls to lifecycle methods:");
-				e.printStackTrace();
+				log.error("Exception while inserting calls to lifecycle methods:", e);
 			}
 			
 			//build new call graph now that we have paths to UI-induced method calls:
@@ -365,19 +367,19 @@ public class Main extends SceneTransformer {
 		}
 		
 		//dump all methods for debugging:
-		if (DEBUG) {
+		if (log.isDebugEnabled()) {
 			List<SootMethod> allMethods = MethodUtils.getAllReachableMethods();
-			System.out.println("All methods in the scene:");
+			log.debug("All methods in the scene:");
 			for (SootMethod m : allMethods)
-				System.out.println("\t" + m.getSignature());
+				log.debug("\t{}", m.getSignature());
 		}
 
 		PackManager.v().runPacks();
 		PackManager.v().writeOutput();
 		
 		//Just nice to have: Print Callgraph to a .dot file
-		if (DEBUG) {
-			System.out.println("Printing call graph to .dot file");
+		if (DUMP_CG_TO_DOT) {
+			log.debug("Printing call graph to .dot file");
 			MethodUtils.printCGtoDOT(Scene.v().getCallGraph(), "main");
 		}
 		
@@ -395,7 +397,7 @@ public class Main extends SceneTransformer {
 			//Sign the APK
 			signAPK(f.getAbsolutePath());
 			
-			System.out.println("Done. Have fun with " + f.getAbsolutePath());
+			log.info("Done. Have fun with {}", f.getAbsolutePath());
 			
 			//Handover to explorer
 			acteve.explorer.Main.main(new String[] {f.getAbsolutePath()});
@@ -414,21 +416,21 @@ public class Main extends SceneTransformer {
 	private static void signAPK(String apk) {
 		try {
 			// jarsigner is part of the Java SDK
-			System.out.println("Signing " + apk + " ...");
+			log.info("Signing {} ...", apk);
 			String cmd = "jarsigner -verbose -digestalg SHA1 -sigalg MD5withRSA -storepass android -keystore "+System.getProperty("user.home")+"/.android/debug.keystore "
 					+ apk + " androiddebugkey";
-			System.out.println("Calling " + cmd);
+			log.debug("Calling {}", cmd);
 			Process p = Runtime.getRuntime().exec(cmd);
 			printProcessOutput(p);
 
 			// zipalign is part of the Android SDK
-			System.out.println("Zipalign " + apk + " ...");
+			log.info("Zipalign ...", apk);
 			cmd = "zipalign -v 4 " + apk + " " + new File(apk).getName() + "_signed.apk";
-			System.out.println(cmd);
+			log.debug(cmd);
 			p = Runtime.getRuntime().exec(cmd);
 			printProcessOutput(p);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		}
 	}
 	

@@ -36,7 +36,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class Config {
+	Logger log = LoggerFactory.getLogger(Config.class);
     private static final int DEFAULT_MAX_EXECS = 1000;
     private static final String DEFAULT_EMU_PORT = "5554";
 
@@ -102,28 +106,27 @@ public final class Config {
 		divergenceThreshold = Integer.valueOf(props.getProperty("diverge.threshold", String.valueOf(3)));
 		wildEmusThreshold = Integer.valueOf(props.getProperty("wildemus.threshold", String.valueOf(6)));
 
-        if (Main.DEBUG) {
-			System.out.println("a3t.monkey=" + monkeyScript);
-	        System.out.println("a3t.pkg=" + appPkgName);
-	        System.out.println("a3t.mainact=" + mainActivity);
-			System.out.println("a3t.actargs=" + activityArgs);
-	        System.out.println("a3t.max.iters=" + maxExecs);
-	        System.out.println("a3t.out.dir=" + outDir);
-	        System.out.println("a3t.port=" + emulatorPort);
-	        System.out.println("a3t.userwait=" + userWait);
-	        System.out.println("a3t.K=" + K);
-	        System.out.println("a3t.indep=" + checkIndep);
-			System.out.println("a3t.readonly=" + checkReadOnly);
-	        System.out.println("a3t.condmap.file=" + condMapFile);
-	        //System.out.println("a3t.writemap.file=" + writeMapFile);
-			System.out.println("a3t.fieldsigs.file=" + fieldSigsFile);
-			System.out.println("a3t.blackfields.file=" + blackListedFieldsFile);
-			System.out.println("a3t.restart="+restart);
-			System.out.println("a3t.prune.last=" + pruneAfterLastStep);
-			System.out.println("a3t.diverge.threshold=" + divergenceThreshold);
-			System.out.println("a3t.wildemus.threshold=" + wildEmusThreshold);
-        }
-        if (outDir != null && !restart) {
+		log.debug("useMonkeyScript={}", useMonkeyScript);
+		log.debug("monkey={}", monkeyScript);
+		log.debug("pkg={}", appPkgName);
+		log.debug("mainact={}", mainActivity);
+		log.debug("actargs={}", activityArgs);
+		log.debug("max.iters={}", maxExecs);
+		log.debug("out.dir={}", outDir);
+		log.debug("port={}", emulatorPort);
+		log.debug("userwait={}", userWait);
+		log.debug("K={}", K);
+		log.debug("indep={}", checkIndep);
+		log.debug("readonly={}", checkReadOnly);
+		log.debug("condmap.file={}", condMapFile);
+		log.debug("fieldsigs.file={}", fieldSigsFile);
+		log.debug("blackfields.file={}", blackListedFieldsFile);
+		log.debug("restart={}",restart);
+		log.debug("prune.last={}", pruneAfterLastStep);
+		log.debug("diverge.threshold={}", divergenceThreshold);
+		log.debug("wildemus.threshold={}", wildEmusThreshold);
+
+		if (outDir != null && !restart) {
 			File d = new File(outDir);
 			if(d.exists()) 
 				Utils.deleteDir(d);

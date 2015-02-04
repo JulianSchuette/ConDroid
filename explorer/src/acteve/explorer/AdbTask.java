@@ -35,9 +35,12 @@ import java.util.Arrays;
 
 import org.apache.tools.ant.taskdefs.ExecTask;
 import org.apache.tools.ant.types.Commandline;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AdbTask extends ExecTask
 {
+	Logger log = LoggerFactory.getLogger(AdbTask.class);
 	protected int port;
 
 	public AdbTask(int port, String cmd)
@@ -60,7 +63,7 @@ public class AdbTask extends ExecTask
 		
 	public void execute()
 	{
-		System.out.println("exec " + Arrays.toString(cmdl.getCommandline()));
+		log.debug("exec {}", Arrays.toString(cmdl.getCommandline()));
 		super.execute();
 	}
 }

@@ -40,8 +40,12 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public final class Config {
+	Logger log = LoggerFactory.getLogger(Config.class);
 	public final String inJars;
 	public final String outJar;
 	public final String libJars;
@@ -110,20 +114,18 @@ public final class Config {
 			ioe.printStackTrace();
 		}
 				
-		if (Main.DEBUG) {
-			System.out.println("in.jars=" + inJars);
-			System.out.println("out.jar=" + outJar);
-			System.out.println("lib.jars=" + libJars);
-			System.out.println("inputmeths.file=" + inputMethsFile);
-			System.out.println("modelmeths.file=" + modelMethsFile);
-			System.out.println("out.dir=" + outDir);
-			System.out.println("sdk.dir=" + sdkDir + " (SDK if null)");
-			System.out.println("rw.kind=" + rwKind);
-			System.out.println("whiteflds.file=" + fldsWhitelist);
-			System.out.println("blackflds.file=" + fldsBlacklist);
-			System.out.println("whitemeths.file=" + methsWhitelist);
-			System.out.println("instrflds.all="+ instrAllFields);
-		}
+		log.debug("in.jars=" + inJars);
+		log.debug("out.jar=" + outJar);
+		log.debug("lib.jars=" + libJars);
+		log.debug("inputmeths.file=" + inputMethsFile);
+		log.debug("modelmeths.file=" + modelMethsFile);
+		log.debug("out.dir=" + outDir);
+		log.debug("sdk.dir=" + sdkDir + " (SDK if null)");
+		log.debug("rw.kind=" + rwKind);
+		log.debug("whiteflds.file=" + fldsWhitelist);
+		log.debug("blackflds.file=" + fldsBlacklist);
+		log.debug("whitemeths.file=" + methsWhitelist);
+		log.debug("instrflds.all="+ instrAllFields);
 	}
 
 	public boolean isSDK() {

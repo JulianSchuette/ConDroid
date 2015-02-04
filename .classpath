@@ -19,7 +19,6 @@
 	<classpathentry kind="lib" path="libs/axmlprinter.jar"/>
 	<classpathentry kind="lib" path="libs/AXMLPrinter2.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-api-1.7.5.jar"/>
-	<classpathentry kind="lib" path="libs/slf4j-simple-1.7.5.jar"/>
 	<classpathentry kind="lib" path="libs/soot-infoflow-android.jar" sourcepath="/soot-infoflow-android"/>
 	<classpathentry kind="lib" path="libs/soot-infoflow.jar" sourcepath="/soot-infoflow"/>
 	<classpathentry kind="lib" path="libs/soot.jar" sourcepath="/soot"/>
@@ -27,5 +26,7 @@
 	<classpathentry kind="lib" path="libs/axml-1.0.jar"/>
 	<classpathentry kind="lib" path="libs/asm-debug-all-5.0.3.jar"/>
 	<classpathentry kind="lib" path="libs/commons-lang3-3.3.2.jar"/>
+	<classpathentry kind="lib" path="libs/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.7.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
