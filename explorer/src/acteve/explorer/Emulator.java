@@ -270,6 +270,9 @@ public class Emulator extends Task
 	static void writeToFile(File file, String content)
 	{
 		try{
+			if (!file.exists()) {
+				file.createNewFile();
+			}
 			PrintWriter writer = Main.newWriter(file);
 			writer.println(content);
 			writer.close();

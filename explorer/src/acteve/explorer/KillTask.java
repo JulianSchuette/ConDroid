@@ -72,7 +72,7 @@ public class KillTask extends AdbTask
 			while(line != null){
 				//System.out.println(line);
 				if(pkgName.matcher(line).find()){
-					System.out.println("process found:\n" + line);
+					log.debug("process found:\n" + line);
 					char[] cs = line.toCharArray();
 					int i = 0;
 					while(!Character.isWhitespace(cs[i]))
@@ -114,7 +114,7 @@ public class KillTask extends AdbTask
 				throw new BuildException("could not kill process ");
 			}
 			else{
-				System.out.println("killed process " + pid);
+				log.debug("killed process " + pid);
 			}
 		}catch(IOException e){
 			throw new BuildException(e);

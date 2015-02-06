@@ -31,19 +31,23 @@
 
 package acteve.explorer;
 
-import java.util.Vector;
-import java.text.DecimalFormat;
-import org.w3c.tools.sexpr.Symbol;
-import org.w3c.tools.sexpr.SimpleSExprStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.File;
+import java.text.DecimalFormat;
+import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.tools.sexpr.SimpleSExprStream;
+import org.w3c.tools.sexpr.Symbol;
 
 public class Z3ModelReader
 {
+	private static final Logger log = LoggerFactory.getLogger(Z3ModelReader.class);
 	public static Z3Model read(File file)
 	{
-		System.out.println("Reading from file " + file.getAbsolutePath());
+		log.trace("Reading from file {}", file.getAbsolutePath());
 		try{
 			FileInputStream fis = new FileInputStream(file);
 			SimpleSExprStream p = new SimpleSExprStream(fis);
@@ -52,7 +56,7 @@ public class Z3ModelReader
 			String result = readResult(p);
 			if(result.startsWith("(error "))
 				throw new Error("smt2 file has errors");
-			System.out.println("Feasible: " + "sat".equals(result));
+			log.trace("Feasible: " + "sat".equals(result));
 
 			if("sat".equals(result)) {
 				Z3Model model = process((Vector) p.parse());

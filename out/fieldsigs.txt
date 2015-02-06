@@ -1,5 +1,3 @@
-<com.example.de.fhg.aisec.concolicexample.LoginActivity$1: com.example.de.fhg.aisec.concolicexample.LoginActivity this$0>
-<com.example.de.fhg.aisec.concolicexample.LoginActivity$2: com.example.de.fhg.aisec.concolicexample.LoginActivity this$0>
 <com.example.de.fhg.aisec.concolicexample.MainActivity: com.example.de.fhg.aisec.concolicexample.MainActivity instance>
 <com.example.de.fhg.aisec.concolicexample.MainActivity: com.example.de.fhg.aisec.concolicexample.LovelyView myView>
 <com.example.de.fhg.aisec.concolicexample.LoginActivity: java.lang.String[] DUMMY_CREDENTIALS>
@@ -11,3 +9,5 @@
 <com.example.de.fhg.aisec.concolicexample.LoginActivity: android.view.View mLoginFormView>
 <com.example.de.fhg.aisec.concolicexample.LoginActivity: android.widget.EditText mEmailView>
 <com.example.de.fhg.aisec.concolicexample.LoginActivity: android.widget.TextView mLoginStatusMessageView>
+<com.example.de.fhg.aisec.concolicexample.LoginActivity$1: com.example.de.fhg.aisec.concolicexample.LoginActivity this$0>
+<com.example.de.fhg.aisec.concolicexample.LoginActivity$2: com.example.de.fhg.aisec.concolicexample.LoginActivity this$0>

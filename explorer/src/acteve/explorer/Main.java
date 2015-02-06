@@ -57,6 +57,8 @@ public class Main
 	public static void main(String[] args) throws XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException
 	{
 		Config config = Config.g();
+		Utils.deleteDir(new File("results"));
+		new File("results").mkdir();
 		
 		if (args.length>0 && new File(args[0]).exists()) {
 			config.fileName = args[0];

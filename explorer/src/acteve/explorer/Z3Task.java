@@ -31,14 +31,18 @@
 
 package acteve.explorer;
 
+import java.io.File;
+
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.ExecTask;
 import org.apache.tools.ant.types.Commandline;
-import org.apache.tools.ant.Target;
-import org.apache.tools.ant.Project;
-import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Z3Task extends ExecTask
 {
+	private static final Logger log = LoggerFactory.getLogger(Z3Task.class);
 	private static String args;
 	private final Target target = new Target();
 
@@ -59,7 +63,7 @@ public class Z3Task extends ExecTask
 	
 	public void exec(File outFile, File errFile, String file)
 	{		
-		System.out.println("Executing Z3Task with outfile " + outFile.getAbsolutePath() + " and errFile " + errFile.getAbsolutePath() + " and file " + file);
+		log.debug("Executing Z3Task with outfile " + outFile.getAbsolutePath() + " and errFile " + errFile.getAbsolutePath() + " and file " + file);
 		Commandline.Argument cmdLineArgs = createArg();
 		String args2 = args + file;
 
@@ -72,7 +76,7 @@ public class Z3Task extends ExecTask
 
 		//setError(errFile);
 		//setOutput(outFile);
-		System.out.println("Running Z3 " + args2);
+		log.debug("Running Z3 " + args2);
 
 		target.execute();
 	}
@@ -89,8 +93,6 @@ public class Z3Task extends ExecTask
 		File file = new File(z3Path);
 		if(!file.exists())
 			throw new Error("z3Path does not exist. " + z3Path);
-		//By JULIAN: Parameter -m is not recognized by current Z3 version
-//		args = "-c \"" + file.getAbsolutePath() + " -m ";		
 		args = "-c \"" + file.getAbsolutePath() + " -f ";		
 	}
 }

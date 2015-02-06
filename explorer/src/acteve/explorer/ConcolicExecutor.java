@@ -179,7 +179,8 @@ public class ConcolicExecutor
 		}
 
 		public void run() {
-			log.info("\n\n\nStarting new worker thread (path.id="+path.id()+")");
+			log.info("\n\n\n");
+			log.info("Starting new path ID{}",path.id());
 			ExecResult result = executePath();
 			switch(result) {			
 			case DIVERGED:

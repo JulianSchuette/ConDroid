@@ -36,8 +36,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PathQueue
 {
+	private static final Logger log = LoggerFactory.getLogger(PathQueue.class);
 	private static final BlockingQueue<Path> allPaths = new LinkedBlockingQueue<Path>();
 	private static final AtomicInteger globalId = new AtomicInteger(0);
 
@@ -53,7 +57,6 @@ public class PathQueue
 	
 	static void addPath(Path p)
 	{
-		System.out.println("Queueing new path " + p.id());
 		allPaths.add(p);
 	}
 	

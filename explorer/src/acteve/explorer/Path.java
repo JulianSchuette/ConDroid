@@ -115,10 +115,10 @@ public class Path
 	 */
     private Path(int seedId, int depth)
     {
-    	log.debug("New path "+seedId+"of depth " + depth);
 		this.seedId = seedId;
 		this.depth = depth;
         this.id = PathQueue.nextPathId();
+    	log.debug("Path {} with new seed {} and depth {}",id, seedId, depth);
     }
 
     public int id()
@@ -238,13 +238,12 @@ public class Path
     */
     ExecResult postProcess() throws IOException
     {		
-    	System.out.println("In postprocess");
 		File logCatFile = Main.newOutFile(Emulator.LOGCAT_OUT+id);
 		File monkeyFile = Main.newOutFile(Emulator.MONKEY_OUT+id);
 		File syslogFile = Main.newOutFile(Emulator.SYSLOG_OUT+id);
 
 		if(checkForSWB(syslogFile)) {
-			System.out.println("******** Something went bad! runid = " + id + " **********");
+			log.error("******** Something went bad! runid = " + id + " **********");
 			return ExecResult.SWB;
 		}
         List<String> pathTxtList = new ArrayList<String>();
@@ -253,7 +252,7 @@ public class Path
             String line;
             // trace file of seed execution must have at least "depth" number of lines
             String traceFile = traceFileNameFor(seedId);
-            System.out.println("    Reading from tracefile " + traceFile);
+            log.debug("Reading from tracefile " + traceFile);
             BufferedReader reader = Main.newReader(traceFile);
             for (int i = 0; i < depth - 1;) {
                 line = reader.readLine();
@@ -292,20 +291,22 @@ public class Path
         boolean diverged = false;
         String line, prevLine="";
         if(!(logCatFile.length() > 0)) throw new Error("Empty trace file");
-        System.out.println("    Reading from logcat file " + logCatFile.getAbsolutePath() + " into tracefile " + traceFileNameFor(id));
         
         declWriter.printComment("Iteration " + id + " Count " + count + " Path depth" + pathTxtSize);
         
         BufferedReader reader = Main.newReader(logCatFile);
         while ((line = reader.readLine()) != null) {
             if (line.startsWith(BRANCH_MARKER)) {
-            	System.out.println("     Found branch marker! " + line + " | " + prevLine);
+            	log.debug("Found branch marker! " + line + " | " + prevLine);
                 int i = line.indexOf(':');
                 String bid = line.substring(i+2).trim();
                 if (!diverged && count < pathTxtSize) {
                     String expBid = pathTxtList.get(count);
+                    //Strip comment from Branch ID
+                    if (expBid.contains("//"))
+                    	expBid=expBid.substring(0,expBid.indexOf("//")-1).trim();
                     if (!expBid.equals(bid)) {
-                        System.out.println("********* DIVERGED at index: " + count +
+                        log.info("********* DIVERGED at index: " + count +
                             " (expected=" + expBid + " got=" + bid + ") " + "runid = " + id + " **********");
                         diverged = true;
                     }
@@ -349,7 +350,7 @@ public class Path
         }
 
         if (!diverged && count < pathTxtSize) {
-            System.out.println("******* DIVERGED: expected length>=" + pathTxtSize + " got=" + count + " runid = " + id + " **********");
+            log.info("******* DIVERGED: expected length>=" + pathTxtSize + " got=" + count + " runid = " + id + " **********");
             diverged = true;
         }
         reader.close();
@@ -373,23 +374,22 @@ public class Path
 		  }
 		*/
 		boolean endsWithPanelClick = roltDetector.readOnlyLastTap();//panelDetector.lastTapOnPanel();
-		System.out.println("     Creating new PathInfo");
+		log.debug("     Creating new PathInfo");
 		PathInfo info = new PathInfo(numEvents, 
 									 count, 
 									 roltDetector.writeSet(), 
 									 rwAnalyzer.rwSet(), 
 									 endsWithPanelClick);
 		info.dump(Main.newOutFile(PathInfo.fileName(id)));
-		System.out.println("     last tap on panel: " + endsWithPanelClick);
+		log.debug("     last tap on panel: " + endsWithPanelClick);
 		return ExecResult.OK;
     }
 
     void generateNextGenPaths(int traceLength)
     {
         for(int i = traceLength;  i > depth; i--){
-        	System.out.println("in generateNextGenPaths: traceLength " + traceLength + " depth " + depth);
+        	log.debug("in generateNextGenPaths: traceLength {}, fuzzed depth {}", traceLength, i);
             Path newPath = new Path(id, i);
-            System.out.println("new path: id = " + newPath.id + " depth = " + i);
             PathQueue.addPath(newPath);
         }
     }
@@ -409,7 +409,7 @@ public class Path
 			String line;
 			while((line = reader.readLine()) != null){
 				if(line.indexOf("ANR") >= 0) {  //TODO: make the pattern more specific
-					System.out.println("**** WARN: " + line);
+					log.warn("**** WARN: " + line);
 					reader.close();
 					return true;
 				} else if(line.indexOf("thread exiting with uncaught exception") >= 0) {
@@ -445,7 +445,7 @@ public class Path
 
     static void copy(File srcFile, File dstFile)
     {
-    	System.out.println("Copying from " + srcFile.getAbsolutePath() + " to " + dstFile.getAbsolutePath());
+    	log.debug("Copying from " + srcFile.getAbsolutePath() + " to " + dstFile.getAbsolutePath());
         try{
             FileInputStream in = new FileInputStream(srcFile);
             FileOutputStream out = new FileOutputStream(dstFile);

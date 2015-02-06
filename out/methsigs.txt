@@ -1,7 +1,3 @@
-<com.example.de.fhg.aisec.concolicexample.LoginActivity$1: void <init>(com.example.de.fhg.aisec.concolicexample.LoginActivity)>
-<com.example.de.fhg.aisec.concolicexample.LoginActivity$1: boolean onEditorAction(android.widget.TextView,int,android.view.KeyEvent)>
-<com.example.de.fhg.aisec.concolicexample.LoginActivity$2: void <init>(com.example.de.fhg.aisec.concolicexample.LoginActivity)>
-<com.example.de.fhg.aisec.concolicexample.LoginActivity$2: void onClick(android.view.View)>
 <com.example.de.fhg.aisec.concolicexample.MainActivity: void <clinit>()>
 <com.example.de.fhg.aisec.concolicexample.MainActivity: void <init>()>
 <com.example.de.fhg.aisec.concolicexample.MainActivity: com.example.de.fhg.aisec.concolicexample.MainActivity getInstance()>
@@ -26,3 +22,7 @@
 <com.example.de.fhg.aisec.concolicexample.LoginActivity: void attemptLogin()>
 <com.example.de.fhg.aisec.concolicexample.LoginActivity: void onCreate(android.os.Bundle)>
 <com.example.de.fhg.aisec.concolicexample.LoginActivity: boolean onCreateOptionsMenu(android.view.Menu)>
+<com.example.de.fhg.aisec.concolicexample.LoginActivity$1: void <init>(com.example.de.fhg.aisec.concolicexample.LoginActivity)>
+<com.example.de.fhg.aisec.concolicexample.LoginActivity$1: boolean onEditorAction(android.widget.TextView,int,android.view.KeyEvent)>
+<com.example.de.fhg.aisec.concolicexample.LoginActivity$2: void <init>(com.example.de.fhg.aisec.concolicexample.LoginActivity)>
+<com.example.de.fhg.aisec.concolicexample.LoginActivity$2: void onClick(android.view.View)>
