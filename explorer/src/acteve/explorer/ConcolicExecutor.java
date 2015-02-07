@@ -180,29 +180,29 @@ public class ConcolicExecutor
 
 		public void run() {
 			log.info("\n\n\n");
-			log.info("Starting new path ID{}",path.id());
+			log.info("Starting new path ID {}",path.id());
 			ExecResult result = executePath();
 			switch(result) {			
-			case DIVERGED:
-				if(numDivergence(path.id()) <= divergenceThreshold){
-					path.generateRepeatPath();
-					divergenceCount.incrementAndGet();
+				case DIVERGED:
+					if(numDivergence(path.id()) <= divergenceThreshold){
+						path.generateRepeatPath();
+						divergenceCount.incrementAndGet();
+						feasibleCount.incrementAndGet();
+						numExecs.incrementAndGet();
+					} else {
+						//ignore this path because it diverged too many times
+						ignoredCount.incrementAndGet();
+						log.debug("Ignored path: " + path.id());
+					}
+					break;
+				case OK:
+					currentRoundRunIds.add(path.id());
 					feasibleCount.incrementAndGet();
 					numExecs.incrementAndGet();
-				} else {
-					//ignore this path because it diverged too many times
-					ignoredCount.incrementAndGet();
-					log.debug("Ignored path: " + path.id());
-				}
-				break;
-			case OK:
-				currentRoundRunIds.add(path.id());
-				feasibleCount.incrementAndGet();
-				numExecs.incrementAndGet();
-				break;
-			case SWB:
-				path.generateRepeatPath();
-				break;
+					break;
+				case SWB:
+					path.generateRepeatPath();
+					break;
 			}
 			if(!emuGoneWild) {
 				try{

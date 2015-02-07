@@ -34,6 +34,7 @@ package acteve.explorer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -118,7 +119,7 @@ public class Path
 		this.seedId = seedId;
 		this.depth = depth;
         this.id = PathQueue.nextPathId();
-    	log.debug("Path {} with new seed {} and depth {}",id, seedId, depth);
+    	log.debug("New path {} with new seed {} and depth {}",id, seedId, depth);
     }
 
     public int id()
@@ -153,6 +154,9 @@ public class Path
         log.debug("pcDecl file     : {} - {} ", pcDeclFile.exists(), pcDeclFile.getAbsolutePath());
         log.debug("scriptToRun file: {} - {} ", scriptToRun.exists(), scriptToRun.getAbsolutePath());
         log.debug("Depth: {}", depth);
+        log.debug("id: {}", id);
+        log.debug("seedId: {}", seedId);
+
         
         if (pcDeclFile.exists())
         	copy(pcDeclFile, smtFile);
@@ -198,7 +202,7 @@ public class Path
 	        
 	        Z3Model model = Z3StrModelReader.read(z3OutFile);
 	        if(model != null){
-	        	log.info("** Solved model **");
+	        	log.info("** Solved model for path id {} **",id);
 	        	model.print();
 	            File seedMonkeyScript = Main.newOutFile(Emulator.SCRIPT_TXT+"."+seedId);
 	            MonkeyScript newMonkeyScript = new FuzzedMonkeyScript(seedMonkeyScript, model);
@@ -246,39 +250,8 @@ public class Path
 			log.error("******** Something went bad! runid = " + id + " **********");
 			return ExecResult.SWB;
 		}
-        List<String> pathTxtList = new ArrayList<String>();
-        if (seedId >= 0) {
-            assert depth > 0;
-            String line;
-            // trace file of seed execution must have at least "depth" number of lines
-            String traceFile = traceFileNameFor(seedId);
-            log.debug("Reading from tracefile " + traceFile);
-            BufferedReader reader = Main.newReader(traceFile);
-            for (int i = 0; i < depth - 1;) {
-                line = reader.readLine();
-                if(!line.equals("")){
-                    i++;
-                    //pathTxtWriter.println(line);
-                    pathTxtList.add(line);
-                }
-            }
-			do {
-				line = reader.readLine();
-			} while(line !=null && line.equals(""));
-			if (line!=null) {
-				if(extended) {
-					pathTxtList.add(line);
-				} else {
-					char c = line.charAt(0);
-					assert c == 'T' || c == 'F' : "unexpected " + line;
-					String flip = (c == 'T' ? "F" : "T") + line.substring(1);
-					//pathTxtWriter.println(flip);
-					pathTxtList.add(flip);
-				}
-			}
+        List<String> expectedList = getExpectedTrace();
 
-            reader.close();
-        }
 
         PrintWriter traceWriter = Main.newWriter(traceFileNameFor(id));
         PrintWriter pcWriter = Main.newWriter(pcFileNameFor(id));
@@ -287,12 +260,12 @@ public class Path
         RWAnalyzer rwAnalyzer = new RWAnalyzer();
 		ReadOnlyLastTapDetector roltDetector = new ReadOnlyLastTapDetector();
 
-        int count = 0, numEvents = 0, pathTxtSize = pathTxtList.size();
+        int count = 0, numEvents = 0, expectedSize = expectedList.size();
         boolean diverged = false;
         String line, prevLine="";
         if(!(logCatFile.length() > 0)) throw new Error("Empty trace file");
         
-        declWriter.printComment("Iteration " + id + " Count " + count + " Path depth" + pathTxtSize);
+        declWriter.printComment("Iteration " + id + " Count " + count + " Path depth" + expectedSize);
         
         BufferedReader reader = Main.newReader(logCatFile);
         while ((line = reader.readLine()) != null) {
@@ -300,8 +273,8 @@ public class Path
             	log.debug("Found branch marker! " + line + " | " + prevLine);
                 int i = line.indexOf(':');
                 String bid = line.substring(i+2).trim();
-                if (!diverged && count < pathTxtSize) {
-                    String expBid = pathTxtList.get(count);
+                if (!diverged && count < expectedSize) {
+                    String expBid = expectedList.get(count);
                     //Strip comment from Branch ID
                     if (expBid.contains("//"))
                     	expBid=expBid.substring(0,expBid.indexOf("//")-1).trim();
@@ -349,8 +322,8 @@ public class Path
             prevLine = line;
         }
 
-        if (!diverged && count < pathTxtSize) {
-            log.info("******* DIVERGED: expected length>=" + pathTxtSize + " got=" + count + " runid = " + id + " **********");
+        if (!diverged && count < expectedSize) {
+            log.info("******* DIVERGED: expected length>=" + expectedSize + " got=" + count + " runid = " + id + " **********");
             diverged = true;
         }
         reader.close();
@@ -385,10 +358,52 @@ public class Path
 		return ExecResult.OK;
     }
 
-    void generateNextGenPaths(int traceLength)
+    /**
+     * Returns the sequence of expected branch markers for the current path.
+     * TODO expected is only set by ActevePathExplorer.
+     * @return
+     * @throws IOException
+     */
+    private List<String> getExpectedTrace() throws IOException {
+        List<String> pathTxtList = new ArrayList<String>();
+		if (seedId >= 0) {
+            assert depth > 0;
+            String line;
+            // trace file of seed execution must have at least "depth" number of lines
+            String traceFile = traceFileNameFor(seedId);
+            BufferedReader reader = Main.newReader(traceFile);
+            for (int i = 0; i < depth - 1;) {
+                line = reader.readLine();
+                if(!line.equals("")){
+                    i++;
+                    //pathTxtWriter.println(line);
+                    pathTxtList .add(line);
+                }
+            }
+			do {
+				line = reader.readLine();
+			} while(line !=null && line.equals(""));
+			if (line!=null) {
+				if(extended) {
+					pathTxtList.add(line);
+				} else {
+					char c = line.charAt(0);
+					assert c == 'T' || c == 'F' : "unexpected " + line;
+					String flip = (c == 'T' ? "F" : "T") + line.substring(1);
+					//pathTxtWriter.println(flip);
+					pathTxtList.add(flip);
+				}
+			}
+
+            reader.close();
+        }
+        return pathTxtList;
+	}
+
+	void generateNextGenPaths(int traceLength)
     {
         for(int i = traceLength;  i > depth; i--){
-        	log.debug("in generateNextGenPaths: traceLength {}, fuzzed depth {}", traceLength, i);
+        	log.debug("in generateNextGenPaths: traceLength {}, depth {}", traceLength, i);
             Path newPath = new Path(id, i);
             PathQueue.addPath(newPath);
         }
