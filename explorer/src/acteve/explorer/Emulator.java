@@ -73,6 +73,7 @@ public class Emulator extends Task
 	private AdbTask unlockPhone;
 	private PullLogCatTask pullLogCat;
 	private AdbTask pushSettingsFile;
+	private AdbTask clearSolution;
 	private AdbTask pushNewSolution; 		//Task to push file with variable assignments (= solution) for current iteration. First iteration is empty.
 	private KillTask initialKillActivity;
 	private ClearHistoryTask clearHistory;
@@ -108,7 +109,7 @@ public class Emulator extends Task
 		this.pushMonkeyScript = new AdbTask(port, "push " + scriptFile.getAbsolutePath() + " " + scriptTxt);
 		subtasks.add(pushMonkeyScript);
 		
-//		Julian: Don't wait for app to finish. This won't happen if app crashes
+//		Don't wait for app to finish. This won't happen if app crashes
 		String amArgs = "-W -S -n " + appPkgName + "/" + mainActivity;
 //		String amArgs = "-n " + appPkgName + "/" + mainActivity;
 		if(activityArgs != null)
@@ -133,6 +134,9 @@ public class Emulator extends Task
 
 		this.initialKillActivity = new KillTask(port, appPkgName);
 		subtasks.add(initialKillActivity);
+		
+		this.clearSolution = new AdbTask(port, "shell rm " +  DEVICE_DIR + "/" + SOLUTION_TXT);
+		subtasks.add(clearSolution);
 	}
 
 	@Override
@@ -142,6 +146,7 @@ public class Emulator extends Task
 		if (isFirst) {
 			execute(unlockPhone);
 			execute(initialKillActivity);
+			execute(clearSolution);
 			execute(installApk);
 			execute(pushPkgNameFile);
 			isFirst = false;
