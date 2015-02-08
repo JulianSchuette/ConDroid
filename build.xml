@@ -19,6 +19,8 @@
 		<path id="explorer.class.path">
 			<pathelement location="libs/jigsaw-sexpr.jar"/>
 			<pathelement location="${ant.home}/lib/ant.jar"/>
+			<pathelement location="${a3t.dir}/libs/slf4j-api-1.7.5.jar"/>
+			<pathelement location="${a3t.dir}/libs/log4j-over-slf4j-1.7.10.jar"/>								
 		</path>
 		<property name="explorer.class.path" refid="explorer.class.path"/>
 		<build-helper
@@ -32,6 +34,8 @@
 			<pathelement location="libs/soot.jar"/>
 			<pathelement location="${symbolic.jar.file}"/>
 			<pathelement location="${ant.home}/lib/ant.jar"/>
+			<pathelement location="libs/slf4j-api-1.7.5.jar"/>
+			<pathelement location="libs/log4j-over-slf4j-1.7.10.jar"/>			
 		</path>
 		<property name="instrumentor.class.path" refid="instrumentor.class.path"/>
 		<build-helper
@@ -74,6 +78,7 @@
 		<attribute name="classpath" default=""/>
 		<attribute name="jarfile"/>
 		<sequential>
+    		<echo message="@{classpath}" />    
 			<mkdir dir="@{dir}/classes"/>
 			<javac srcdir="@{dir}/src" destdir="@{dir}/classes"
 			    debug="true" debuglevel="source,lines,vars"
@@ -97,6 +102,8 @@
 				<pathelement location="${a3t.dir}/libs/ant.jar"/>
 				<pathelement location="${a3t.dir}/libs/ant-launcher.jar"/>
 				<pathelement location="${a3t.dir}/libs/soot.jar"/>
+				<pathelement location="libs/slf4j-api-1.7.5.jar"/>
+				<pathelement location="libs/log4j-over-slf4j-1.7.10.jar"/>								
 			</classpath>
 		</java>
 	</target>
@@ -116,6 +123,8 @@
 				<pathelement location="${a3t.dir}/libs/ant.jar"/>
 				<pathelement location="${a3t.dir}/libs/ant-launcher.jar"/>
 				<pathelement location="${a3t.dir}/libs/jigsaw-sexpr.jar"/>
+				<pathelement location="${a3t.dir}/libs/slf4j-api-1.7.5.jar"/>
+				<pathelement location="${a3t.dir}/libs/log4j-over-slf4j-1.7.10.jar"/>								
 			</classpath>
 		</java>
 	</target>
