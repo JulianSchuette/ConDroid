@@ -63,7 +63,7 @@ public class AdbTask extends ExecTask
 		
 	public void execute()
 	{
-		log.debug("exec {}", Arrays.toString(cmdl.getCommandline()));
+		log.trace("exec {}", Arrays.toString(cmdl.getCommandline()));
 		super.execute();
 	}
 }

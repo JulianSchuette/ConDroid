@@ -119,7 +119,7 @@ public class Path
 		this.seedId = seedId;
 		this.depth = depth;
         this.id = PathQueue.nextPathId();
-    	log.debug("New path {} with new seed {} and depth {}",id, seedId, depth);
+    	log.trace("New path {} with new seed {} and depth {}",id, seedId, depth);
     }
 
     public int id()
@@ -148,14 +148,14 @@ public class Path
 //			//ms.generate(Main.newOutFile(Emulator.SCRIPT_TXT));
 //			return ms;
 //	    }
-
-        log.debug("Smt file        : {} - {} ", smtFile.exists(), smtFile.getAbsolutePath());
-        log.debug("pc file         : {} - {} ", Main.newOutFile(pcFileNameFor(seedId)).exists(), new File(pcFileNameFor(seedId)).getAbsolutePath());
-        log.debug("pcDecl file     : {} - {} ", pcDeclFile.exists(), pcDeclFile.getAbsolutePath());
-        log.debug("scriptToRun file: {} - {} ", scriptToRun.exists(), scriptToRun.getAbsolutePath());
-        log.debug("Depth: {}", depth);
-        log.debug("id: {}", id);
-        log.debug("seedId: {}", seedId);
+        log.debug("Generating new script");
+        log.debug("	Smt file        : {} - {} ", smtFile.exists(), smtFile.getAbsolutePath());
+        log.debug("	pc file         : {} - {} ", Main.newOutFile(pcFileNameFor(seedId)).exists(), new File(pcFileNameFor(seedId)).getAbsolutePath());
+        log.debug("	pcDecl file     : {} - {} ", pcDeclFile.exists(), pcDeclFile.getAbsolutePath());
+        log.debug("	scriptToRun file: {} - {} ", scriptToRun.exists(), scriptToRun.getAbsolutePath());
+        log.debug("	Depth: {}", depth);
+        log.debug("	id: {}", id);
+        log.debug("	seedId: {}", seedId);
 
         
         if (pcDeclFile.exists())
@@ -163,9 +163,9 @@ public class Path
 
         if (Main.newOutFile(pcFileNameFor(seedId)).exists()) {
 	        PrintWriter smtWriter = Main.newWriter(smtFile, true);
-	        BufferedReader reader = Main.newReader(pcFileNameFor(seedId));
+	        BufferedReader pcReader = Main.newReader(pcFileNameFor(seedId));
 	        
-	        String line = reader.readLine();
+	        String line = pcReader.readLine();
 	        int i = 1;
 	        while(i < depth){
 	            char c = line.charAt(0);
@@ -174,12 +174,12 @@ public class Path
 	            else
 	                line = line.substring(1);
 	            smtWriter.println("(assert "+line+")");
-	            line = reader.readLine();
+	            line = pcReader.readLine();
 	        }
 	        char c = line.charAt(0);
 	        while(c == '*'){
 	            smtWriter.println("(assert "+line.substring(1)+")");
-	            line = reader.readLine();
+	            line = pcReader.readLine();
 	            c = line.charAt(0);
 	        }
 	        
@@ -190,14 +190,14 @@ public class Path
 	        smtWriter.println("(check-sat)");
 	        smtWriter.println("(get-model)");
 	        
-	        reader.close();
+	        pcReader.close();
 	        smtWriter.close();
         }
         if (smtFile.exists()) {
 	        File z3OutFile = Main.newOutFile(Z3_OUT+id);
 	        File z3ErrFile = Main.newOutFile(Z3_ERR+id);
-	        log.debug("Z3 Out file {}", z3OutFile.getAbsolutePath());
-	        log.debug("Z3 Err file {}", z3ErrFile.getAbsolutePath());
+	        log.trace("Z3 Out file {}", z3OutFile.getAbsolutePath());
+	        log.trace("Z3 Err file {}", z3ErrFile.getAbsolutePath());
 	        new Z3Task().exec(z3OutFile, z3ErrFile, smtFile.getAbsolutePath());
 	        
 	        Z3Model model = Z3StrModelReader.read(z3OutFile);
@@ -347,14 +347,12 @@ public class Path
 		  }
 		*/
 		boolean endsWithPanelClick = roltDetector.readOnlyLastTap();//panelDetector.lastTapOnPanel();
-		log.debug("     Creating new PathInfo");
 		PathInfo info = new PathInfo(numEvents, 
 									 count, 
 									 roltDetector.writeSet(), 
 									 rwAnalyzer.rwSet(), 
 									 endsWithPanelClick);
 		info.dump(Main.newOutFile(PathInfo.fileName(id)));
-		log.debug("     last tap on panel: " + endsWithPanelClick);
 		return ExecResult.OK;
     }
 
@@ -403,18 +401,18 @@ public class Path
 	void generateNextGenPaths(int traceLength)
     {
         for(int i = traceLength;  i > depth; i--){
-        	log.debug("in generateNextGenPaths: traceLength {}, depth {}", traceLength, i);
+        	log.trace("in generateNextGenPaths: traceLength {}, depth {}", traceLength, i);
             Path newPath = new Path(id, i);
             PathQueue.addPath(newPath);
         }
     }
 
-	void generateRepeatPath()
+	Path getRepeatPath()
 	{
 		String divergingScript = Emulator.SCRIPT_TXT+"."+id;
 		MonkeyScript seedScript = new ElementaryMonkeyScript(Main.newOutFile(divergingScript));
 		seedScript.addComment("Repeat of " + divergingScript);
-		PathQueue.addPath(new Path(seedScript, seedId, depth));
+		return new Path(seedScript, seedId, depth);
 	}
 
 	private boolean checkForSWB(File sysLog)
@@ -460,7 +458,7 @@ public class Path
 
     static void copy(File srcFile, File dstFile)
     {
-    	log.debug("Copying from " + srcFile.getAbsolutePath() + " to " + dstFile.getAbsolutePath());
+    	log.trace("Copying from " + srcFile.getAbsolutePath() + " to " + dstFile.getAbsolutePath());
         try{
             FileInputStream in = new FileInputStream(srcFile);
             FileOutputStream out = new FileOutputStream(dstFile);

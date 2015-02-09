@@ -72,7 +72,7 @@ public class KillTask extends AdbTask
 			while(line != null){
 				//System.out.println(line);
 				if(pkgName.matcher(line).find()){
-					log.debug("process found:\n" + line);
+					log.debug("process found: " + line);
 					char[] cs = line.toCharArray();
 					int i = 0;
 					while(!Character.isWhitespace(cs[i]))

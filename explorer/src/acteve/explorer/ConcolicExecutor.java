@@ -125,7 +125,6 @@ public class ConcolicExecutor
 			MonkeyScript script = null;
 			if (Config.g().useMonkeyScript) {
 				try{
-					log.debug("Generating new script");
 					script = path.generateScript();
 				}catch(IOException e){
 					throw new Error(e);
@@ -149,6 +148,7 @@ public class ConcolicExecutor
 				break;
 			
 			Worker w = new Worker(emu, path, script);
+			w.setName("Worker-"+path.id());
 			w.start();
 		}
 		return false;
@@ -179,16 +179,12 @@ public class ConcolicExecutor
 		}
 
 		public void run() {
-			log.info("\n\n\n");
-			log.info("Starting new path ID {}",path.id());
+			log.info("\n\n\nStarting new path ID {}",path.id());
 			ExecResult result = executePath();
 			switch(result) {			
 				case DIVERGED:
 					if(numDivergence(path.id()) <= divergenceThreshold){
-						path.generateRepeatPath();
-						divergenceCount.incrementAndGet();
-						feasibleCount.incrementAndGet();
-						numExecs.incrementAndGet();
+						handleDivergence(path);
 					} else {
 						//ignore this path because it diverged too many times
 						ignoredCount.incrementAndGet();
@@ -201,7 +197,7 @@ public class ConcolicExecutor
 					numExecs.incrementAndGet();
 					break;
 				case SWB:
-					path.generateRepeatPath();
+					PathQueue.addPath(path.getRepeatPath());
 					break;
 			}
 			if(!emuGoneWild) {
@@ -217,6 +213,13 @@ public class ConcolicExecutor
 			}
 		}	
 		
+		private void handleDivergence(Path path2) {
+			PathQueue.addPath(path.getRepeatPath());
+			divergenceCount.incrementAndGet();
+			feasibleCount.incrementAndGet();
+			numExecs.incrementAndGet();
+		}
+
 		private ExecResult executePath()
 		{
 			log.debug("Executing path " + path.id() + " on " + emu);

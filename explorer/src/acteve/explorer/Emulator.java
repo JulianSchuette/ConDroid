@@ -59,7 +59,7 @@ public class Emulator extends Task
 	private static final String SETTINGS_TXT = "settings.txt";
 	private static final String SOLUTION_TXT = "solution.txt";
 
-	private List<Task> subtasks = new ArrayList();
+	private List<Task> subtasks = new ArrayList<Task>();
 	private Target target = new Target();
 
 	private AdbTask logcatBegin;

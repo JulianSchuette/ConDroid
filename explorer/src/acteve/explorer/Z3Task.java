@@ -63,7 +63,7 @@ public class Z3Task extends ExecTask
 	
 	public void exec(File outFile, File errFile, String file)
 	{		
-		log.debug("Executing Z3Task with outfile " + outFile.getAbsolutePath() + " and errFile " + errFile.getAbsolutePath() + " and file " + file);
+		log.trace("Executing Z3Task with outfile " + outFile.getAbsolutePath() + " and errFile " + errFile.getAbsolutePath() + " and file " + file);
 		Commandline.Argument cmdLineArgs = createArg();
 		String args2 = args + file;
 

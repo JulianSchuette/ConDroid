@@ -31,17 +31,16 @@
 
 package acteve.explorer;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PullLogCatTask extends Task
 {
+	private static final Logger log = LoggerFactory.getLogger(PullLogCatTask.class);
 	private AdbTask pullKilledProcFile;
 	private AdbTask pullLogCatFile;
 	private AdbTask rmDeviceLogCatFile;
@@ -85,7 +84,7 @@ public class PullLogCatTask extends Task
 				pullKilledProcFile.execute();
 			}catch(Exception e){
 				count++;
-				System.out.println("waiting for emulator-"+port+ " to finish.");
+				log.trace("waiting for emulator-"+port+ " to finish.");
 			}
 			try{
 				Thread.sleep(count*500);
