@@ -142,9 +142,10 @@ public class Emulator extends Task
 	@Override
 	public void execute()
 	{
+		log.debug("Starting logcat");
 		execute(logcatBegin);
 		if (isFirst) {
-			log.debug("Unlocking screed");
+			log.debug("Unlocking screen");
 			execute(unlockPhone);
 			log.debug("Killing running activity");
 			execute(initialKillActivity);
