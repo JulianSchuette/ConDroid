@@ -144,21 +144,31 @@ public class Emulator extends Task
 	{
 		execute(logcatBegin);
 		if (isFirst) {
+			log.debug("Unlocking screed");
 			execute(unlockPhone);
+			log.debug("Killing running activity");
 			execute(initialKillActivity);
+			log.debug("Clearing existing solution file");
 			execute(clearSolution);
+			log.debug("Installing APK: {}", installApk.getCmd());
 			execute(installApk);
+			log.debug("Pushing pkg name file");
 			execute(pushPkgNameFile);
 			isFirst = false;
 		}
+		log.debug("Clearing history");
 		execute(clearHistory);
+		log.debug("Pushing settings file");
 		execute(pushSettingsFile);
-		if (Config.g().useMonkeyScript)
+		if (Config.g().useMonkeyScript) {
+			log.debug("Pushing monkey script");
 			execute(pushMonkeyScript);
+		}
 		try {	
 			int start = this.pushNewSolution.getCmd().indexOf("push ")+5;
 			String solutionFile = this.pushNewSolution.getCmd().substring(start, this.pushNewSolution.getCmd().indexOf(' ', start));
 			if (new File(solutionFile).exists()) {
+				log.debug("Pushing solution file");
 				execute(this.pushNewSolution);
 			} else {
 				System.err.println("Solution file " + solutionFile + " does not exist. Nothing to push.");
@@ -169,6 +179,7 @@ public class Emulator extends Task
 		}
 		killActivity.prepare();
 		pullLogCat.prepare();
+		log.debug("Starting activity");
 		execute(startActivity);
 		log.debug("Waiting for activity to settle...");
 		try {	Thread.sleep(4000); } catch (InterruptedException e1) {	}

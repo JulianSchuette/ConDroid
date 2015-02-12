@@ -59,6 +59,7 @@ public class Main
 		new File("results").mkdir();
 		
 		if (args.length>2 && new File(args[0]).exists()) {
+			config.fileName = args[0];
 			config.appPkgName = args[1];
 			config.mainActivity = args[2];
 		} else {

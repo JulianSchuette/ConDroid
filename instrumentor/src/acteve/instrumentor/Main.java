@@ -153,6 +153,8 @@ public class Main extends SceneTransformer {
 	public static void main(String[] args) throws ZipException, XPathExpressionException, IOException, InterruptedException, ParserConfigurationException, SAXException {
 		soot.G.reset();
 		config = Config.g();
+		
+		//Clear output dir
 		Utils.deleteDir(new File("sootOutput"));
 		
 		if (args.length<=0 || !new File(args[0]).exists()) {
@@ -209,6 +211,7 @@ public class Main extends SceneTransformer {
 		Options.v().set_src_prec(Options.src_prec_apk);
 		Options.v().set_debug(true);
 		
+		//Create dummy main method referencing all entry points
 		SootMethod dummyMain = setupApplication.getEntryPointCreator().createDummyMain();
 
 		Scene.v().setEntryPoints(Collections.singletonList(dummyMain));
@@ -225,24 +228,6 @@ public class Main extends SceneTransformer {
 		//Register all application classes for instrumentation
 		Chain<SootClass> appclasses = Scene.v().getApplicationClasses();
 		classesToInstrument.addAll(appclasses);
-
-		// ------------- FOR DEBUGGING ONLY --------------------------
-//		Collection<Pack> allPacks = PackManager.v().allPacks();
-//		Pack cgPack = PackManager.v().getPack("cg");
-//		Iterator<Transform> cgPackIt = cgPack.iterator();
-//		while (cgPackIt.hasNext()) {
-//			Transform t = cgPackIt.next();
-//			System.out.println("    " +  t.getTransformer());
-//		}
-//		
-//		for (Pack p: allPacks) {
-//			System.out.println(p.getPhaseName());
-//		}
-//		if (1>0)
-//			return;
-		// ------------- FOR DEBUGGING ONLY --------------------------
-		
-//		PackManager.v().getPack("cg").apply();
 		
 		//Collect additional classes which will be injected into the app
 		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
@@ -274,12 +259,10 @@ public class Main extends SceneTransformer {
 		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
 		if (LIMIT_TO_CALL_PATH ) {
 			/* 
-			 * Battle plan:
 			 * 1.	Find all entry points (i.e. "real" entry points according to
 			 *      Android life cycle model that get automatically called by OS)
 			 * 1a.	Add all constructors from View lifecycles (are not provided by EntryPointAnalysis)
-			 * 2)   Find all reachable methods in which dynamic loading takes
-			 *      place (= goal methods)
+			 * 2)   Find all reachable /target/ methods 
 			 * 3)   Determine all paths from methods in 1) to methods in 2)
 			 * 4)   Instrument only on those paths 
 			 */
