@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import acteve.explorer.Utils;
 import soot.JimpleClassSource;
 import soot.MethodOrMethodContext;
 import soot.Modifier;
@@ -72,7 +73,6 @@ import soot.jimple.infoflow.android.data.AndroidMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 import soot.util.Chain;
-import acteve.explorer.Utils;
 
 public class Main extends SceneTransformer {
 	public static Logger log = LoggerFactory.getLogger(Main.class);
@@ -400,7 +400,9 @@ public class Main extends SceneTransformer {
 			log.info("Done. Have fun with {}", f.getAbsolutePath());
 			
 			//Handover to explorer
-			acteve.explorer.Main.main(new String[] {f.getAbsolutePath()});
+			String appPkgName = ih.getPackagename();
+			String mainActivity = ih.getDefaultActivities().iterator().next();
+			acteve.explorer.Main.main(new String[] {f.getAbsolutePath(), appPkgName, mainActivity});
 		} else {
 			System.out.println("ERROR: " + outputApk + " does not exist");
 		}

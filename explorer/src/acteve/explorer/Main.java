@@ -48,8 +48,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
-import acteve.instrumentor.InstrumentationHelper;
-
 public class Main
 {
 	public static final boolean DEBUG = true;
@@ -60,15 +58,13 @@ public class Main
 		Utils.deleteDir(new File("results"));
 		new File("results").mkdir();
 		
-		if (args.length>0 && new File(args[0]).exists()) {
-			config.fileName = args[0];
+		if (args.length>2 && new File(args[0]).exists()) {
+			config.appPkgName = args[1];
+			config.mainActivity = args[2];
 		} else {
-			System.out.println("Usage: explorer <apk file>");
+			System.out.println("Usage: explorer <apk file> <package name> <mainActivity>");
 			System.exit(-1);
 		}
-		InstrumentationHelper ih = new InstrumentationHelper(new File(config.fileName));
-		config.appPkgName = ih.getPackagename();
-		config.mainActivity = ih.getDefaultActivities().iterator().next();
 
         MonkeyScript.setup(config.userWait);
         ConcolicExecutor.setup(config.emulatorPort, 

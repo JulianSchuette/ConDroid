@@ -32,10 +32,15 @@
 	<target name="build-instrumentor" depends="build-symbolic">
 		<path id="instrumentor.class.path">
 			<pathelement location="libs/soot.jar"/>
+			<pathelement location="libs/soot-infoflow-android.jar"/>
+			<pathelement location="libs/soot-infoflow.jar"/>
 			<pathelement location="${symbolic.jar.file}"/>
 			<pathelement location="${ant.home}/lib/ant.jar"/>
 			<pathelement location="libs/slf4j-api-1.7.5.jar"/>
-			<pathelement location="libs/log4j-over-slf4j-1.7.10.jar"/>			
+			<pathelement location="libs/log4j-over-slf4j-1.7.10.jar"/>
+			<pathelement location="libs/commons-io-2.4.jar" />		
+			<pathelement location="libs/commons-lang3-3.3.2.jar"/>	
+			<pathelement location="${explorer.jar.file}"/>
 		</path>
 		<property name="instrumentor.class.path" refid="instrumentor.class.path"/>
 		<build-helper
