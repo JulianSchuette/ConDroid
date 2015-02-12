@@ -885,7 +885,7 @@ public class Util
 							//TODO handle array and float types
 							String varvalue = mat.group(3);
 							System.out.println("Varvalue is " + varvalue);
-							if (varvalue=="\"null@0\"") {
+							if ("\"null@0\"".equals(varvalue)) {
 								varvalue = null;
 								System.out.println("There is a null string in solution map");
 							}
