@@ -650,6 +650,10 @@ public class Util
 		if(eventId > 0 && started)
 			Mylog.e("A3T_AREAD", System.identityHashCode(obj) + " " + index);
 	}
+	
+	public static void targetHit(Object obj) {
+		Mylog.e("A3T_TARGET", obj.toString());
+	}
 
 	public static void writeArray(Object obj, int index) {
 		if(eventId > 0 && started)

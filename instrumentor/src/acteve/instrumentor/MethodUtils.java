@@ -117,7 +117,7 @@ public class MethodUtils {
 	};
 	
 	
-	private static HashSet<String> TARGET_METHODS = new HashSet<String>();
+	public static HashSet<String> TARGET_METHODS = new HashSet<String>();
 	static {
 		HashSet<String> aHashSet = new HashSet<String>();
 		aHashSet.addAll( Arrays.asList(new String[] {

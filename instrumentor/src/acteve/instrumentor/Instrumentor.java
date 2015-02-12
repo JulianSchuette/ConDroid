@@ -39,6 +39,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -128,6 +129,50 @@ public class Instrumentor extends AbstractStmtSwitch {
 	private SootMethod currentMethod;
 	private int sigIdOfCurrentMethod;
 	private static int uniqueVarCounter;
+	
+	//TODO Read targets from configurable targets.txt file
+	private static HashSet<String> TARGET_METHODS = new HashSet<String>();
+	static {
+		HashSet<String> aHashSet = new HashSet<String>();
+		aHashSet.addAll( Arrays.asList(new String[] {
+				"<java.lang.Class: T newInstance()>",
+				 "<java.lang.Class: newInstance()>",
+				 "<java.lang.Object: newInstance()>",
+				 "<java.lang.Class: T newInstance(java.lang.Object...)>",
+				 "<java.lang.Class: newInstance(java.lang.Object...)>",
+				 "<java.lang.Class: java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)>",
+				 "<java.lang.Class: java.lang.reflect.Constructor getConstructor(java.lang.Class...)>",
+				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getConstructors()>",
+				 "<java.lang.Class: java.lang.reflect.Constructor[] getConstructors()>",
+				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getDeclaredConstructors()>",
+				 "<java.lang.Class: java.lang.reflect.Constructor[] getDeclaredConstructors()>",
+				 "<java.lang.Class: java.lang.Class<T> forName(java.lang.String)>",
+				 "<java.lang.Class: java.lang.Class forName(java.lang.String)>",
+
+				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
+				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>",
+				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String,boolean)>",
+				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>",
+				 "<java.lang.ClassLoader: void <init>()>",
+				 "<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>",
+				 "<java.lang.ClassLoader: java.lang.ClassLoader getSystemClassLoader()>",
+
+				 "<java.net.URLClassLoader: void <init>(java.net.URL[])>",
+				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader)>",
+				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)>",
+
+				 "<java.security.SecureClassLoader: void <init>()>",
+				 "<java.security.SecureClassLoader: void <init>(java.lang.ClassLoader)>",
+				 
+				"<dalvik.system.BaseDexClassLoader: void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)>",
+
+				"<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>",
+
+				"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,java.lang.ClassLoader)>",
+				 "<dalvik.system.PathClassLoader: void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)>"
+				}));
+		TARGET_METHODS = aHashSet;
+	};
 
 	private boolean doRW() {
 		return doRW(null);
@@ -517,6 +562,13 @@ public class Instrumentor extends AbstractStmtSwitch {
 		List symArgs = new ArrayList();
 		SootMethod callee = ie.getMethod();
 		int subSig = methSubsigNumberer.getOrMakeId(callee);
+		
+		// Insert TARGET marker, if invocation of target method
+		if (TARGET_METHODS.contains(ie.getMethod().getSignature())) {
+			Local targetName = G.newLocal(RefType.v("java.lang.String"));
+			G.assign(targetName, StringConstant.v(ie.getMethod().getSignature()));
+			G.invoke(G.staticInvokeExpr(G.targetHit, targetName));
+		}
 		
 		//pass the subsig of the callee
 		symArgs.add(IntConstant.v(subSig));

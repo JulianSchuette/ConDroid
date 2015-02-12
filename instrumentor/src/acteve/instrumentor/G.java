@@ -125,6 +125,7 @@ public class G
     static final SootMethodRef retPush;
     static final SootMethodRef retPop;
     static final SootMethodRef assume;
+    static final SootMethodRef targetHit;
 
     static final SootMethodRef id_field_read;
     static final SootMethodRef explicit_read;
@@ -213,6 +214,7 @@ public class G
 		retPush = symUtilClass.getMethod("void retpush(int,"+EXPRESSION_CLASS_NAME+")").makeRef();
 		retPop = symUtilClass.getMethod(EXPRESSION_CLASS_NAME+" retpop(int)").makeRef();
 		assume = symUtilClass.getMethod("void assume(" + EXPRESSION_CLASS_NAME + ",int,boolean)").makeRef();
+		targetHit = symUtilClass.getMethod("void targetHit(" + OBJECT_CLASS_NAME + ")").makeRef();
 		explicit_read = symUtilClass.getMethod("void read(" + OBJECT_CLASS_NAME + ",int)").makeRef();
 		explicit_write = symUtilClass.getMethod("void write(" + OBJECT_CLASS_NAME + ",int)").makeRef();
 		id_field_read = symUtilClass.getMethod("void read(int)").makeRef();
@@ -422,7 +424,7 @@ public class G
     {
 		return jimple.newInterfaceInvokeExpr(local, mref, arg1, arg2);
     }
-	
+    
     public static CastExpr castExpr(Local l, Type t)
     {
 		return jimple.newCastExpr(l, t);
