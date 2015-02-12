@@ -123,18 +123,18 @@ public class ConcolicExecutor
 			}
 
 			MonkeyScript script = null;
-			if (Config.g().useMonkeyScript) {
-				try{
-					script = path.generateScript();
-				}catch(IOException e){
-					throw new Error(e);
-				}
-				if(script == null) {
-					//infeasible path
-					numExecs.incrementAndGet();
-					continue;
-				}
+			try {
+				script = path.generateScript();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			
+			if(script == null) {
+				//infeasible path
+				numExecs.incrementAndGet();
+				continue;
+			}
+			
 			if(wildEmusCount.get() >= wildEmusThreshold)
 			break;
 
@@ -214,7 +214,7 @@ public class ConcolicExecutor
 		}	
 		
 		private void handleDivergence(Path path2) {
-			PathQueue.addPath(path.getRepeatPath());
+			PathQueue.addPath(path2.getRepeatPath());
 			divergenceCount.incrementAndGet();
 			feasibleCount.incrementAndGet();
 			numExecs.incrementAndGet();
@@ -254,6 +254,7 @@ public class ConcolicExecutor
 		{
 			try{
 				String script = Emulator.SCRIPT_TXT+"."+pathId;
+				//TODO store num of repetitions elsewhere to support useMonkeyScript=false
 				BufferedReader reader = Main.newReader(Main.newOutFile(script));
 				String line;
 				int count = 0;

@@ -583,7 +583,6 @@ public class Util
 	{
 		if (e == null) {
 			Mylog.e("PRE_A3T_BRANCH", "Assume called with null symbolic expression on branch id " + branchId + " and conditional value " + b);
-			Thread.dumpStack();
 			return;
 		}
 

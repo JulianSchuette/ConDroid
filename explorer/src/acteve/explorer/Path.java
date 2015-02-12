@@ -412,6 +412,7 @@ public class Path
 		String divergingScript = Emulator.SCRIPT_TXT+"."+id;
 		MonkeyScript seedScript = new ElementaryMonkeyScript(Main.newOutFile(divergingScript));
 		seedScript.addComment("Repeat of " + divergingScript);
+		log.debug("Creating repeat path. SeedId {}, depth {}",seedId, depth);
 		return new Path(seedScript, seedId, depth);
 	}
 

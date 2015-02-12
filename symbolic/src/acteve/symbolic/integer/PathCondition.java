@@ -45,7 +45,8 @@ public class PathCondition
 	
     public void assumeDet(Expression e)
     {
-		printConstraint(e, true, true);
+		new Exception().printStackTrace();
+    	printConstraint(e, true, true);
     }
 
     public void assumeTru(Expression e)

@@ -86,7 +86,6 @@ public class SymbolicInteger extends IntegerExpression
     static String makeName()
     {
     	System.out.println("SymbolicInteger: making a new name: $I$"+(count+1));
-    	Thread.dumpStack();
 		return "$I$" + count++;
     }
 	
