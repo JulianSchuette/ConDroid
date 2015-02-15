@@ -118,7 +118,7 @@ public class Util
 		symRet = null;
 		long threadId = Thread.currentThread().getId();
 		symArgs = new SymArgs(subsig, threadId, sa);
-		Mylog.e("PRE_A3T_ARGPUSH", subsig + " " + Arrays.toString(sa));
+//		Mylog.e("PRE_A3T_ARGPUSH", subsig + " " + Arrays.toString(sa));
 	}
 
 	public static void argpush(int subsig)
@@ -506,7 +506,7 @@ public class Util
 	 */
 	public static Expression[] argpop(int subSig, int sig, int argCount)
 	{
-		Mylog.e("PRE_A3T_ARGPOP", subSig + " " + sig + " "+argCount);
+//		Mylog.e("PRE_A3T_ARGPOP", subSig + " " + sig + " "+argCount);
 
         if (sig >= 0) { // -1 for models method
 			if(eventId == numEvents)
@@ -539,12 +539,12 @@ public class Util
 	{
 		SymRet sr = new SymRet(subSig, Thread.currentThread().getId(), i);		
 		symRet = sr;
-		Mylog.e("PRE_A3T_RETPUSH", "Pushing for subsig " +symRet.subSignatureId);
+//		Mylog.e("PRE_A3T_RETPUSH", "Pushing for subsig " +symRet.subSignatureId);
 	}
 	
 	public static Expression retpop(int subSig)
 	{
-		Mylog.e("PRE_A3T_RETPUSH", "Popping for subsig " + subSig);
+//		Mylog.e("PRE_A3T_RETPUSH", "Popping for subsig " + subSig);
 		SymRet sr = symRet;
 		if(sr != null){
 			long ti = sr.threadId;
