@@ -504,9 +504,8 @@ public class MethodUtils {
 									|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet,int)"))) { 
 						source.addTag(new GenericAttribute("entrymethod", new byte[0]));					
 						System.out.println("This is a view constructor and a potential entrypoint: " + source);
-					}else {
-						System.out.println("Not an entrypoint: " + source.getSignature());
 					}
+					
 					if (!transitiveSources.contains(source)) {
 						transitiveSources.add(source);
 						unprocessedSources.add(source);

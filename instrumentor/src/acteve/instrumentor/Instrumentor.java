@@ -83,6 +83,7 @@ import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.LengthExpr;
 import soot.jimple.LookupSwitchStmt;
+import soot.jimple.MonitorStmt;
 import soot.jimple.NegExpr;
 import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
@@ -422,8 +423,16 @@ public class Instrumentor extends AbstractStmtSwitch {
         // collect all conditional branches in this method
         List<IfStmt> conds = new ArrayList<IfStmt>();
 		Chain<Unit> units = body.getUnits();
+		Unit lastParamStmt = units.getFirst();
+		HashSet<Value> toInitialize = new HashSet<Value>(body.getLocalCount());
         for (Unit u : units) {
-            if (u instanceof IfStmt) {
+        	//Collect all register used in monitor stmts to initialize them to avoid possible VRFY errors
+        	if (u instanceof MonitorStmt) {        		
+        		Value s = ((MonitorStmt) u).getOp();
+        		if (s instanceof Local)
+        			toInitialize.add(s);
+        	}
+        	if (u instanceof IfStmt) {
                 conds.add((IfStmt) u);
                 String str = getStr(u, methodSigAndFileStr);
                 condIdStrList.add(str);
@@ -528,6 +537,16 @@ public class Instrumentor extends AbstractStmtSwitch {
 			//Let if-statement jump to "assume: true" assumption 
 			ifStmt.setTarget(assumeTruStmt);
 		}
+		//Insert variable initialization at begin of method to avoid VRFY error
+    	for (Value v: toInitialize) {
+            System.out.println("Initializing " + v + " WHICH IS a local? " + v.getType().toString() + " " + (v instanceof Local));
+    		Stmt initStmt = G.jimple.newAssignStmt(v, NullConstant.v());
+            units.insertAfter(initStmt, lastParamStmt);
+    	}
+        Stmt symInitStmt = G.jimple.newAssignStmt(symVar, NullConstant.v());    	
+    	System.out.println("Inserting " + symInitStmt.toString() + " after " + lastParamStmt.toString() + " in " + body.getMethod().getName());
+    	units.insertAfter(symInitStmt, lastParamStmt);
+
 	}
 
 	private void insertPrologue(Body body, List<Local> params)
