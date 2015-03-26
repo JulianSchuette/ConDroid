@@ -14,3 +14,4 @@ The goal of ConDroid is to drive execution of Android app to specific code locat
 <a href="https://scan.coverity.com/projects/3500">
 <img alt="Coverity Scan Build Status"
 src="https://scan.coverity.com/projects/3500/badge.svg"/></a>
+<a href="#" name="status-images" class="open-popup" data-ember-action="786"><img src="https://travis-ci.org/JulianSchuette/ConDroid.svg" data-bindattr-787="787" title="Build Status Images"></a>
