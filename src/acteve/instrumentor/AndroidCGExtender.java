@@ -72,22 +72,16 @@ public class AndroidCGExtender extends SceneTransformer {
 					Body b = me.getActiveBody();
 					for (Unit u : b.getUnits()) {
 						if (u.toString().contains("android.view.View findViewById(int)")) {
-							System.out.println("Found a call to findViewById: " + u.toString());
-
 							// Extract constant parameter from findViewByID
 							if (u instanceof AssignStmt) {
 								Value val = ((AssignStmt) u).getInvokeExpr().getArg(0);
 								if (val instanceof IntConstant) {
 									int id = ((IntConstant) val).value;
 
-									System.out.println("Now we need to find out which class is registered for " + "0x" + Integer.toHexString(id) + " (" + id + "). Is referenced from "
-											+ b.getMethod().getSignature());
-
 									// retrieve class mapped to id
 									try {
 										HashMap<Integer, SootClass> id2cls = Main.ih.getClassOfViewId();
 										SootClass clazz = id2cls.get(new Integer(id));
-										System.out.println("This is my class: " + clazz);
 										if (clazz != null) {
 											// insert implicit edge into CG
 											SootMethod constr = null;
@@ -98,8 +92,7 @@ public class AndroidCGExtender extends SceneTransformer {
 												System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
 												cg.addEdge(newEdge);
 											} catch (RuntimeException rte) {
-												// Method does not exist
-
+												// Method does not exist. continue
 											}
 											try {
 												constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet)");
@@ -107,10 +100,8 @@ public class AndroidCGExtender extends SceneTransformer {
 												System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
 												cg.addEdge(newEdge);
 											} catch (RuntimeException rte) {
-												// method does not exist
+												// method does not exist. continue
 											}
-										} else {
-											System.err.println("Could not find class for view id " + ((IntConstant) val).value);
 										}
 									} catch (XPathExpressionException | SAXException | IOException | ParserConfigurationException e) {
 										e.printStackTrace();

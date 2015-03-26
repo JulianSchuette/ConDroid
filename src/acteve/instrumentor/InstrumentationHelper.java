@@ -68,6 +68,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -84,6 +86,7 @@ import soot.FloatType;
 import soot.IntType;
 import soot.JimpleClassSource;
 import soot.Local;
+import soot.LongType;
 import soot.MethodOrMethodContext;
 import soot.Modifier;
 import soot.PatchingChain;
@@ -102,7 +105,6 @@ import soot.Unit;
 import soot.UnknownType;
 import soot.Value;
 import soot.VoidType;
-import soot.LongType;
 import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.javaToJimple.LocalGenerator;
 import soot.jimple.ArrayRef;
@@ -145,6 +147,7 @@ import soot.util.HashChain;
  * 
  */
 public class InstrumentationHelper {
+	public static Logger log = LoggerFactory.getLogger(InstrumentationHelper.class);
 	
 	/**
 	 * All listener classes defined inside Android.view. We need those to
@@ -192,12 +195,9 @@ public class InstrumentationHelper {
 	private static final boolean CLEAR_AFTER_USER = true;
 	private String manifest;
 	private String packagename;
-	private String defaultActivity;
 	private static LinkedHashSet<String> mainActivities = new LinkedHashSet<String>();
 
-	private InstrumentationHelper() {
-		// Don't call me, I'm private
-	}
+	private InstrumentationHelper() { }
 
 	/**
 	 * 
@@ -213,7 +213,7 @@ public class InstrumentationHelper {
 			SAXException, XPathExpressionException {
 		// unpack
 		if (Main.DEBUG) {
-			System.out.println("Decoding " + apkFile.getAbsolutePath());
+			log.info("Decoding " + apkFile.getAbsolutePath());
 		}
 		Process p = Runtime.getRuntime().exec(
 				"java -jar libs/apktool.jar d -s -f " + apkFile.getAbsolutePath() + " decoded");
@@ -338,7 +338,7 @@ public class InstrumentationHelper {
 	 */
 	public static void insertAtBeginOfMethod(Body body, Chain<Unit> stmts) {
 		if (Main.DEBUG) {
-			System.out.println("Inserting at begin of " + body.getMethod().getName());
+			log.info("Inserting at begin of " + body.getMethod().getName());
 		}
 
 		Iterator<Unit> i = body.getUnits().snapshotIterator();
@@ -452,7 +452,7 @@ public class InstrumentationHelper {
 		
 		HashSet<SootMethod> onClickListeners = new HashSet<SootMethod>();
 		for (String layoutFileName : layoutsToActivity.keySet()){
-			System.out.println("Checking layout file " + layoutFileName);
+			log.debug("Checking layout file " + layoutFileName);
 			
 			File layoutFile = new File("decoded/res/layout/" + layoutFileName + ".xml");
 			Document doc = dBuilder.parse(layoutFile);
@@ -465,15 +465,15 @@ public class InstrumentationHelper {
 				SootMethod oncmeth = Scene.v().getMethod("<"+className+": " + onClickMethod + ">");
 				if (filter.matcher(oncmeth.getSignature()).matches()) {
 					onClickListeners.add(oncmeth);
-					System.out.println("XML-defined onclick handler: " + oncmeth.getSignature());
+					log.debug("XML-defined onclick handler: " + oncmeth.getSignature());
 				} else {
-					System.out.println("Does not match filter: " + oncmeth.getSignature() + " :: " + filter.pattern());
+					log.debug("Does not match filter: " + oncmeth.getSignature() + " :: " + filter.pattern());
 				}
 			}
 		}
 		result = onClickListeners;
 		
-		System.out.println("Found " + result.size() + " android:onClickListeners in layout XML file.");
+		log.debug("Found " + result.size() + " android:onClickListeners in layout XML file.");
 		
 		return result;
 	}
@@ -494,12 +494,7 @@ public class InstrumentationHelper {
 		//Collect all layout ids which are used in setContentView
 		SootMethod setContentView = Scene.v().getMethod("<android.app.Activity: void setContentView(int)>");
 		Iterator<Edge> callers = Scene.v().getCallGraph().edgesInto(setContentView);
-		System.out.println("Size of cg is " + Scene.v().getCallGraph().size());
-		Iterator<MethodOrMethodContext> it = Scene.v().getCallGraph().sourceMethods();
-		while (it.hasNext()) {
-			SootMethod sm = it.next().method();
-			System.out.println("Source method: " + sm.getSignature());
-		}
+		log.debug("Size of cg is " + Scene.v().getCallGraph().size());
 		while (callers.hasNext()) {
 			Edge e = callers.next();
 			MethodOrMethodContext caller = e.getSrc();
@@ -511,13 +506,12 @@ public class InstrumentationHelper {
 						Value arg = ((JInvokeStmt) u).getInvokeExpr().getArg(0);
 						if (arg instanceof IntConstant) {
 							int id = ((IntConstant) arg).value;
-							System.out.println("ID: "+Integer.toHexString(id));
 							if (!classesToLayoutIDs.containsKey(caller.method().getDeclaringClass())) {
 								classesToLayoutIDs.put(caller.method().getDeclaringClass(), new ArrayList<String>());
 							}
 							classesToLayoutIDs.get(caller.method().getDeclaringClass()).add("0x"+Integer.toHexString(id));
 						} else {
-							System.err.println("Sorry, could not resolve references layout: " + u.toString());
+							log.error("Sorry, could not resolve references layout: " + u.toString());
 						}
 					}
 				}
@@ -593,7 +587,6 @@ public class InstrumentationHelper {
 	public HashMap<Integer,SootClass> getClassOfViewId() throws SAXException, IOException, XPathExpressionException, ParserConfigurationException {
 		HashMap<Integer, SootClass> layoutIdToClass = new HashMap<Integer, SootClass>();		
 		HashMap<String, String> layoutNamesToClass= new HashMap<String, String>();
-		
 		
 		//Resolve layout ids to file names
 		HashMap<String,Integer> layoutNamesToIds = new HashMap<String,Integer>();	//Hex ids to names
@@ -824,7 +817,7 @@ public class InstrumentationHelper {
 	 * into the primitive ctor which 
 	 */
 	public static Pair<PatchingChain<Unit>, Chain<Local>> generateObjectInstance(Local local, Unit unit, SootMethod meth){	
-		//TODO JS: To support testing, return unit chain of stmts here instead of injecting them immediately before unit.
+		// J: To support testing, return unit chain of stmts here instead of injecting them immediately before unit.
 		// RF: problem is we need locals in the body which need to be inserted anyway
 		assert local.getType() instanceof RefType:"No object generation for primitive types.";
 		
@@ -893,7 +886,6 @@ public class InstrumentationHelper {
 		newUnits.addLast(assignStmt);
 		
 		//now add initializations to the ctor we just made public:
-		//TODO @ JS: decide whether you want to call it separately!
 		for (SootField field : Scene.v().getSootClass(className).getFields()){
 			Pair<PatchingChain<Unit>, Chain<Local>> tPair2 = generateUnitsToInitializeFieldIfNotInitialized(field, primitiveCtor);
 			primitiveCtor.getActiveBody().getUnits().addAll(tPair2.getLeft());
@@ -929,7 +921,7 @@ public class InstrumentationHelper {
 						}
 				}
 			}
-		}*/ //abandoned for now
+		}*/ 
 		return new ImmutablePair<PatchingChain<Unit>, Chain<Local>>(newUnits, newLocals);
 		
 	}
@@ -1129,9 +1121,7 @@ public class InstrumentationHelper {
 					listenerFields.add(f);
 			}
 		}
-		
-		System.out.println("Found " + listenerFields.size() + " fields that are references to Objects implementing UI callback methods.");
-		
+				
 		HashSet<SootMethod> onClickHandlerMethods = new HashSet<SootMethod>();
 		
 		//Limit injection to default main
@@ -1155,7 +1145,6 @@ public class InstrumentationHelper {
 	    for (Local l : body.getLocals())
 	    	if (l.getType().equals(RefType.v("android.content.Context"))){
 	    		ctxLocal = l;
-	    		System.out.println("Found Ctx local: " + ctxLocal.getName() + " of type " + ctxLocal.getType().toString());
 	    	}
 	    // if there is no context local, generate one - we will need it
 	    if (ctxLocal == null){
@@ -1163,12 +1152,10 @@ public class InstrumentationHelper {
 	    	units.insertBefore(
 	    			Jimple.v().newAssignStmt(ctxLocal, Jimple.v().newVirtualInvokeExpr(thisRefLocal, Scene.v().getSootClass("android.content.Context").getMethod("android.content.Context getApplicationContext()").makeRef()))
 	    		, returnstmt);
-	    	System.out.println("Generated Ctx Local of type " + ctxLocal.getType().toString());
 	    }
 
 		// add references to the fields to call on them:
 		for (SootField f : listenerFields){			
-			System.out.println("Processing field " + f.getName() + " of reference type " + f.getType().toString());
 			Local g = generator.generateLocal(RefType.v(f.getType().toString()));
 			units.insertBefore(
 					Jimple.v().newAssignStmt(g, Jimple.v().newInstanceFieldRef(thisRefLocal, f.makeRef()))
@@ -1177,7 +1164,6 @@ public class InstrumentationHelper {
 			 *  we have a reference (g) to the field (f), now 1) find the
 			 *  interface's predefined methods and 2) call them on the reference (g)
 			 */
-			System.out.println("Number of callback methods for field " + f.getName() + ": " + uiListeners.get(f.getType().toString()).length);
 			for (String callbackSubsig : uiListeners.get(f.getType().toString())){
 				SootMethod callbackMethod = Scene.v().getSootClass(f.getType().toString()).getMethod(callbackSubsig);
 				aep.buildMethodCall(callbackMethod, body, g, generator, returnstmt); //note: this already ADDS the method call to Units
@@ -1250,7 +1236,7 @@ public class InstrumentationHelper {
 	 */
 	public static void insertAtEndOfMethod(Body body, Chain<Unit> stmts) {
 		if (Main.DEBUG) {
-			System.out.println("Inserting at end of " + body.getMethod().getName());
+			log.info("Inserting at end of " + body.getMethod().getName());
 		}
 		body.getUnits().insertAfter(stmts, body.getUnits().getLast());
 	}
@@ -1373,7 +1359,7 @@ public class InstrumentationHelper {
 			InterruptedException {
 		// unpack
 		if (Main.DEBUG) {
-			System.out.println("Decoding " + apkFile.getAbsolutePath());
+			log.info("Decoding " + apkFile.getAbsolutePath());
 		}
 		File decodedDir = new File ("decoded");
 		if (decodedDir.exists() && decodedDir.isDirectory()) {
@@ -1398,7 +1384,7 @@ public class InstrumentationHelper {
 		p = Runtime.getRuntime().exec("java -jar libs/apktool.jar b decoded/ " + newFile.getAbsolutePath());
 		processExitCode = p.waitFor();
 		if (processExitCode != 0) {
-			System.err.println("Something went wrong when packing " + apkFile.getAbsolutePath());
+			log.error("Something went wrong when packing " + apkFile.getAbsolutePath());
 			return null;
 		}
 
@@ -1407,7 +1393,7 @@ public class InstrumentationHelper {
 			if (decoded.isDirectory())
 				decoded.delete();
 			else
-				System.err.println("Unexpected: decoded is not a directory");
+				log.error("Unexpected: decoded is not a directory");
 		}
 		return newFile;
 	}
@@ -1452,7 +1438,7 @@ public class InstrumentationHelper {
 		File newFile = h.replaceManifest(new File(apkFile), manifestString);
 		
 		if (Main.DEBUG) {
-			System.out.println("New manifest: \n" + manifestString);
+			log.error("New manifest: \n" + manifestString);
 		}
 		return newFile;
 		
@@ -1467,62 +1453,13 @@ public class InstrumentationHelper {
 	public void writeClassToFile(SootClass sClass) throws IOException {
 		String fileName = SourceLocator.v().getFileNameFor(sClass, Options.output_format_jimple);
 		if (Main.DEBUG) {
-			System.out.println("Dumping class to " + fileName);
+			log.error("Dumping class to " + fileName);
 		}
 		OutputStream streamOut = new FileOutputStream(fileName);
 		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
 		Printer.v().printTo(sClass, writerOut);
-		// JasminClass jasminClass = new soot.jimple.JasminClass(sClass);
-		// jasminClass.print(writerOut);
 		writerOut.flush();
 		streamOut.close();
-	}
-
-	/**
-	 * Before invokations of a method, wrap its parameter by a method call to
-	 * another method.
-	 * 
-	 * Note: TODO Not finished yet.
-	 * 
-	 * @param body
-	 * @param methSig
-	 *            The Soot signature of the method call to apply. For example:
-	 *            <code><de.fhg.aisec.gudjcetest.Utility: char[] wrapChar(char[])></code>
-	 */
-	public static void applyFunctionToMethodParams(Body body, String methSig) {
-		Iterator<Unit> i = body.getUnits().snapshotIterator();
-		while (i.hasNext()) {
-			Unit u = i.next();
-
-			if (u instanceof JInvokeStmt) {
-				InvokeExpr invok = ((JInvokeStmt) u).getInvokeExpr();
-				// TODO Considers only the first parameter
-				if (invok.getArgCount() > 0 && invok.getArg(0).getType() instanceof RefLikeType) {
-
-					// Get argument to wrap
-					System.out
-							.println(invok.getArg(0).toString() + " Has type " + invok.getArg(0).getType().toString());
-
-					// TODO condition should be configurable
-					if (invok.getArg(0).getType().toString().equals("char[]")) {
-
-						// // tmp = new char[]
-						Local lCharA = generateNewLocal(body, ArrayType.v(CharType.v(), 1));
-
-						// arg = util.wrapChar(tmp)
-						Unit tmpU = Jimple.v()
-								.newAssignStmt(
-										lCharA,
-										Jimple.v().newStaticInvokeExpr(Scene.v().getMethod(methSig).makeRef(),
-												invok.getArg(0)));
-						body.getUnits().insertBefore(tmpU, u);
-
-						// now use (wrapped) arg instead of original
-						((JInvokeStmt) u).getInvokeExpr().setArg(0, lCharA);
-					}
-				}
-			}
-		}
 	}
 
 	/**
@@ -1538,12 +1475,12 @@ public class InstrumentationHelper {
 	 */
 	public static void replaceClassByChild(Body body, String clazz, String child) {
 		if (Main.DEBUG) {
-			System.out.println("Replacing class " + clazz + " by child " + child);
+			log.info("Replacing class " + clazz + " by child " + child);
 		}
 		SootClass newClass = Scene.v().getSootClass(child);
 
 		if (newClass.isAbstract())
-			System.err.println("WARN: Replacement class" + child + " is abstract");
+			log.error("WARN: Replacement class" + child + " is abstract");
 
 		HashMap<String, Local> localsReplace = new HashMap<String, Local>();
 
@@ -1603,7 +1540,7 @@ public class InstrumentationHelper {
 						body.getUnits().insertAfter(generated, u);
 						body.getUnits().remove(u);
 					} else {
-						System.err.println("WARN: NOT IMPLEMENTED: " + expr);
+						log.error("WARN: NOT IMPLEMENTED: " + expr);
 					}
 				}
 			}

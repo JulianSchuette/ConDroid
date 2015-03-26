@@ -49,8 +49,6 @@ public class Annotation
 	static boolean isSymbolicMethod(SootMethod method)
 	{		
 		for (Tag tag : method.getTags()) {
-			//System.out.println("name: " + tag.getName());
-			//System.out.println("val: " + tag.getValue
 			if (tag instanceof VisibilityAnnotationTag) { //VisibilityAnnotationTag = Java Annotation
 				for (AnnotationTag atag : ((VisibilityAnnotationTag) tag).getAnnotations()) {
 					String type = atag.getType();

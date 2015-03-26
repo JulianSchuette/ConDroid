@@ -31,24 +31,23 @@
 
 package acteve.instrumentor;
 
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
+import soot.ArrayType;
+import soot.BooleanType;
+import soot.ByteType;
+import soot.CharType;
 import soot.DoubleType;
 import soot.FloatType;
 import soot.IntType;
-import soot.ShortType;
-import soot.CharType;
-import soot.ByteType;
-import soot.BooleanType;
 import soot.Local;
 import soot.LongType;
 import soot.Modifier;
 import soot.PrimType;
-import soot.ArrayType;
 import soot.RefType;
 import soot.Scene;
+import soot.ShortType;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.SootMethodRef;
@@ -247,11 +246,8 @@ public class SymOpsClassGenerator
 			G.staticInvokeExpr(constClass.getMethodByName("get").makeRef(), op1Concrete));
 		Stmt op1CastAssignment = G.jimple.newAssignStmt(op1Cast, G.jimple.newCastExpr(op1, op1Cast.getType()));
 
-		//BY JULIAN
 		Local locString = G.newLocal( RefType.v("java.lang.String"));
-		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " called")));
-		// END BY JULIAN
-
+		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int d(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("CONDROID"),StringConstant.v(opMethodName + " called")));
 		
 		G.iff(G.neExpr(op1, NullConstant.v()), op1CastAssignment);
 		
@@ -259,7 +255,7 @@ public class SymOpsClassGenerator
 			Local operand = paramLocals.get(i);
 			G.iff(G.neExpr(operand, NullConstant.v()), makeExpr1);
 		}		
-		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " returns null")));
+		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int d(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("CONDROID"),StringConstant.v(opMethodName + " returns null")));
 
 		G.ret(NullConstant.v());
 		G.insertStmt(op1CastAssignment);
@@ -286,12 +282,7 @@ public class SymOpsClassGenerator
 			G.jimple.newInterfaceInvokeExpr(op1Cast, opMethod, args) :
 			G.jimple.newVirtualInvokeExpr(op1Cast, opMethod, args);
         G.assign(result, ie);
-		//BY JULIAN
-//		Local lString = G.newLocal( RefType.v("java.lang.String"));
-//		G.assign(lString, G.virtualInvokeExpr(result, Scene.v().getMethod("<java.lang.Object: java.lang.String toString()>").makeRef()));
-		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),StringConstant.v(opMethodName + " returns")));
-//		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("JULIAN"),lString));
-		// END BY JULIAN
+		G.invoke(G.staticInvokeExpr(Scene.v().getMethod("<android.util.Log: int d(java.lang.String,java.lang.String)>").makeRef(), StringConstant.v("CONDROID"),StringConstant.v(opMethodName + " returns")));
 
 		G.ret(result);
 		G.debug(method, Main.DEBUG);

@@ -31,18 +31,16 @@
 
 package acteve.instrumentor;
 
-import org.apache.tools.ant.taskdefs.Jar ;
-import org.apache.tools.ant.types.ZipFileSet;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Target;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
-
 import java.io.File;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
+import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.types.ZipFileSet;
 
 /**
    copies the uninstrumented classes from the original
@@ -62,7 +60,6 @@ public class AddUninstrClassesToJar extends Jar
 			String originalJarName = e.getKey();
 			ZipFileSet originalJar = new ZipFileSet();
 			originalJar.setSrc(new File(originalJarName));
-			System.out.println("original jar: " + originalJarName);
 
 			List<String> classes = e.getValue();
 			int numFilesToCopy = classes.size();
@@ -71,7 +68,6 @@ public class AddUninstrClassesToJar extends Jar
 			for (String className : classes) {
 				className = className.replace('.', File.separatorChar) + ".class";
 				array[i++] = className;
-				System.out.println("copy from original jar: "+ className);
 			}
 			originalJar.appendIncludes(array);
 

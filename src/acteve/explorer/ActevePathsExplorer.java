@@ -182,7 +182,6 @@ public class ActevePathsExplorer implements ExplorationStrategy
 		seedScript.addComment("Extended from " + prefixScript);
 
 		PathQueue.addPath(new Path(seedScript, prefixRunId, pinfo.traceLength, true));
-		//PathsRepo.addPath(new Path(prefixScript, suffixScript, pinfo.traceLength));
 	}
 
     private boolean vanillaSymEx() {

@@ -108,8 +108,11 @@ import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.util.Chain;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Instrumentor extends AbstractStmtSwitch {
+	public static Logger log = LoggerFactory.getLogger(Instrumentor.class);
 	private final RWKind rwKind;
 	private final String outDir;
 	private final String sdkDir;
@@ -118,18 +121,16 @@ public class Instrumentor extends AbstractStmtSwitch {
     private final FieldSigNumberer fieldSigNumberer;
 	private final Filter fieldsWhitelist;
 	private final Filter fieldsBlacklist;
+	@SuppressWarnings("unused")
 	private final Filter methodsWhitelist;
 	private final boolean instrAllFields;
 	private final Map<SootField, SootField> fieldsMap;
 	private final Map<SootField, SootField> idFieldsMap;
     private final List<String> condIdStrList;
-	//private final Map<Integer, Set<Integer>> writeMap;
 	// map from a original local to its corresponding shadow local
 	private final Map<Local, Local> localsMap;
-	//private Set<Integer> currentWriteSet;
 	private SootMethod currentMethod;
 	private int sigIdOfCurrentMethod;
-	private static int uniqueVarCounter;
 	
 	//TODO Read targets from configurable targets.txt file
 	private static HashSet<String> TARGET_METHODS = new HashSet<String>();
@@ -232,8 +233,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 		for (SootClass klass : classes) {
 			klass.setApplicationClass();
 			addSymbolicFields(klass);
-			System.out.println("Added symbolic fields to " + klass.getName());
-			System.out.println(klass.getName());
 		}
 
 		loadFiles();
@@ -251,7 +250,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 				
 				if (ModelMethodsHandler.modelExistsFor(m)) {
 					// do not instrument method if a model for it exists
-					System.out.println("skipping instrumentation of " + m + " (model exists)");
+					log.debug("skipping instrumentation of " + m + " (model exists)");
 					continue;
 				}
 				instrument(m);
@@ -277,24 +276,14 @@ public class Instrumentor extends AbstractStmtSwitch {
 				fieldsMap.put(origField, symField);
 			}
 
-			// XXX: idField for tracking writes
             if(rwKind == RWKind.ID_FIELD_WRITE && doRW(origField)){
 				SootField idField = new SootField(origField.getName()+"$a3tid", IntType.v(), origField.getModifiers());
-				System.out.println("Adding field " + idField.getName() + " for " + origField.getName() + " in " + c.getName());
+				log.debug("Adding field " + idField.getName() + " for " + origField.getName() + " in " + c.getName());
 				if (!c.declaresFieldByName(idField.getName()))
 					c.addField(idField);
 				idFieldsMap.put(origField, idField);
             }
 		}
-	}
-
-	private boolean hasNativeMethod(SootClass klass) {
-		for (SootMethod m : klass.getMethods()) {
-			if (m.isNative()) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private void instrument(SootMethod method) {
@@ -304,7 +293,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		Body body = method.retrieveActiveBody();		
 		G.editor.newBody(body, method);
 		addSymLocals(body);
-		List<Local> params = new ArrayList();
+		List<Local> params = new ArrayList<Local>();
 	
 		currentMethod = method;
 		sigIdOfCurrentMethod = methSigNumberer.getOrMakeId(method);
@@ -349,10 +338,7 @@ public class Instrumentor extends AbstractStmtSwitch {
         }
         
 		//TODO Consider negate
-		
         JVirtualInvokeExpr rightOp = (JVirtualInvokeExpr) s.getRightOp();
-        
-        System.out.println(rightOp);
         Immediate op1 = (Immediate) rightOp.getBase();
         Immediate op2 = (Immediate) s.getInvokeExpr().getArg(0);
         
@@ -451,9 +437,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 			IfStmt ifStmt = conds.get(i);
 			int absCondId = entryCondId + i;
 			ConditionExpr condExp = (ConditionExpr) ifStmt.getCondition();
-			System.out.println("Condition id " + absCondId + " : " + condExp.toString());
 			if (condExp.getOp1() instanceof Constant && condExp.getOp2() instanceof Constant) {
-				System.out.println("Only constants are compared. No need for symbolic tracing " + condExp.toString() + ". Skipping");
+				// Only constants are compared. No need for symbolic tracing
 				continue;
 			}
 			//Check UD chain for references to String methods TODO UD chain is only intraprocedural. Extend to interproc. backwards propagation
@@ -472,12 +457,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 							
 							if (m.getName().equals("_contains")) { //TODO Handle more operations supported by Z3 here
 								realV = ((AssignStmt) symDef).getLeftOp();
-								System.out.println("Replacing conditional with string operation: " + condExp.toString() + " : " + realV);
 								break;
 							}
-							
 						} else {
-							System.out.println("No symbolic counterpart found for " + def);
+							log.warn("No symbolic counterpart found for " + def);
 						}
 					}
 				}
@@ -492,10 +475,8 @@ public class Instrumentor extends AbstractStmtSwitch {
 			if (realV !=null) { //TODO fixme! Assign leftOp of stmt before "stuff", if stmt is staticinvoke symbolicoperations._contains
 				v = realV;
 			}
-			System.out.println("Value v: " + v.toString());
 			Stmt symAsgnStmt = G.jimple.newAssignStmt(symVar, v);
 
-			System.out.println("Assume with symVar " + symVar + " condId " + condId);
 			Stmt assumeFlsStmt, assumeTruStmt;
 			assumeFlsStmt = G.jimple.newInvokeStmt(G.staticInvokeExpr(G.assume,
 				Arrays.asList(new Immediate[]{symVar, condId, IntConstant.v(0)})));
@@ -537,14 +518,13 @@ public class Instrumentor extends AbstractStmtSwitch {
 			//Let if-statement jump to "assume: true" assumption 
 			ifStmt.setTarget(assumeTruStmt);
 		}
-		//Insert variable initialization at begin of method to avoid VRFY error
+
+        //Insert variable initialization at begin of method to avoid VRFY error
     	for (Value v: toInitialize) {
-            System.out.println("Initializing " + v + " WHICH IS a local? " + v.getType().toString() + " " + (v instanceof Local));
     		Stmt initStmt = G.jimple.newAssignStmt(v, NullConstant.v());
             units.insertAfter(initStmt, lastParamStmt);
     	}
         Stmt symInitStmt = G.jimple.newAssignStmt(symVar, NullConstant.v());    	
-    	System.out.println("Inserting " + symInitStmt.toString() + " after " + lastParamStmt.toString() + " in " + body.getMethod().getName());
     	units.insertAfter(symInitStmt, lastParamStmt);
 
 	}
@@ -575,8 +555,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 	}
 
-	private void handleInvokeExpr(Stmt s)
-	{
+	private void handleInvokeExpr(Stmt s) {
 		InvokeExpr ie = s.getInvokeExpr();
 		List symArgs = new ArrayList();
 		SootMethod callee = ie.getMethod();
@@ -614,11 +593,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 		if (s instanceof AssignStmt) {
 			Local retValue = (Local) ((AssignStmt) s).getLeftOp();
 			if(addSymLocationFor(retValue.getType())) {
-				//BY Julian: Force solution value to drive execution down the new path.
-//				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
+				// Force solution value to drive execution down the new path.
 				SootMethod modelInvoker = ModelMethodsHandler.getModelInvokerFor(callee);
 				if (modelInvoker != null) {
-					System.out.println("Should be $Lsym_L_java_lang_System_currentTimeMillis :" + toSymbolicVarName(callee));
 					G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue, G.staticInvokeExpr(G.getSolution_long, StringConstant.v(toSymbolicVarName(callee)))));
 				}
 
@@ -735,19 +712,12 @@ public class Instrumentor extends AbstractStmtSwitch {
 	}
 
 	@Override
-	public void caseIdentityStmt(IdentityStmt is)
-	{
+	public void caseIdentityStmt(IdentityStmt is) {
 		if (!(is.getRightOp() instanceof CaughtExceptionRef))
 			assert false : "unexpected " + is;
-		
-		//Local leftOp = (Local) is.getLeftOp();
-		//Local leftOp_sym = localsMap.get(leftOp);
-		////TODO: track meta data for exceptional objects
-		//G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp_sym, NullConstant.v()));
 	}
 
-	void handleBinopStmt(Local leftOp, BinopExpr binExpr)
-	{
+	void handleBinopStmt(Local leftOp, BinopExpr binExpr) {
 		Local leftOp_sym = localsMap.get(leftOp);
 		Value rightOp_sym = handleBinopExpr(binExpr, false, localsMap);
 		if (rightOp_sym == null)
@@ -755,8 +725,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		G.assign(leftOp_sym, rightOp_sym);
 	}
 
-	void handleNegStmt(Local leftOp, NegExpr negExpr)
-	{
+	void handleNegStmt(Local leftOp, NegExpr negExpr) {
 		Local lefOp_sym = localsMap.get(leftOp);
 		Immediate operand = (Immediate) negExpr.getOp();
 		Value rightOp_sym;
@@ -772,38 +741,16 @@ public class Instrumentor extends AbstractStmtSwitch {
 		G.assign(lefOp_sym, rightOp_sym);
 	}
 
-	void handleSimpleAssignStmt(Local leftOp, Immediate rightOp)
-	{
+	void handleSimpleAssignStmt(Local leftOp, Immediate rightOp) {
 		if(!addSymLocationFor(leftOp.getType()))
 			return;
 		G.assign(symLocalfor(leftOp), symLocalfor(rightOp));
 		
 		// Handle system constant which should be replaced by solutions.
 		Local retValue = (Local) leftOp;
-		//BY Julian: Force solution value to drive execution down the new path.
-//				G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue,IntConstant.v(23)));
-//		SootMethod modelInvoker = ModelMethodsHandler.getModelInvokerFor(callee); //TODO write new invoker for symbolic constants?
-
-		System.out.println("Simple assign stmt: " + leftOp + " <- " + rightOp);
-		
-//		if (modelInvoker != null) {
-//			System.out.println("Should be $Lsym_L_java_lang_System_currentTimeMillis :" + toSymbolicVarName(callee));
-//			G.editor.insertStmtAfter(G.jimple.newAssignStmt(retValue, G.staticInvokeExpr(G.getSolution_long, StringConstant.v(toSymbolicConstName(rightOp)))));
-//		}
-//
-//		G.editor.insertStmtAfter(G.jimple.newAssignStmt(symLocalfor(retValue),
-//														G.staticInvokeExpr(G.retPop, IntConstant.v(subSig))));
-//		
-//		if (modelInvoker != null) {
-//			G.editor.insertStmtAfter(G.jimple.newInvokeStmt(G.staticInvokeExpr(modelInvoker.makeRef(), args)));
-//		}
-
-			
-		
 	}
 
-	void handleStoreStmt(FieldRef leftOp, Immediate rightOp) 
-	{
+	void handleStoreStmt(FieldRef leftOp, Immediate rightOp) {
 		Immediate base;
 		if (leftOp instanceof StaticFieldRef) {
 			base = NullConstant.v();
@@ -815,20 +762,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 		if (!Main.isInstrumented(fld.getDeclaringClass())&&!fld.getDeclaringClass().getName().contains("android.os")) 
 			return;
 
-		System.out.println("Creating field for " + fld);
-		//JULIAN
-//		if (!fieldsMap.containsKey(fld)) {
-//			SootClass c = new SootClass("models."+fld.getDeclaringClass().getName());
-//			SootField symField = new SootField(fld.getName()+"$sym",
-//											   G.EXPRESSION_TYPE, fld.getModifiers());
-//			c.addField(symField);
-//			c.setApplicationClass();
-//			fieldsMap.put(fld, symField);
-//			System.out.println("Field not contained. Creating a new one: " + symField);
-//		}
-		
-		
-		
 		if(addSymLocationFor(fld.getType()) && fieldsMap.containsKey(fld)) {
 			
 			SootField fld_sym = fieldsMap.get(fld);
@@ -870,14 +803,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 				G.invoke(G.staticInvokeExpr(G.only_write, IntConstant.v(fld_id)));
 			}
 		}
-
-		//currentWriteSet.add(fld_id);
-
-		//else if(Instrument.useW) {
-            //G.invoke(G.staticInvokeExpr(G.write1, 
-			//							IntConstant.v(methSigNumberer.getOrMakeId(method)), 
-			//							IntConstant.v(fieldSigNumberer.getOrMakeId(fld))));
-		//}
 	}
 	
 	
@@ -945,7 +870,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			units.insertBefore(assignToSymFld, insertPoint);
 		
 		} else {
-			System.err.println("Field is not static " + fld);
+			log.error("Field is not static " + fld);
 		}		
 		return symField;
 	}
@@ -1010,16 +935,14 @@ public class Instrumentor extends AbstractStmtSwitch {
         }
 
 		//Overwrite concrete value with solution
-		System.out.println("Should be field solution name :" + toSymbolicVarName(fld));
 		if (ModelMethodsHandler.modelExistsFor(fld)) { //Modelled?
 			if (fld.getType() instanceof PrimType || fld.getType().toString().equals("java.lang.String")) { //Supported type?
-			System.out.println("Overwriting field: " + fld.getName());
-			G.editor.insertStmtAfter(Jimple.v().newAssignStmt(leftOp, G.staticInvokeExpr(G.getSolution_string, StringConstant.v(toSymbolicVarName(fld)))));
+				G.editor.insertStmtAfter(Jimple.v().newAssignStmt(leftOp, G.staticInvokeExpr(G.getSolution_string, StringConstant.v(toSymbolicVarName(fld)))));
 			} else {
-				System.err.println("Modelled field of non-supported type: " + fld.getName() + " : " + fld.getType());
+				log.error("Modelled field of non-supported type: " + fld.getName() + " : " + fld.getType());
 			}
 		} else {
-			System.out.println("Not modelled: " + fld.toString());
+			log.debug("Not modelled: " + fld.toString());
 		}
 	}
 
@@ -1038,15 +961,13 @@ public class Instrumentor extends AbstractStmtSwitch {
 			G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp_sym, NullConstant.v()));
 	}
 
-	void handleNewMultiArrayStmt(Local leftOp, NewMultiArrayExpr rightOp)
-	{
+	void handleNewMultiArrayStmt(Local leftOp, NewMultiArrayExpr rightOp) {
 		//Local leftOp_sym = localsMap.get(leftOp);
 		//G.editor.insertStmtAfter(G.jimple.newAssignStmt(leftOp_sym, NullConstant.v()));
 	}
 	
 	@Override
-	public void caseReturnStmt(ReturnStmt rs)
-	{
+	public void caseReturnStmt(ReturnStmt rs) {
 		Immediate retValue = (Immediate) rs.getOp();
 		if(!addSymLocationFor(retValue.getType()))
 			return;
@@ -1054,12 +975,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 		G.invoke(G.staticInvokeExpr(G.retPush, IntConstant.v(subSig), symLocalfor(retValue)));
 	}
 
-	public void caseReturnVoidStmt(ReturnStmt rs)
-	{	
+	public void caseReturnVoidStmt(ReturnStmt rs) {	
 	}
 
-	void handleCastExpr(Local leftOp, CastExpr castExpr)
-	{
+	void handleCastExpr(Local leftOp, CastExpr castExpr) {
 		if(!addSymLocationFor(leftOp.getType()))
 			return;
 		Local leftOp_sym = localsMap.get(leftOp);
@@ -1085,8 +1004,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 	}
 
-	void handleArrayLoadStmt(Local leftOp, ArrayRef rightOp)
-	{
+	void handleArrayLoadStmt(Local leftOp, ArrayRef rightOp) {
 		Local base = (Local) rightOp.getBase();
 		Immediate index = (Immediate) rightOp.getIndex();
 		
@@ -1106,8 +1024,7 @@ public class Instrumentor extends AbstractStmtSwitch {
         }
 	}
 
-	void handleArrayLengthStmt(Local leftOp, LengthExpr rightOp)
-	{
+	void handleArrayLengthStmt(Local leftOp, LengthExpr rightOp) {
 		Local leftOp_sym = localsMap.get(leftOp);
 		Local base = (Local) rightOp.getOp();
 		if(addSymLocationFor(base.getType())){
@@ -1142,17 +1059,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 			else if (rwKind == RWKind.ONLY_WRITE)
             	G.invoke(G.staticInvokeExpr(G.only_write, IntConstant.v(-1)));
         }
-		
-		//currentWriteSet.add(-1);
-		//else if(Instrument.useW) {
-            //G.invoke(G.staticInvokeExpr(G.write1, 
-			//							IntConstant.v(methSigNumberer.getOrMakeId(method)), 
-			//							IntConstant.v(-1)));
-		//}
 	}
 
-	void handleInstanceOfStmt(Local leftOp, InstanceOfExpr expr)
-	{
+	void handleInstanceOfStmt(Local leftOp, InstanceOfExpr expr) {
 		Local leftOp_sym = localsMap.get(leftOp);
 		if(leftOp_sym != null)
 			G.assign(leftOp_sym, NullConstant.v());
@@ -1163,8 +1072,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 	 * 
 	 * @param body
 	 */
-	private void addSymLocals(Body body)
-	{
+	private void addSymLocals(Body body) {
 		Chain<Local> locals = body.getLocals();
 		Iterator lIt = locals.snapshotIterator();
 		while (lIt.hasNext()) {
@@ -1182,8 +1090,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 	 * @param type
 	 * @return
 	 */
-	private boolean addSymLocationFor(Type type)
-	{
+	private boolean addSymLocationFor(Type type) {
 		if(type instanceof PrimType)
 			return true;
 		if(type instanceof ArrayType){
@@ -1208,8 +1115,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 	 * @param v
 	 * @return
 	 */
-	private Immediate symLocalfor(Immediate v)
-	{
+	private Immediate symLocalfor(Immediate v) {
 		if (v instanceof Constant)
 			return NullConstant.v();
 		else {
@@ -1218,22 +1124,16 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 	}
 
-	public static boolean paramOrThisIdentityStmt(Stmt s)
-	{
+	public static boolean paramOrThisIdentityStmt(Stmt s) {
 		if (!(s instanceof IdentityStmt))
 			return false;
 		return !(((IdentityStmt) s).getRightOp() instanceof CaughtExceptionRef);
 	}
 
-    private Value handleBinopExpr(BinopExpr binExpr, boolean negate, Map<Local,Local> localsMap)
-    {
+    private Value handleBinopExpr(BinopExpr binExpr, boolean negate, Map<Local,Local> localsMap) {
 		Immediate op1 = (Immediate) binExpr.getOp1();
         Immediate op2 = (Immediate) binExpr.getOp2();
 		
-        //Also support complex objects:
-//		if(!(op1.getType() instanceof PrimType))
-//			return null;
-
 		String binExprSymbol = binExpr.getSymbol().trim();
 		if (negate) {
 			binExprSymbol = G.negationMap.get(binExprSymbol);
@@ -1302,31 +1202,8 @@ public class Instrumentor extends AbstractStmtSwitch {
                 out.println(s);
             }
             out.close();
-			
-			/*
-			out = new PrintWriter(new File(outDir + "/" + WRITEMAP_FILENAME));
-			if (sdkDir != null) {
-				BufferedReader in = new BufferedReader(new FileReader(sdkDir + "/" + WRITEMAP_FILENAME));
-				String s;
-				while ((s = in.readLine()) != null)
-					out.println(s);
-				in.close();
-			}
-			for (Map.Entry<Integer, Set<Integer>> e : writeMap.entrySet()) {
-				Set<Integer> set = e.getValue();
-				if (!set.isEmpty()) {
-					Integer m = e.getKey();
-					Iterator<Integer> it = set.iterator();
-					out.print(m + "@" + it.next());
-					while (it.hasNext())
-						out.print(" " + it.next());
-					out.println();
-				}
-			}
-			out.close();
-			*/
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error(ex.getMessage(),ex);
             System.exit(1);
         }
     }

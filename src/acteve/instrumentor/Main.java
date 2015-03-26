@@ -56,7 +56,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import acteve.explorer.Utils;
 import soot.JimpleClassSource;
 import soot.MethodOrMethodContext;
 import soot.Modifier;
@@ -67,12 +66,12 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Transform;
-import soot.javaToJimple.IInitialResolver.Dependencies;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.android.data.AndroidMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 import soot.util.Chain;
+import acteve.explorer.Utils;
 
 public class Main extends SceneTransformer {
 	public static Logger log = LoggerFactory.getLogger(Main.class);
@@ -387,7 +386,7 @@ public class Main extends SceneTransformer {
 			String mainActivity = ih.getDefaultActivities().iterator().next();
 			acteve.explorer.Main.main(new String[] {f.getAbsolutePath(), appPkgName, mainActivity});
 		} else {
-			System.out.println("ERROR: " + outputApk + " does not exist");
+			log.error("ERROR: " + outputApk + " does not exist");
 		}
 	}
 
@@ -440,7 +439,8 @@ public class Main extends SceneTransformer {
 
 	
 	/**
-	 * By Julian 
+	 * Load a soot class from Jimple. 
+	 * 
 	 * @param f
 	 * @param className
 	 * @return
@@ -453,8 +453,7 @@ public class Main extends SceneTransformer {
 			// Load from Jimple file
 			JimpleClassSource jcs = new JimpleClassSource(className, fip);
 			SootClass sc = new SootClass(className, Modifier.PUBLIC);
-			Dependencies dep = jcs.resolve(sc);
-
+			jcs.resolve(sc);			
 			return sc;
 		} catch (Throwable t) {
 			t.printStackTrace();

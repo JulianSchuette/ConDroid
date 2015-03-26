@@ -35,37 +35,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
 
 import soot.Body;
 import soot.BooleanType;
-import soot.Immediate;
-import soot.Local;
 import soot.ByteType;
-import soot.ShortType;
 import soot.CharType;
-import soot.IntType;
-import soot.LongType;
-import soot.FloatType;
 import soot.DoubleType;
+import soot.FloatType;
+import soot.Immediate;
+import soot.IntType;
+import soot.Local;
+import soot.LongType;
 import soot.PrimType;
-import soot.RefLikeType;
 import soot.RefType;
 import soot.Scene;
+import soot.ShortType;
 import soot.SootClass;
 import soot.SootFieldRef;
 import soot.SootMethod;
 import soot.SootMethodRef;
 import soot.Type;
-import soot.Value;
 import soot.Unit;
-import soot.jimple.NullConstant;
+import soot.Value;
 import soot.jimple.AddExpr;
 import soot.jimple.AssignStmt;
-import soot.jimple.BinopExpr;
 import soot.jimple.CastExpr;
 import soot.jimple.ConditionExpr;
-import soot.jimple.Constant;
 import soot.jimple.EqExpr;
 import soot.jimple.IdentityRef;
 import soot.jimple.IdentityStmt;
@@ -85,7 +80,6 @@ import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.SubExpr;
 import soot.jimple.VirtualInvokeExpr;
-import acteve.symbolic.Util;
 import acteve.symbolic.integer.Types;
 
 /**
@@ -93,7 +87,7 @@ import acteve.symbolic.integer.Types;
 */
 public class G
 {
-    public static final boolean DEBUG = false;//System.getProperty("a3t.debug","false").equals("true");
+    public static final boolean DEBUG = false;
 
     public static final Jimple jimple = Jimple.v();
 
@@ -107,7 +101,7 @@ public class G
 
     public static final Map<String, String> binopSymbolToMethodName = new HashMap<String, String>();
     public static final Map<String, String> negationMap = new HashMap<String, String>();
-	public static final Map<PrimType, Integer> typeMap = new HashMap();
+	public static final Map<PrimType, Integer> typeMap = new HashMap<PrimType, Integer>();
 
     static final String OBJECT_CLASS_NAME = "java.lang.Object";
     static final String STRING_CLASS_NAME = "java.lang.String";
@@ -147,10 +141,6 @@ public class G
 		EXPRESSION_TYPE = RefType.v(EXPRESSION_CLASS_NAME);
 		OBJECT_TYPE = RefType.v(OBJECT_CLASS_NAME);
 		symUtilClass = Scene.v().getSootClass(SYMUTIL_CLASS_NAME);
-		/* System.out.println("Printing methods of UTILS");
-		for (SootMethod m: symUtilClass.getMethods() ) {
-			System.out.println("   DEBUG: Method in Util: " + m.getDeclaration());
-		}*/
 
 		Map map = binopSymbolToMethodName;
 		map.put("+",   "_plus");
@@ -509,8 +499,7 @@ public class G
 			try{
 				Printer.v().printTo(m.retrieveActiveBody(), printer);
 			}catch(RuntimeException e) {
-				//failed to validate I guess
-				System.out.println("Failed to validate: " + m.getSignature());
+				System.err.println("Failed to validate: " + m.getSignature());
 				for (Unit u : m.retrieveActiveBody().getUnits()) {
 					System.out.println("\t"+u);
 				}

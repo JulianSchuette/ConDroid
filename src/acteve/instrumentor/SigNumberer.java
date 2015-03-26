@@ -31,10 +31,13 @@
 
 package acteve.instrumentor;
 
-import java.io.*;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
-import soot.SootMethod;
+import java.util.Map;
 
 public class SigNumberer {
 	private final Map<String, Integer> sigToId = new HashMap<String, Integer>();

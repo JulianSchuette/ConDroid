@@ -31,35 +31,34 @@
 
 package acteve.instrumentor;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
+import soot.Body;
+import soot.BooleanType;
+import soot.Local;
+import soot.Modifier;
+import soot.PrimType;
+import soot.RefType;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
-import soot.Local;
-import soot.Immediate;
-import soot.Modifier;
 import soot.Type;
-import soot.VoidType;
-import soot.RefType;
-import soot.PrimType;
-import soot.BooleanType;
 import soot.Unit;
-import soot.Body;
-import soot.util.Chain;
-import soot.jimple.Stmt;
-import soot.jimple.NullConstant;
-import soot.jimple.IntConstant;
-import soot.jimple.StringConstant;
+import soot.Value;
+import soot.VoidType;
 import soot.jimple.IdentityStmt;
+import soot.jimple.IntConstant;
+import soot.jimple.NullConstant;
 import soot.jimple.ParameterRef;
+import soot.jimple.Stmt;
+import soot.jimple.StringConstant;
+import soot.util.Chain;
 
 /**
  * Input methods inject test values which are used for a test run of the program.
@@ -83,19 +82,12 @@ public class InputMethodsHandler
 			while (line != null) {
 				int index = line.indexOf(' ');
 				String className = line.substring(0, index);
-				if (!Scene.v().containsClass(className)) {
-					System.out.println("will not inject symbolic values into method: " + line);
-				}
-				else {
+				if (Scene.v().containsClass(className)) {
 					String methodSig = line.substring(index+1).trim();
 					SootClass declClass = Scene.v().getSootClass(className);
 					if (declClass.declaresMethod(methodSig)) {
-						System.out.println("inject symbolic values into method: " + line);
 						SootMethod method = declClass.getMethod(methodSig);
 						apply(method);
-					}
-					else {
-						System.out.println("will not inject symbolic values into method: " + line);
 					}
 				}
 				line = reader.readLine();
@@ -110,7 +102,7 @@ public class InputMethodsHandler
 	static void apply(SootMethod method)
 	{
 		Body body = method.retrieveActiveBody();
-		List<Local> params = new ArrayList();
+		List<Local> params = new ArrayList<Local>();
 		Chain<Unit> units = body.getUnits().getNonPatchingChain();
 		//Step through statements of this method
 		for (Unit u : units) {
@@ -168,23 +160,23 @@ public class InputMethodsHandler
 		String id = builder.toString();
 
 		SootMethod injector = new SootMethod(method.getName()+"$sym",
-				new ArrayList(method.getParameterTypes()),
+				new ArrayList<Type>(method.getParameterTypes()),
 				VoidType.v(),
 				Modifier.STATIC | Modifier.PRIVATE);
 		method.getDeclaringClass().addMethod(injector);
 
 		G.addBody(injector);
-		List paramLocals = G.paramLocals(injector);
+		List<Local> paramLocals = G.paramLocals(injector);
 
-		List symArgs = new ArrayList();
+		List<Value> symArgs = new ArrayList<Value>();
 		symArgs.add(IntConstant.v(-1));
 
 		if (!method.isStatic())
 			symArgs.add(NullConstant.v());
 
 		int i = 0;
-		for (Iterator pit = method.getParameterTypes().iterator(); pit.hasNext();) {
-			Type ptype = (Type) pit.next();
+		for (Iterator<Type> pit = method.getParameterTypes().iterator(); pit.hasNext();) {
+			Type ptype = pit.next();
 			//If param is not Boolean:
 			if (((ptype instanceof PrimType) && !(ptype instanceof BooleanType)) || ptype instanceof RefType) {
 				SootMethod m = G.symValueInjectorFor(ptype);

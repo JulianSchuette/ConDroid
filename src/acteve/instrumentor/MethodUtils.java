@@ -473,14 +473,15 @@ public class MethodUtils {
 	 */
 	public static CallGraph findTransitiveCallersOf(SootMethod sootMethod) {
 		Pattern actevePat = Pattern.compile("dummyMainClass|(acteve\\..*)");
-
-		System.out.println("Finding transitive callers of " + sootMethod.getSignature());
 		String dotFile = "goals_"+sootMethod.getDeclaringClass().getName() + sootMethod.getName();
+		
 		CallGraph callGraph = Scene.v().getCallGraph();
 		CallGraph subGraph = new CallGraph();
+		
 		Set<SootMethod> transitiveSources = new LinkedHashSet<SootMethod>();	//TODO not needed anymore. Remove
 		HashChain<SootMethod> unprocessedSources = new HashChain<SootMethod>();
 		unprocessedSources.add(sootMethod);
+
 		while (!unprocessedSources.isEmpty()) {
 			sootMethod = unprocessedSources.getFirst();
 			unprocessedSources.removeFirst();
@@ -494,14 +495,14 @@ public class MethodUtils {
 					
 					if (MethodUtils.getCalleesOf(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>")).contains(source)
 							&& !source.getName().equals("<init>")) {
+						// Callees from dummyMain are potential entrypoints
 						source.addTag(new GenericAttribute("entrymethod", new byte[0]));
-						System.out.println("This is an entrypoint: " + source);
 					} else if (Scene.v().getActiveHierarchy().isClassSubclassOf(source.getDeclaringClass(), Scene.v().getSootClass("android.view.View"))
 							&& (source.getSubSignature().equals("void <init>(android.content.Context)")
 									|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet)")
 									|| source.getSubSignature().equals("void <init>(android.content.Context,android.util.AttributeSet,int)"))) { 
+						//ALso view constructors are potential entrypoints
 						source.addTag(new GenericAttribute("entrymethod", new byte[0]));					
-						System.out.println("This is a view constructor and a potential entrypoint: " + source);
 					}
 					
 					if (!transitiveSources.contains(source)) {
@@ -526,6 +527,12 @@ public class MethodUtils {
 		return transitiveTargets;
 	}
 
+	/**
+	 * Write out call graph to a dot file.
+	 * 
+	 * @param cg Call graph to render.
+	 * @param prefix <prefix>_cg.dot.
+	 */
 	public static void printCGtoDOT(CallGraph cg, String prefix) {
 		DotGraph dg = new DotGraph("Call Graph");
 		QueueReader<Edge> edges = cg.listener();
@@ -569,85 +576,14 @@ public class MethodUtils {
 		if (name.contains("$")) {
 			c.setOuterClass(outerClass);
 		}    	
-    	Body constr = createDefaultConstructor(c);    	
-    	
-    	System.out.println("Created constr: " + constr.toString());
-    	//TODO Generate method bodies. see com.example.de.fhg.aisec.concolicexample.Test$VERSION.jimple
-//		SootMethod clinitMethod = null;
-//		  if (!c.declaresMethod("<clinit>", new ArrayList(), soot.VoidType.v())) {
-//			//Add static initializer
-//		    clinitMethod = new soot.SootMethod("<clinit>", new ArrayList(), soot.VoidType.v(), soot.Modifier.STATIC, new ArrayList<SootClass>());                
-//		    clinitMethod.setActiveBody(Jimple.v().newBody(clinitMethod));
-//		    c.addMethod(clinitMethod);
-//		} else {
-//		    clinitMethod = c.getMethod("<clinit>", new ArrayList(), soot.VoidType.v());
-//		}		  
-//		
-//		SootMethod initMethod = null;
-//		  if (!c.declaresMethod("<init>", new ArrayList(), soot.VoidType.v())) {
-//			//Add static initializer
-//			  initMethod = new soot.SootMethod("<init>", new ArrayList(), soot.VoidType.v(), soot.Modifier.PUBLIC, new ArrayList<SootClass>());                
-//			  initMethod.setActiveBody(Jimple.v().newBody(initMethod));
-//		    c.addMethod(initMethod);
-//		} else {
-//			initMethod = c.getMethod("<init>", new ArrayList(), soot.VoidType.v());
-//		}		  
-			
-			
-		
-    	
-//    	if (outerName!=null && outerClass!=null) {
-//    		outerClass.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
-//    		c.addTag(new InnerClassTag(name,outerName, name.substring(name.lastIndexOf("$")+1), Modifier.PUBLIC));
-//    	}
     	c.setApplicationClass();	
 		
 		Scene.v().addBasicClass(c.getName(), SootClass.BODIES);
 		Scene.v().forceResolve(c.getName(), SootClass.BODIES);
-		
 
 		return c;
     }
     
-    /**
-     * 
-     * Default:
-     * public class com.example.de.fhg.aisec.concolicexample.Test extends java.lang.Object
-{
-
-    public void <init>()
-    {
-        com.example.de.fhg.aisec.concolicexample.Test $r0;
-
-        $r0 := @this: com.example.de.fhg.aisec.concolicexample.Test;
-        specialinvoke $r0.<java.lang.Object: void <init>()>();
-        return;
-    }
-}
-
-     * 
-     * 
-     * Default Inner:
-     * public class com.example.de.fhg.aisec.concolicexample.Test$VERSION extends java.lang.Object
-{
-    public static final java.lang.String bla;
-    final com.example.de.fhg.aisec.concolicexample.Test this$0;
-
-    public void <init>(com.example.de.fhg.aisec.concolicexample.Test)
-    {
-        com.example.de.fhg.aisec.concolicexample.Test$VERSION $r0;
-        com.example.de.fhg.aisec.concolicexample.Test $r1;
-
-        $r0 := @this: com.example.de.fhg.aisec.concolicexample.Test$VERSION;
-        $r1 := @parameter0: com.example.de.fhg.aisec.concolicexample.Test;
-        $r0.<com.example.de.fhg.aisec.concolicexample.Test$VERSION: com.example.de.fhg.aisec.concolicexample.Test this$0> = $r1;
-        specialinvoke $r0.<java.lang.Object: void <init>()>();
-        return;
-    }
-}
-
-     * @return
-     */
     
     public static Body createDefaultConstructor(SootClass c) {
     	List<Type> params = new LinkedList<Type>();
@@ -670,9 +606,7 @@ public class MethodUtils {
             	}
         	});
     	}
-//    	m.setActiveBody(b);
     	PatchingChain<Unit> units = b.getUnits();
-    	Chain<Local> locals = b.getLocals();
     	LocalGenerator locGen = new LocalGenerator(b);
 
     	// com.example.de.fhg.aisec.concolicexample.Test $r0;

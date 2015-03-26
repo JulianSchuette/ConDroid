@@ -58,7 +58,6 @@ public final class SwitchTransformer {
 		
 		while (G.editor.hasNext()) {
 			Stmt s = G.editor.next();
-			//System.out.println(">> " + s);
 
 			if (s.branches() && !(s instanceof GotoStmt)) {
 				if (s instanceof LookupSwitchStmt) {
