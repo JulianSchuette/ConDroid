@@ -829,10 +829,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 		
 		
 		
-		if(addSymLocationFor(fld.getType())) {
+		if(addSymLocationFor(fld.getType()) && fieldsMap.containsKey(fld)) {
 			
 			SootField fld_sym = fieldsMap.get(fld);
-			assert fld_sym != null : fld + " " + fld.getDeclaringClass();
+			assert fld_sym != null : "No sym var for " + fld + " " + fld.getDeclaringClass();
 			FieldRef leftOp_sym;
 			if (leftOp instanceof StaticFieldRef) {
 				leftOp_sym = G.staticFieldRef(fld_sym.makeRef());
@@ -1058,27 +1058,29 @@ public class Instrumentor extends AbstractStmtSwitch {
 	{	
 	}
 
-	void handleCastExpr(Local leftOp, CastExpr rightOp)
+	void handleCastExpr(Local leftOp, CastExpr castExpr)
 	{
 		if(!addSymLocationFor(leftOp.getType()))
 			return;
 		Local leftOp_sym = localsMap.get(leftOp);
-		Immediate op = (Immediate) rightOp.getOp();
-		Type type = rightOp.getCastType();
-		if (op instanceof Constant) {
+		Immediate rightOp = (Immediate) castExpr.getOp();
+		Type type = castExpr.getCastType();
+		if (rightOp instanceof Constant) {
            	G.assign(leftOp_sym, NullConstant.v());
 		} else {
-			Local op_sym = localsMap.get((Local) op);
-			if (type instanceof PrimType) {
-				SootMethodRef ref = G.symOpsClass.getMethodByName(G.castMethodName).makeRef();
-				Integer t = G.typeMap.get(type);
-				if(t == null)
-					throw new RuntimeException("unexpected type " + type);
-				G.assign(leftOp_sym, G.staticInvokeExpr(ref, op_sym, IntConstant.v(t.intValue())));
-			} else {
-				//TODO: now sym values corresponding non-primitive types
-				//flow through cast operations similar to assignment operation
-				G.assign(leftOp_sym, op_sym);
+			Local op_sym = localsMap.get((Local) rightOp);
+			if (op_sym != null) {
+				if (type instanceof PrimType) {
+					SootMethodRef ref = G.symOpsClass.getMethodByName(G.castMethodName).makeRef();
+					Integer t = G.typeMap.get(type);
+					if(t == null)
+						throw new RuntimeException("unexpected type " + type);
+					G.assign(leftOp_sym, G.staticInvokeExpr(ref, op_sym, IntConstant.v(t.intValue())));
+				} else {
+					//TODO: now sym values corresponding non-primitive types
+					//flow through cast operations similar to assignment operation
+					G.assign(leftOp_sym, op_sym);
+				}
 			}
 		}
 	}

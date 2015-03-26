@@ -173,11 +173,9 @@ public class MethodUtils {
 		SootClass declaringClass = method.getDeclaringClass();
 		for (String key : TARGET_METHODS) {
 			if (Scene.v().containsMethod(key)) {
-				System.out.println("YEP! There is a method in scene: " + key);
 				SootMethod target = Scene.v().getMethod(key);			
 				if (isOrExtendsClass(declaringClass.getName(), target.getDeclaringClass().getName()))				
 						if(method.getSubSignature().equals(target.getSubSignature())) {
-							System.out.println("YES!! Reflective loading: " + method);
 							return true;
 						}
 			}

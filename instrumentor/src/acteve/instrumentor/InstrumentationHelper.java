@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2014, Julian Schuette, Fraunhofer AISEC
+ * Copyright (c) 2014, Julian Schuette, Rafael Fedler, Fraunhofer AISEC
    All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -1087,32 +1087,27 @@ public class InstrumentationHelper {
 	}
 	
 	/**
-	 * Inserts calls to all lifecycle methods at the end of the onCreate()
-	 * method.
-	 * @throws Exception if no onCreate(android.os.Bundle) method is found
+	 * Inserts calls to all lifecycle methods at the end of the given method.
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
+	 * @throws XPathExpressionException 
+	 * 
 	 */
-	public void insertCallsToLifecycleMethods(SootMethod toInstrument) throws Exception{
+	public void insertCallsToLifecycleMethods(SootMethod toInstrument) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
 		/* we now need to find the main activity among a) the entry points or,
 		 * b) if its a dummy entry point among the callees
-		 */	
-		if (toInstrument == null){
-			System.err.println("No onCreate method found in app; this should not happen. Call graph not yet built?");
-			throw new Exception("No onCreate() found!");
-		} else {
-			System.out.println("Injecting calls to Android lifecycle methods into " + toInstrument.getSignature());
-		}
-				
+		 */					
 		Body body = toInstrument.getActiveBody();
 		PatchingChain<Unit> units = body.getUnits();
 		LocalGenerator generator = new LocalGenerator(body);
 		
-		//find the return statement and insert our stuff before that:
+		//find return statement and insert our stuff before it:
 		List<Unit> returns = getReturnUnits(body);
 		if (returns.size()<=0) {
 			throw new RuntimeException("Unexpected: Body does not contain return stmt: " + body.toString());
 		}
 		Unit returnstmt = returns.get(0); //TODO Consider (inject before) all return stmts, not just the first one
-		System.out.println("Found return statement: " + returnstmt.toString());
 		
 		Set<String> classesToScan = new HashSet<String>();
 		classesToScan.add(toInstrument.getDeclaringClass().getName());
