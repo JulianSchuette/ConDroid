@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="explorer/src"/>
-	<classpathentry kind="src" path="instrumentor/src"/>
 	<classpathentry kind="src" path="models/src"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="stubs/src"/>
 	<classpathentry kind="src" path="symbolic/src"/>
 	<classpathentry kind="lib" path="libs/ant-launcher.jar"/>

@@ -1,149 +1,75 @@
-<project name="A3T" default="build">
-	<dirname property="a3t.dir" file="${ant.file.A3T}"/>
-	<property name="explorer.jar.file" location="${a3t.dir}/jars/a3t_explorer.jar"/>
-	<property name="instrumentor.jar.file" location="${a3t.dir}/jars/a3t_instrumentor.jar"/>
-	<property name="models.jar.file" location="${a3t.dir}/jars/a3t_models.jar"/>
-	<property name="stubs.jar.file" location="${a3t.dir}/jars/a3t_stubs.jar"/>
-	<property name="symbolic.jar.file" location="${a3t.dir}/jars/a3t_symbolic.jar"/>
+<project name="condroid" default="dist" basedir=".">
+	<description>
+		Concolic execution of Android applications
+	</description>
 
-    <target name="build">
-		<mkdir dir="jars"/>
-		<antcall target="build-explorer"/>
-		<antcall target="build-instrumentor"/>
-		<antcall target="build-models"/>
-		<antcall target="build-stubs"/>
-		<antcall target="build-symbolic"/>
+	<property name="projectName" value="condroid" />
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="build-symbolic" location="build-symbolic" />
+	<property name='lib.dir' location='libs' />
+	<property name='jars.dir' location='jars' />
+	<property name="dist" location="dist" />
+	<available file=".git" type="dir" property="git.present" />
+
+	<target name="init">
+		<mkdir dir="${build}" />
+		<mkdir dir="${build-symbolic}" />
 	</target>
 
-	<target name="build-explorer">
-		<path id="explorer.class.path">
-			<pathelement location="libs/jigsaw-sexpr.jar"/>
-			<pathelement location="${ant.home}/lib/ant.jar"/>
-			<pathelement location="${a3t.dir}/libs/slf4j-api-1.7.5.jar"/>
-			<pathelement location="${a3t.dir}/libs/log4j-over-slf4j-1.7.10.jar"/>								
-		</path>
-		<property name="explorer.class.path" refid="explorer.class.path"/>
-		<build-helper
-			dir="explorer"
-			classpath="${explorer.class.path}"
-			jarfile="${explorer.jar.file}"/>
+	<target name="git-revision" description="Store git revision in ${repository.version}">
+		<exec executable="git" outputproperty="git.revision"
+			failifexecutionfails="false" errorproperty="">
+			<arg value="describe" />
+			<arg value="--tags" />
+			<arg value="--always" />
+			<arg value="HEAD" />
+		</exec>
+		<condition property="repository.version" value="${git.revision}"
+			else="unknown">
+			<and>
+				<isset property="git.revision" />
+				<length string="${git.revision}" trim="yes" length="0" when="greater" />
+			</and>
+		</condition>
 	</target>
 
-	<target name="build-instrumentor" depends="build-symbolic">
-		<path id="instrumentor.class.path">
-			<pathelement location="libs/soot.jar"/>
-			<pathelement location="libs/soot-infoflow-android.jar"/>
-			<pathelement location="libs/soot-infoflow.jar"/>
-			<pathelement location="${symbolic.jar.file}"/>
-			<pathelement location="${ant.home}/lib/ant.jar"/>
-			<pathelement location="libs/slf4j-api-1.7.5.jar"/>
-			<pathelement location="libs/log4j-over-slf4j-1.7.10.jar"/>
-			<pathelement location="libs/commons-io-2.4.jar" />		
-			<pathelement location="libs/commons-lang3-3.3.2.jar"/>	
-			<pathelement location="${explorer.jar.file}"/>
-		</path>
-		<property name="instrumentor.class.path" refid="instrumentor.class.path"/>
-		<build-helper
-			dir="instrumentor"
-			classpath="${instrumentor.class.path}"
-			jarfile="${instrumentor.jar.file}"/>
-    </target>
 
-	<target name="build-models" depends="build-symbolic,build-stubs">
-		<path id="models.class.path">
-			<pathelement location="${symbolic.jar.file}"/>
-			<pathelement location="${stubs.jar.file}"/>
-		</path>
-		<property name="models.class.path" refid="models.class.path"/>
-		<build-helper
-			dir="models"
-			classpath="${models.class.path}"
-			jarfile="${models.jar.file}"/>
-	</target>
-
-	<target name="build-stubs">
-		<build-helper
-			dir="stubs"
-			jarfile="${stubs.jar.file}"/>
-	</target>
-
-	<target name="build-symbolic" depends="build-stubs">
-		<path id="symbolic.class.path">
-			<pathelement location="${stubs.jar.file}"/>
-		</path>
-		<property name="symbolic.class.path" refid="symbolic.class.path"/>
-		<build-helper
-			dir="symbolic"
-			classpath="${symbolic.class.path}"
-			jarfile="${symbolic.jar.file}"/>
-	</target>
-
-	<macrodef name="build-helper">
-		<attribute name="dir"/>
-		<attribute name="classpath" default=""/>
-		<attribute name="jarfile"/>
-		<sequential>
-    		<echo message="@{classpath}" />    
-			<mkdir dir="@{dir}/classes"/>
-			<javac srcdir="@{dir}/src" destdir="@{dir}/classes"
-			    debug="true" debuglevel="source,lines,vars"
-				classpath="@{classpath}" includeantruntime="false"/>
-			<jar jarfile="@{jarfile}" basedir="@{dir}/classes"/>
-		</sequential>
-	</macrodef>
-
-	<target name="instrument">
-		<property environment="env"/>
-		<fail unless="env.JavaHeap" message="Set environment variable JavaHeap."/>
-		<java classname="a3t.instrumentor.Main" fork="true" failonerror="true"
-				dir="${user.dir}" maxmemory="${env.JavaHeap}">
-			<syspropertyset>
-				<propertyref builtin="all"/>
-			</syspropertyset>
-			<jvmarg value="-ea"/>
+	<target name="compile" depends="init" description="compile the source ">
+		<!-- Compile from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}">
 			<classpath>
-				<pathelement location="${instrumentor.jar.file}"/>
-				<pathelement location="${symbolic.jar.file}"/>
-				<pathelement location="${a3t.dir}/libs/ant.jar"/>
-				<pathelement location="${a3t.dir}/libs/ant-launcher.jar"/>
-				<pathelement location="${a3t.dir}/libs/soot.jar"/>
-				<pathelement location="libs/slf4j-api-1.7.5.jar"/>
-				<pathelement location="libs/log4j-over-slf4j-1.7.10.jar"/>								
+				<fileset dir="${lib.dir}">
+					<include name="*.jar*" />
+				</fileset>
+				<fileset dir="${jars.dir}">
+					<include name="*.jar*" />
+				</fileset>
 			</classpath>
-		</java>
+		</javac>
 	</target>
 
-	<target name="run">
-		<property environment="env"/>
-   		<fail unless="env.Z3_BIN" message="Set environment variable Z3_BIN to absolute location of Z3 binary."/>
-		<fail unless="env.JavaHeap" message="Set environment variable JavaHeap."/>
-		<java classname="a3t.explorer.Main" fork="true" failonerror="true"
-    	     	 dir="${user.dir}" maxmemory="${env.JavaHeap}">
-			<jvmarg value="-ea"/>
-			<syspropertyset>
-				<propertyref builtin="all"/>
-			</syspropertyset>
+	<target name="compile-symbolic" depends="init">
+		<javac srcdir="${src}" destdir="${build-symbolic}">
 			<classpath>
-				<pathelement location="${explorer.jar.file}"/>
-				<pathelement location="${a3t.dir}/libs/ant.jar"/>
-				<pathelement location="${a3t.dir}/libs/ant-launcher.jar"/>
-				<pathelement location="${a3t.dir}/libs/jigsaw-sexpr.jar"/>
-				<pathelement location="${a3t.dir}/libs/slf4j-api-1.7.5.jar"/>
-				<pathelement location="${a3t.dir}/libs/log4j-over-slf4j-1.7.10.jar"/>								
+				<fileset dir="${lib.dir}">
+					<include name="*.jar*" />
+				</fileset>
+				<fileset dir="${jars.dir}">
+					<include name="*.jar*" />
+				</fileset>
 			</classpath>
-		</java>
-	</target>
-	
-	<target name="test" depends="build-symbolic">
-	    <!-- Nothing here yet -->
+		</javac>
 	</target>
 
-	<target name="clean">
-		<delete dir="explorer/classes"/>
-		<delete dir="instrumentor/classes"/>
-		<delete dir="models/classes"/>
-		<delete dir="stubs/classes"/>
-		<delete dir="symbolic/classes"/>
-		<delete dir="jars"/>
+	<target name="dist" depends="compile-symbolic,compile">
+		<mkdir dir="${dist}/lib" />
+		<jar jarfile="${dist}/lib/${projectName}-symbolic.jar" basedir="${build-symbolic}" />
+		<jar jarfile="${dist}/lib/${projectName}.jar" basedir="${build}" />
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
 	</target>
 </project>
