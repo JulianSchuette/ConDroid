@@ -72,4 +72,7 @@
 		<delete dir="${build}" />
 		<delete dir="${dist}" />
 	</target>
+	
+	<!-- For Travis CI -->
+	<target name="test" depends="dist" />
 </project>
