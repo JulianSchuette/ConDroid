@@ -1085,8 +1085,8 @@ public class InstrumentationHelper {
 	 * @throws ParserConfigurationException 
 	 * @throws XPathExpressionException 
 	 * 
-	 */
-	public void insertCallsToLifecycleMethods(SootMethod toInstrument) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
+	 */ //TODO Precision: Filter by methods instead of classes
+	public void insertCallsToLifecycleMethods(SootMethod toInstrument, Set<SootClass> filter) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
 		/* we now need to find the main activity among a) the entry points or,
 		 * b) if its a dummy entry point among the callees
 		 */					
@@ -1133,11 +1133,18 @@ public class InstrumentationHelper {
 		//Get entry methods of default main
 		onClickHandlerMethods.addAll(getEntryMethods(Pattern.compile(".*onClick.*")));
 		
+		//Consider only those along the possible CP
+		for (SootMethod m:onClickHandlerMethods) {
+			if (!filter.contains(m.getDeclaringClass())) {
+				onClickHandlerMethods.remove(m);
+			}
+		}
+		
+		// Speed:
 		if (listenerFields.size() < 1 && onClickHandlerMethods.size() < 1)
 			return;
 		
-		///reference to class on which to call findViewById:
-	    
+		///reference to class on which to call findViewById:	    
 	    Local thisRefLocal = body.getThisLocal();
 	    
 	    //get us the context local:
@@ -1146,7 +1153,8 @@ public class InstrumentationHelper {
 	    	if (l.getType().equals(RefType.v("android.content.Context"))){
 	    		ctxLocal = l;
 	    	}
-	    // if there is no context local, generate one - we will need it
+	    
+	    // if there is no context local, retrieve from getApplicationContext()
 	    if (ctxLocal == null){
 	    	ctxLocal = generator.generateLocal(RefType.v("android.content.Context"));
 	    	units.insertBefore(
@@ -1170,13 +1178,10 @@ public class InstrumentationHelper {
 			}
 		}
 		
-		/* 
-		 * After being done with fields, we now deal with onClick-elements
-		 * defined in layout files.
+		
+		/*
+		 * Immediate calls to other activities using startActivity(new Intent(this,"ACTIVITY_NAME"))
 		 */
-		
-		
-		//For now, we filter for those which are defined in the main activity ONLY:
 		Set<SootClass> otherActivities = new HashSet<SootClass>();
 		for (SootMethod m : onClickHandlerMethods) {
 			if (toInstrument.getDeclaringClass().equals(m.getDeclaringClass()) && !m.getName().contains("init>")) {
@@ -1184,11 +1189,16 @@ public class InstrumentationHelper {
 				boolean canSetParameter = true;
 				List<Type> argTypes = m.getParameterTypes();
 				for (Type argType:argTypes) {
-					if (!argType.equals(RefType.v("android.content.Context")) && !argType.equals(RefType.v("android.view.View")))
-						canSetParameter=false;						
+					if (!argType.equals(RefType.v("android.content.Context")) && !argType.equals(RefType.v("android.view.View"))) {
+						canSetParameter=false;
+						break;
+					}
 				}
-				if (canSetParameter)
+				if (canSetParameter) {
 					aep.buildMethodCall(m, body, thisRefLocal, generator, returnstmt);
+				} else {
+					log.warn("I do not know how to retrieve parameters values for " + m.getSignature());
+				}
 			} else if (!m.getName().contains("init>") && !m.getDeclaringClass().getName().contains("$")) {
 				otherActivities.add(m.getDeclaringClass());				
 			}

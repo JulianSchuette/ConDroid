@@ -478,7 +478,7 @@ public class MethodUtils {
 		CallGraph callGraph = Scene.v().getCallGraph();
 		CallGraph subGraph = new CallGraph();
 		
-		Set<SootMethod> transitiveSources = new LinkedHashSet<SootMethod>();	//TODO not needed anymore. Remove
+		Set<SootMethod> transitiveSources = new LinkedHashSet<SootMethod>();
 		HashChain<SootMethod> unprocessedSources = new HashChain<SootMethod>();
 		unprocessedSources.add(sootMethod);
 

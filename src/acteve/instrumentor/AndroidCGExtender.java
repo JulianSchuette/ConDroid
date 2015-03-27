@@ -35,6 +35,8 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import soot.Body;
@@ -60,6 +62,7 @@ import soot.jimple.toolkits.callgraph.Edge;
  * 
  */
 public class AndroidCGExtender extends SceneTransformer {
+	public static Logger log = LoggerFactory.getLogger(AndroidCGExtender.class);	
 
 	@Override
 	protected void internalTransform(String phaseName, Map<String, String> options) {
@@ -89,7 +92,7 @@ public class AndroidCGExtender extends SceneTransformer {
 											try {
 												constr = clazz.getMethod("void <init>(android.content.Context,android.util.AttributeSet,int)");
 												newEdge = new Edge(b.getMethod(), u, constr, Kind.CLINIT);
-												System.out.println("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
+												log.debug("Extending CG by " + b.getMethod().getSignature() + " --> " + constr.getSignature());
 												cg.addEdge(newEdge);
 											} catch (RuntimeException rte) {
 												// Method does not exist. continue

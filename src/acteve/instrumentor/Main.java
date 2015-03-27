@@ -1,32 +1,33 @@
 /*
-  Copyright (c) 2011,2012, 
-   Saswat Anand (saswat@gatech.edu)
-   Mayur Naik  (naik@cc.gatech.edu)
-  All rights reserved.
-  
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met: 
-  
-  1. Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer. 
-  2. Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution. 
-  
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  
-  The views and conclusions contained in the software and documentation are those
-  of the authors and should not be interpreted as representing official policies, 
-  either expressed or implied, of the FreeBSD Project.
+   * Copyright (c) 2014, Julian Schuette, Fraunhofer AISEC
+   * Partly based on Acteve, Copyright (c) 2011,2012, Saswat Anand (saswat@gatech.edu), Mayur Naik  (naik@cc.gatech.edu)
+   * 
+   *  All rights reserved.
+   *  
+   *  Redistribution and use in source and binary forms, with or without
+   *  modification, are permitted provided that the following conditions are met:
+   *    
+   *  1. Redistributions of source code must retain the above copyright notice, this
+   *  list of conditions and the following disclaimer.
+   *  2. Redistributions in binary form must reproduce the above copyright notice,
+   *  this list of conditions and the following disclaimer in the documentation
+   *  and/or other materials provided with the distribution. 
+   *
+   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+   * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+   * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+   * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+   * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+   * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+   * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   *
+   * The views and conclusions contained in the software and documentation are those
+   * of the authors and should not be interpreted as representing official policies, 
+   * either expressed or implied, of the FreeBSD Project.
+   * 
  */
 package acteve.instrumentor;
 
@@ -69,6 +70,7 @@ import soot.Transform;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.android.data.AndroidMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.util.Chain;
 import acteve.explorer.Utils;
@@ -79,18 +81,18 @@ public class Main extends SceneTransformer {
 	private static Set<SootClass> classesToInstrument = new HashSet<SootClass>();
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
-	static boolean DEBUG = true;
+	static boolean DEBUG = false;
 	public final static boolean DUMP_JIMPLE = false; //default: false. Set to true to create Jimple code instead of APK
 	public final static boolean VALIDATE = false; //Set to true to apply some consistency checks. Set to false to get past validation exceptions and see the generated code. Note: these checks are more strict than the Dex verifier and may fail at some obfuscated, though valid classes
 	private final static String androidJAR = "./libs/android-14.jar"; //required for CH resolution
 	private final static String libJars = "./jars/a3t_symbolic.jar"; //libraries
-	private final static String modelClasses = "./mymodels/src"; //Directory where user-defined model classes reside.
+	private final static String modelClasses = "./mymodels/src"; 	//Directory where user-defined model classes reside
 	private static String apk = null;
-	private static boolean OMIT_MANIFEST_MODIFICATION = false;
-	private static boolean LIMIT_TO_CALL_PATH = true; //Limit instrumentation to methods along the CP to reflection use?
+	private static boolean OMIT_MANIFEST_MODIFICATION = false;		// Manifest is modified to support writing to sdcard
+	private static boolean LIMIT_TO_CALL_PATH = true; 				// Limit instrumentation to methods along the CP to reflection use?
 	private static boolean SKIP_CONCOLIC_INSTRUMENTATION = false;
-	private static boolean SKIP_ALL_INSTRUMENTATION = false;	//For debugging
-	private static boolean SKIP_CG_EXTENTION=false;
+	private static boolean SKIP_ALL_INSTRUMENTATION = false;		// Switch off all instrumentation for debugging
+	private static boolean SKIP_CG_EXTENTION=false;					// Extends the CG by direct calls to callbacks
 
 	/**
 	 * Classes to exclude from instrumentation (all acteve, dalvik classes, plus some android SDK classes which are used by the instrumentation itself).
@@ -116,7 +118,6 @@ public class Main extends SceneTransformer {
 										   config.methsWhitelist, 
 										   config.instrAllFields);
 		ci.instrument(classesToInstrument);
-//		InputMethodsHandler.instrument(config.inputMethsFile);
 		ModelMethodsHandler.addInvokerBodies();
 		Scene.v().getApplicationClasses().remove(Scene.v().getSootClass(dummyMainClassName));
 
@@ -133,8 +134,7 @@ public class Main extends SceneTransformer {
 			}
 			out.close();
 		} catch (IOException ex) {
-			ex.printStackTrace();
-			System.exit(1);
+			log.error(ex.getMessage(), ex);
 		}
 	}
 
@@ -256,6 +256,7 @@ public class Main extends SceneTransformer {
 
 			
 		// -------------------------------- BEGIN RAFAEL ----------------------------------------------
+		CallGraph subGraph = null;
 		if (LIMIT_TO_CALL_PATH ) {
 			/* 
 			 * 1.	Find all entry points (i.e. "real" entry points according to
@@ -292,23 +293,23 @@ public class Main extends SceneTransformer {
 			}
 
 			//2)
-			List<SootMethod> goalMethods = MethodUtils.findReflectiveLoadingMethods(entryPoints);
+			List<SootMethod> targetMethods = MethodUtils.findReflectiveLoadingMethods(entryPoints);
 			if (DEBUG) {
-				log.debug("Found the following goal methods:");
-				for (SootMethod m : goalMethods){
+				log.debug("Found the following target methods:");
+				for (SootMethod m : targetMethods){
 					log.debug("  Signature: {}", m.getSignature());
 				}
 			}
 			
 			//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
 			HashMap<SootMethod, List<SootClass>> pathsToGoal = new HashMap<SootMethod, List<SootClass>>();
-			for (SootMethod goalMeth : goalMethods){
+			for (SootMethod targetMeth : targetMethods){
 				List<SootClass> path = new ArrayList<SootClass>();
 				//add the declaring class because developers might inherit & extend from base class loaders
-				if(!excludePat.matcher(goalMeth.getDeclaringClass().getName()).matches())
-					path.add(goalMeth.getDeclaringClass());
+				if(!excludePat.matcher(targetMeth.getDeclaringClass().getName()).matches())
+					path.add(targetMeth.getDeclaringClass());
 				//and all the classes on the way to the call:
-				CallGraph subGraph = MethodUtils.findTransitiveCallersOf(goalMeth);
+				subGraph = MethodUtils.findTransitiveCallersOf(targetMeth);
 				Iterator<MethodOrMethodContext> methodsAlongThePath = subGraph.sourceMethods();
 				while (methodsAlongThePath.hasNext()) {
 					SootMethod methodAlongThePath = methodsAlongThePath.next().method();
@@ -316,10 +317,10 @@ public class Main extends SceneTransformer {
 						path.add(methodAlongThePath.getDeclaringClass());
 					}
 				}
-				pathsToGoal.put(goalMeth, path);
+				pathsToGoal.put(targetMeth, path);
 			}
 			
-			if (log.isDebugEnabled()) {
+			if (DEBUG) {
 				for (SootMethod goal:pathsToGoal.keySet()) {
 					log.debug("{} classes along the path to {}", pathsToGoal.get(goal).size(), goal.getSignature());
 					List<SootClass> along = pathsToGoal.get(goal);
@@ -339,7 +340,13 @@ public class Main extends SceneTransformer {
 		
 		if (!SKIP_ALL_INSTRUMENTATION) {
 			try {
-				ih.insertCallsToLifecycleMethods(lcMethodToExtend);
+				if (subGraph!=null) { // if LIMIT_TO_CALL_PATH has been applied
+					HashSet<SootClass> entryClasses = new HashSet<SootClass>();
+					for (Iterator<Edge> entryEdges = subGraph.edgesOutOf(Scene.v().getMethod("<dummyMainClass: void dummyMainMethod()>"));entryEdges.hasNext();) {
+						entryClasses.add(entryEdges.next().tgt().getDeclaringClass());
+					}
+				}
+				ih.insertCallsToLifecycleMethods(lcMethodToExtend, classesToInstrument);
 			} catch (Exception e) {
 				log.error("Exception while inserting calls to lifecycle methods:", e);
 			}
