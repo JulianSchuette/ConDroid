@@ -1,7 +1,9 @@
 /*
-  Copyright (c) 2011,2012, 
+  Copyright (c) 2011,2012,2014
    Saswat Anand (saswat@gatech.edu)
    Mayur Naik  (naik@cc.gatech.edu)
+   Julian Schuette (julian.schuette@aisec.fraunhofer.de)
+   
   All rights reserved.
   
   Redistribution and use in source and binary forms, with or without
@@ -130,41 +132,40 @@ public class Instrumentor extends AbstractStmtSwitch {
 	// map from a original local to its corresponding shadow local
 	private final Map<Local, Local> localsMap;
 	private SootMethod currentMethod;
-	private int sigIdOfCurrentMethod;
-	
-	//TODO Read targets from configurable targets.txt file
+	private int sigIdOfCurrentMethod;	
 	private static HashSet<String> TARGET_METHODS = new HashSet<String>();
+	
 	static {
-		HashSet<String> aHashSet = new HashSet<String>();
-		aHashSet.addAll( Arrays.asList(new String[] {
-				"<java.lang.Class: T newInstance()>",
-				 "<java.lang.Class: newInstance()>",
-				 "<java.lang.Object: newInstance()>",
-				 "<java.lang.Class: T newInstance(java.lang.Object...)>",
-				 "<java.lang.Class: newInstance(java.lang.Object...)>",
-				 "<java.lang.Class: java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)>",
-				 "<java.lang.Class: java.lang.reflect.Constructor getConstructor(java.lang.Class...)>",
-				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getConstructors()>",
-				 "<java.lang.Class: java.lang.reflect.Constructor[] getConstructors()>",
-				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getDeclaredConstructors()>",
-				 "<java.lang.Class: java.lang.reflect.Constructor[] getDeclaredConstructors()>",
-				 "<java.lang.Class: java.lang.Class<T> forName(java.lang.String)>",
-				 "<java.lang.Class: java.lang.Class forName(java.lang.String)>",
-
-				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
-				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>",
-				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String,boolean)>",
-				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>",
-				 "<java.lang.ClassLoader: void <init>()>",
-				 "<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>",
-				 "<java.lang.ClassLoader: java.lang.ClassLoader getSystemClassLoader()>",
-
-				 "<java.net.URLClassLoader: void <init>(java.net.URL[])>",
-				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader)>",
-				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)>",
-
-				 "<java.security.SecureClassLoader: void <init>()>",
-				 "<java.security.SecureClassLoader: void <init>(java.lang.ClassLoader)>",
+		// Target definitions
+		TARGET_METHODS.addAll( Arrays.asList(new String[] {
+//				"<java.lang.Class: T newInstance()>",
+//				 "<java.lang.Class: newInstance()>",
+//				 "<java.lang.Object: newInstance()>",
+//				 "<java.lang.Class: T newInstance(java.lang.Object...)>",
+//				 "<java.lang.Class: newInstance(java.lang.Object...)>",
+//				 "<java.lang.Class: java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>...)>",
+//				 "<java.lang.Class: java.lang.reflect.Constructor getConstructor(java.lang.Class...)>",
+//				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getConstructors()>",
+//				 "<java.lang.Class: java.lang.reflect.Constructor[] getConstructors()>",
+//				 "<java.lang.Class: java.lang.reflect.Constructor<?>[] getDeclaredConstructors()>",
+//				 "<java.lang.Class: java.lang.reflect.Constructor[] getDeclaredConstructors()>",
+//				 "<java.lang.Class: java.lang.Class<T> forName(java.lang.String)>",
+//				 "<java.lang.Class: java.lang.Class forName(java.lang.String)>",
+//
+//				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String)>",
+//				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>",
+//				 "<java.lang.ClassLoader: java.lang.Class<T> loadClass(java.lang.String,boolean)>",
+//				 "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>",
+//				 "<java.lang.ClassLoader: void <init>()>",
+//				 "<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>",
+//				 "<java.lang.ClassLoader: java.lang.ClassLoader getSystemClassLoader()>",
+//
+//				 "<java.net.URLClassLoader: void <init>(java.net.URL[])>",
+//				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader)>",
+//				 "<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)>",
+//
+//				 "<java.security.SecureClassLoader: void <init>()>",
+//				 "<java.security.SecureClassLoader: void <init>(java.lang.ClassLoader)>",
 				 
 				"<dalvik.system.BaseDexClassLoader: void <init>(Java.lang.String,java.io.File,java.lang.String,java.lang.ClassLoader)>",
 
@@ -173,7 +174,6 @@ public class Instrumentor extends AbstractStmtSwitch {
 				"<dalvik.system.PathClassLoader: void <init>(Java.lang.String,java.lang.ClassLoader)>",
 				 "<dalvik.system.PathClassLoader: void <init>(Java.lang.String,Java.lang.String,java.lang.ClassLoader)>"
 				}));
-		TARGET_METHODS = aHashSet;
 	};
 
 	private boolean doRW() {
