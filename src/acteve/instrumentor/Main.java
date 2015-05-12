@@ -78,7 +78,7 @@ import acteve.explorer.Utils;
 public class Main extends SceneTransformer {
 	public static Logger log = LoggerFactory.getLogger(Main.class);
 	private static Config config;
-	private static Set<SootClass> classesToInstrument = new HashSet<SootClass>();
+	private static Set<SootMethod> methodsToInstrument = new HashSet<SootMethod>();
 	private static Map<String, List<String>> uninstrumentedClasses = new HashMap<String, List<String>>();
 	private static final String dummyMainClassName = "acteve.symbolic.DummyMain";
 	static boolean DEBUG = false;
@@ -117,7 +117,7 @@ public class Main extends SceneTransformer {
 										   config.fldsBlacklist, 
 										   config.methsWhitelist, 
 										   config.instrAllFields);
-		ci.instrument(classesToInstrument);
+		ci.instrument(methodsToInstrument);
 		ModelMethodsHandler.addInvokerBodies();
 		Scene.v().getApplicationClasses().remove(Scene.v().getSootClass(dummyMainClassName));
 
@@ -129,13 +129,56 @@ public class Main extends SceneTransformer {
 	private void printClasses(String fileName) {
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter(fileName));
-			for (SootClass klass : classesToInstrument) {
-				Printer.v().printTo(klass, out);
+			for (SootMethod meth : methodsToInstrument) {
+				Printer.v().printTo(meth.getDeclaringClass(), out);
 			}
 			out.close();
 		} catch (IOException ex) {
 			log.error(ex.getMessage(), ex);
 		}
+	}
+	
+	private static void setSootOptions() {
+		//restore the class path because of soot.G.reset() in calculateSourcesSinksEntrypoints:
+		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
+		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
+		
+		Options.v().set_no_bodies_for_excluded(true);
+		Options.v().set_src_prec(Options.src_prec_apk);
+		
+		Options.v().set_whole_program(true);	//Implicitly "on" when instrumenting Android, AFAIR.
+		Options.v().setPhaseOption("cg", "on");	//"On" by default.
+		Options.v().setPhaseOption("cg", "verbose:true");
+		Options.v().setPhaseOption("cg", "safe-newinstance:true");
+		Options.v().setPhaseOption("cg", "safe-forname:true");
+	    Options.v().set_keep_line_number(true);
+		Options.v().set_keep_offset(true);
+
+		// replace Soot's printer with our logger (will be overwritten by G.reset(), though)
+		// G.v().out = new PrintStream(new LogStream(Logger.getLogger("SOOT"),
+		// Level.DEBUG), true);
+
+		Options.v().set_allow_phantom_refs(true);
+		Options.v().set_prepend_classpath(true);
+		Options.v().set_validate(VALIDATE);
+
+		if (DUMP_JIMPLE) {
+			Options.v().set_output_format(Options.output_format_jimple);
+		} else {
+			Options.v().set_output_format(Options.output_format_dex);
+		}
+		Options.v().set_process_dir(Collections.singletonList(apk));
+		Options.v().set_force_android_jar(androidJAR);
+		Options.v().set_android_jars(libJars);
+		Options.v().set_src_prec(Options.src_prec_apk);
+		Options.v().set_debug(true);
+		
+		// All packages which are not already in the app's transitive hull but
+		// are required by the injected code need to be marked as dynamic.
+		Options.v().set_dynamic_package(
+				Arrays.asList(new String[] { "acteve.symbolic.", "com.android", "models.", "org.json", "org.apache", "org.w3c",
+						"org.xml", "junit", "javax", "javax.crypto"}));
+
 	}
 
 	/**
@@ -176,57 +219,20 @@ public class Main extends SceneTransformer {
 			e.printStackTrace();
 		}
 		
-		//restore the class path because of soot.G.reset() in calculateSourcesSinksEntrypoints:
-		Options.v().set_soot_classpath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
-		Scene.v().setSootClassPath("./libs/android-19.jar"+":"+libJars+":"+modelClasses + ":" + apk);
-		
-		Options.v().set_no_bodies_for_excluded(true);
-		Options.v().set_src_prec(Options.src_prec_apk);
-		
-		Options.v().set_whole_program(true);	//Implicitly "on" when instrumenting Android, AFAIR.
-		Options.v().setPhaseOption("cg", "on");	//"On" by default.
-		Options.v().setPhaseOption("cg", "verbose:true");
-		Options.v().setPhaseOption("cg", "safe-newinstance:true");
-		Options.v().setPhaseOption("cg", "safe-forname:true");
-	    Options.v().set_keep_line_number(true);
-		Options.v().set_keep_offset(true);
-
-		// replace Soot's printer with our logger (will be overwritten by G.reset(), though)
-		// G.v().out = new PrintStream(new LogStream(Logger.getLogger("SOOT"),
-		// Level.DEBUG), true);
-
-		Options.v().set_allow_phantom_refs(true);
-		Options.v().set_prepend_classpath(true);
-		Options.v().set_validate(VALIDATE);
-
-		if (DUMP_JIMPLE) {
-			Options.v().set_output_format(Options.output_format_jimple);
-		} else {
-			Options.v().set_output_format(Options.output_format_dex);
-		}
-		Options.v().set_process_dir(Collections.singletonList(apk));
-		Options.v().set_force_android_jar(androidJAR);
-		Options.v().set_android_jars(libJars);
-		Options.v().set_src_prec(Options.src_prec_apk);
-		Options.v().set_debug(true);
+		setSootOptions();
 		
 		//Create dummy main method referencing all entry points
 		SootMethod dummyMain = setupApplication.getEntryPointCreator().createDummyMain();
 
 		Scene.v().setEntryPoints(Collections.singletonList(dummyMain));
 		Scene.v().addBasicClass(dummyMain.getDeclaringClass().getName(), SootClass.BODIES);
-		// All packages which are not already in the app's transitive hull but
-		// are required by the injected code need to be marked as dynamic.
-		Options.v().set_dynamic_package(
-				Arrays.asList(new String[] { "acteve.symbolic.", "com.android", "models.", "org.json", "org.apache", "org.w3c",
-						"org.xml", "junit", "javax", "javax.crypto"}));
-
-
 		Scene.v().loadNecessaryClasses();
 		
 		//Register all application classes for instrumentation
 		Chain<SootClass> appclasses = Scene.v().getApplicationClasses();
-		classesToInstrument.addAll(appclasses);
+		for (SootClass c:appclasses) {
+			methodsToInstrument.addAll(c.getMethods());
+		}
 		
 		//Collect additional classes which will be injected into the app
 		List<String> libClassesToInject = SourceLocator.v().getClassesUnder("./jars/a3t_symbolic.jar");		
@@ -302,19 +308,19 @@ public class Main extends SceneTransformer {
 			}
 			
 			//we have all SootMethods now which might be used to load classes at runtime. Now get the classes on the paths to them:
-			HashMap<SootMethod, List<SootClass>> pathsToGoal = new HashMap<SootMethod, List<SootClass>>();
+			HashMap<SootMethod, List<SootMethod>> pathsToGoal = new HashMap<SootMethod, List<SootMethod>>();
 			for (SootMethod targetMeth : targetMethods){
-				List<SootClass> path = new ArrayList<SootClass>();
-				//add the declaring class because developers might inherit & extend from base class loaders
-				if(!excludePat.matcher(targetMeth.getDeclaringClass().getName()).matches())
-					path.add(targetMeth.getDeclaringClass());
-				//and all the classes on the way to the call:
+				List<SootMethod> path = new ArrayList<SootMethod>();
+//				//add the declaring class because developers might inherit & extend from base class loaders
+//				if(!excludePat.matcher(targetMeth.getDeclaringClass().getName()).matches())
+//					path.add(targetMeth.getDeclaringClass());
+				//add all methods on the way to the call:
 				subGraph = MethodUtils.findTransitiveCallersOf(targetMeth);
 				Iterator<MethodOrMethodContext> methodsAlongThePath = subGraph.sourceMethods();
 				while (methodsAlongThePath.hasNext()) {
 					SootMethod methodAlongThePath = methodsAlongThePath.next().method();
 					if(!excludePat.matcher(methodAlongThePath.getDeclaringClass().getName()).matches()){
-						path.add(methodAlongThePath.getDeclaringClass());
+						path.add(methodAlongThePath);
 					}
 				}
 				pathsToGoal.put(targetMeth, path);
@@ -322,17 +328,18 @@ public class Main extends SceneTransformer {
 			
 			if (DEBUG) {
 				for (SootMethod goal:pathsToGoal.keySet()) {
-					log.debug("{} classes along the path to {}", pathsToGoal.get(goal).size(), goal.getSignature());
-					List<SootClass> along = pathsToGoal.get(goal);
-					for (SootClass c:along) {
-						log.debug("  {}", c.getName());
+					log.debug("{} methods along the path to {}", pathsToGoal.get(goal).size(), goal.getSignature());
+					List<SootMethod> along = pathsToGoal.get(goal);
+					for (SootMethod m:along) {
+						log.debug("  {}", m.getSignature());
 					}
 				}
 			}
 			
-			classesToInstrument = new HashSet<SootClass>();
-			for (List<SootClass> path:pathsToGoal.values()) {
-				classesToInstrument.addAll(path);
+			//Reset classesToInstrument to those along the CP
+			methodsToInstrument = new HashSet<SootMethod>();
+			for (List<SootMethod> path:pathsToGoal.values()) {
+				methodsToInstrument.addAll(path);
 			}			
 		}
 		// -------------------------------- END RAFAEL ----------------------------------------------
@@ -346,7 +353,7 @@ public class Main extends SceneTransformer {
 						entryClasses.add(entryEdges.next().tgt().getDeclaringClass());
 					}
 				}
-				ih.insertCallsToLifecycleMethods(lcMethodToExtend, classesToInstrument);
+				ih.insertCallsToLifecycleMethods(lcMethodToExtend, methodsToInstrument);
 			} catch (Exception e) {
 				log.error("Exception while inserting calls to lifecycle methods:", e);
 			}
@@ -363,6 +370,7 @@ public class Main extends SceneTransformer {
 				log.debug("\t{}", m.getSignature());
 		}
 
+		//Start instrumentation
 		PackManager.v().runPacks();
 		PackManager.v().writeOutput();
 		
@@ -396,8 +404,7 @@ public class Main extends SceneTransformer {
 			log.error("ERROR: " + outputApk + " does not exist");
 		}
 	}
-
-
+	
 	private static void printUsage() {
 		System.out.println("Usage: instrumenter <apk>");
 		System.out.println("  apk:    APK file to prepare");
@@ -440,8 +447,8 @@ public class Main extends SceneTransformer {
 		input.close();
 	}
 
-	static boolean isInstrumented(SootClass klass) {
-		return classesToInstrument.contains(klass);
+	static boolean isInstrumented(SootMethod m) {
+		return methodsToInstrument.contains(m);
 	}
 
 	

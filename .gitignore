@@ -9,3 +9,6 @@
 /smtFile.smt2
 /solution.txt
 /config.properties
+/sootOutput
+/build
+/dist

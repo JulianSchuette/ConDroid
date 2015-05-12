@@ -229,33 +229,30 @@ public class Instrumentor extends AbstractStmtSwitch {
 		instrAllFields = _instrAllFields;
 	}
 
-	public void instrument(Set<SootClass> classes) {
-		for (SootClass klass : classes) {
-			klass.setApplicationClass();
-			addSymbolicFields(klass);
+	public void instrument(Set<SootMethod> methods) {
+		for (SootMethod klass : methods) {
+			klass.getDeclaringClass().setApplicationClass();
+			addSymbolicFields(klass.getDeclaringClass());
 		}
 
 		loadFiles();
 
-		for (SootClass klass : classes) {
-			List<SootMethod> origMethods = klass.getMethods();
-			for (SootMethod m : origMethods) {
-				if (!m.isConcrete())
-					continue;
+		for (SootMethod m : methods) {
+			if (!m.isConcrete())
+				continue;
 
-				//BY JULIAN: For Debugging, attach the subsig number to each method.
-				int subSig = methSubsigNumberer.getOrMakeId(m);
-				m.addTag(new StringTag(String.valueOf(subSig)));
-				
-				
-				if (ModelMethodsHandler.modelExistsFor(m)) {
-					// do not instrument method if a model for it exists
-					log.debug("skipping instrumentation of " + m + " (model exists)");
-					continue;
-				}
-				instrument(m);
+			//For Debugging, attach the subsig number to each method.
+			int subSig = methSubsigNumberer.getOrMakeId(m);
+			m.addTag(new StringTag(String.valueOf(subSig)));
+			
+			
+			if (ModelMethodsHandler.modelExistsFor(m)) {
+				// do not instrument method if a model for it exists
+				log.debug("skipping instrumentation of " + m + " (model exists)");
+				continue;
 			}
-		}
+			instrument(m);
+		}		
 
 		saveFiles();
 	}
@@ -287,6 +284,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 	}
 
 	private void instrument(SootMethod method) {
+		log.info("Instrumenting " + method.getSignature());
 		SwitchTransformer.transform(method);
  		localsMap.clear();
 
@@ -759,7 +757,15 @@ public class Instrumentor extends AbstractStmtSwitch {
 		}
 
 		SootField fld = leftOp.getField();
-		if (!Main.isInstrumented(fld.getDeclaringClass())&&!fld.getDeclaringClass().getName().contains("android.os")) 
+		
+		boolean isClassInstrumented = false;
+		for (SootMethod m:fld.getDeclaringClass().getMethods()) {
+			if (Main.isInstrumented(m)) {
+				isClassInstrumented = true;
+				break;
+			}
+		}
+		if (!isClassInstrumented&&!fld.getDeclaringClass().getName().contains("android.os")) 
 			return;
 
 		if(addSymLocationFor(fld.getType()) && fieldsMap.containsKey(fld)) {
@@ -887,7 +893,14 @@ public class Instrumentor extends AbstractStmtSwitch {
 
 		SootField fld = rightOp.getField();
 		Local leftOp_sym = localsMap.get(leftOp);
-		if (!Main.isInstrumented(fld.getDeclaringClass()) && !Config.g().fieldsToModel.contains(fld.toString())) {
+		boolean isClassInstrumented = false;
+		for (SootMethod m:fld.getDeclaringClass().getMethods()) {
+			if (Main.isInstrumented(m)) {
+				isClassInstrumented = true;
+				break;
+			}
+		}
+		if (!isClassInstrumented && !Config.g().fieldsToModel.contains(fld.toString())) {
 			if(leftOp_sym != null)
 				G.assign(leftOp_sym, NullConstant.v());
 			return;

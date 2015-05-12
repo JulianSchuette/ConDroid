@@ -1085,8 +1085,8 @@ public class InstrumentationHelper {
 	 * @throws ParserConfigurationException 
 	 * @throws XPathExpressionException 
 	 * 
-	 */ //TODO Precision: Filter by methods instead of classes
-	public void insertCallsToLifecycleMethods(SootMethod toInstrument, Set<SootClass> filter) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
+	 */
+	public void insertCallsToLifecycleMethods(SootMethod toInstrument, Set<SootMethod> filter) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
 		/* we now need to find the main activity among a) the entry points or,
 		 * b) if its a dummy entry point among the callees
 		 */					
@@ -1134,9 +1134,9 @@ public class InstrumentationHelper {
 		onClickHandlerMethods.addAll(getEntryMethods(Pattern.compile(".*onClick.*")));
 		
 		//Consider only those along the possible CP
-		for (SootMethod m:onClickHandlerMethods) {
-			if (!filter.contains(m.getDeclaringClass())) {
-				onClickHandlerMethods.remove(m);
+		for (Iterator<SootMethod> it = onClickHandlerMethods.iterator();it.hasNext();) {
+			if (!filter.contains(it.next())) {
+				it.remove();
 			}
 		}
 		
