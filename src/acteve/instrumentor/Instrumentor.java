@@ -48,6 +48,9 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import soot.ArrayType;
 import soot.Body;
 import soot.Immediate;
@@ -109,9 +112,6 @@ import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.util.Chain;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Instrumentor extends AbstractStmtSwitch {
 	public static Logger log = LoggerFactory.getLogger(Instrumentor.class);
@@ -774,9 +774,9 @@ public class Instrumentor extends AbstractStmtSwitch {
 			assert fld_sym != null : "No sym var for " + fld + " " + fld.getDeclaringClass();
 			FieldRef leftOp_sym;
 			if (leftOp instanceof StaticFieldRef) {
-				leftOp_sym = G.staticFieldRef(fld_sym.makeRef());
+				leftOp_sym = G.staticFieldRef(Scene.v().makeFieldRef(fld.getDeclaringClass(), fld_sym.getName(), fld_sym.getType(), true));
 			} else {
-				leftOp_sym = G.instanceFieldRef(base, fld_sym.makeRef());
+				leftOp_sym = G.instanceFieldRef(base, Scene.v().makeFieldRef(fld.getDeclaringClass(), fld_sym.getName(), fld_sym.getType(), false));
 			}
 			G.assign(leftOp_sym, symLocalfor(rightOp));
 		} 
@@ -917,10 +917,10 @@ public class Instrumentor extends AbstractStmtSwitch {
 			SootField fld_sym = fieldsMap.get(fld);
 			assert fld_sym != null : fld + " " + fld.getDeclaringClass();
 			FieldRef rightOp_sym;
-			if (rightOp instanceof StaticFieldRef) {
-				rightOp_sym = G.staticFieldRef(fld_sym.makeRef());
+			if (rightOp instanceof StaticFieldRef) {				
+				rightOp_sym = G.staticFieldRef(Scene.v().makeFieldRef(fld.getDeclaringClass(), fld_sym.getName(), fld_sym.getType(), true));
 			} else {
-				rightOp_sym = G.instanceFieldRef(base, fld_sym.makeRef());
+				rightOp_sym = G.instanceFieldRef(base, Scene.v().makeFieldRef(fld.getDeclaringClass(), fld_sym.getName(), fld_sym.getType(), false));
 			}
 			G.assign(leftOp_sym, rightOp_sym);
 		} else if(leftOp_sym != null) {
