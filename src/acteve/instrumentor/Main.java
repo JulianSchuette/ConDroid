@@ -120,7 +120,9 @@ public class Main extends SceneTransformer {
 		ci.instrument(methodsToInstrument);
 		ModelMethodsHandler.addInvokerBodies();
 		Scene.v().getApplicationClasses().remove(Scene.v().getSootClass(dummyMainClassName));
-
+		//Remove dummyMainClass as it is not needed at runtime and results in VRFY errors in Android >5.0
+		Scene.v().removeClass(Scene.v().getSootClass("dummyMainClass"));
+		
 		if (DEBUG)
 			printClasses("aft_instr.txt");
 	}
@@ -422,11 +424,11 @@ public class Main extends SceneTransformer {
 			printProcessOutput(p);
 
 			// zipalign is part of the Android SDK
-			log.info("Zipalign ...", apk);
-			cmd = "zipalign -v 4 " + apk + " " + new File(apk).getName() + "_signed.apk";
-			log.debug(cmd);
-			p = Runtime.getRuntime().exec(cmd);
-			printProcessOutput(p);
+//			log.info("Zipalign ...", apk);
+//			cmd = "zipalign -v 4 " + apk + " " + new File(apk).getName() + "_signed.apk";
+//			log.debug(cmd);
+//			p = Runtime.getRuntime().exec(cmd);
+//			printProcessOutput(p);
 		} catch (IOException e) {
 			log.error(e.getMessage(), e);
 		}
