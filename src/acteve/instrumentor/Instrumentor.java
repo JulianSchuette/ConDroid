@@ -403,17 +403,22 @@ public class Instrumentor extends AbstractStmtSwitch {
     private void instrumentConds(Body body) {
 		String methodSigAndFileStr = getMethodSigAndFileStr(body);
         int entryCondId = condIdStrList.size();
-
+        
+        
+        
         // collect all conditional branches in this method
         List<IfStmt> conds = new ArrayList<IfStmt>();
 		Chain<Unit> units = body.getUnits();
 		Unit lastParamStmt = units.getFirst();
+		IdentityStmt thisstmt = InstrumentationHelper.getThisStmt(body);
+		Value thisLocal = thisstmt!=null?thisstmt.getLeftOp():null;
+		
 		HashSet<Value> toInitialize = new HashSet<Value>(body.getLocalCount());
         for (Unit u : units) {
         	//Collect all register used in monitor stmts to initialize them to avoid possible VRFY errors
         	if (u instanceof MonitorStmt) {        		
         		Value s = ((MonitorStmt) u).getOp();
-        		if (s instanceof Local)
+        		if (s instanceof Local && s!=thisLocal)
         			toInitialize.add(s);
         	}
         	if (u instanceof IfStmt) {
@@ -1136,7 +1141,7 @@ public class Instrumentor extends AbstractStmtSwitch {
 			return l == null ? NullConstant.v() : l;
 		}
 	}
-
+	
 	public static boolean paramOrThisIdentityStmt(Stmt s) {
 		if (!(s instanceof IdentityStmt))
 			return false;

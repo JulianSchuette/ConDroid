@@ -111,6 +111,7 @@ import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.ClassConstant;
 import soot.jimple.FieldRef;
+import soot.jimple.IdentityStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
@@ -924,6 +925,16 @@ public class InstrumentationHelper {
 		}*/ 
 		return new ImmutablePair<PatchingChain<Unit>, Chain<Local>>(newUnits, newLocals);
 		
+	}
+
+	public static IdentityStmt getThisStmt(Body body) {
+		Chain<Unit> units = body.getUnits().getNonPatchingChain();
+		for (Unit u:units) {
+			if (u instanceof IdentityStmt) {
+				return (IdentityStmt) u;
+			}
+		}
+		return null;
 	}
 	
 	public static Local generateLocalAndDontInsert(Body body, Type type){
