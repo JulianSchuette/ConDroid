@@ -1210,7 +1210,7 @@ public class InstrumentationHelper {
 				} else {
 					log.warn("I do not know how to retrieve parameters values for " + m.getSignature());
 				}
-			} else if (!m.getName().contains("init>") && !m.getDeclaringClass().getName().contains("$")) {
+			} else if (InstrumentationHelper.extendsClass(m.getDeclaringClass(), Scene.v().getSootClass("android.content.Activity")) && !m.getName().contains("init>") && !m.getDeclaringClass().getName().contains("$")) {
 				otherActivities.add(m.getDeclaringClass());				
 			}
 		}
@@ -1247,6 +1247,19 @@ public class InstrumentationHelper {
 		//TODO in each activity, inject calls to their onclickhandlers at the end of oncreate
 	}
 
+
+	public static boolean extendsClass(SootClass child, SootClass parent) {
+		if (child.equals(parent))
+			return true;
+		
+		SootClass p = null;
+		try { p = child.getSuperclass(); } catch (RuntimeException rte) {	}
+		if (p!=null) {
+			return extendsClass(p,parent);
+		} else {
+			return false;
+		}
+	}
 
 	/**
 	 * Inserts statements at the end of a method, but ensures that thrown
