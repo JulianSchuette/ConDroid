@@ -83,7 +83,7 @@ public final class Config {
 		modelFieldsFile = props.getProperty("modelfields.file", "fieldsToModel.txt");
 		outDir = props.getProperty("out.dir", "out");
 		sdkDir = props.getProperty("sdk.dir", "out");
-		String s = props.getProperty("rw.kind", "id_field_write");
+		String s = props.getProperty("rw.kind", "explicit_write");
 		if (s.equals("none")) 
 			rwKind = RWKind.NONE;
 		else if (s.equals("id_field_write"))
