@@ -1,0 +1,59 @@
+task wrapper(type: Wrapper) {
+   gradleVersion = '2.8' //version required
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+	flatDir {
+		dirs 'libs'
+		dirs 'jars'
+	}
+}
+
+buildscript {
+	repositories { jcenter() }
+  	dependencies {
+    	classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
+  	}
+}
+
+apply plugin: "java"
+apply plugin: "application"
+apply plugin: 'com.github.johnrengelman.shadow'
+
+
+dependencies {
+	compile name: 'ant-launcher'
+	//compile name: 'android-14'
+	//compile name: 'android-19'
+	compile name: 'ant'
+	compile name: 'jep'
+	compile name: 'jigsaw-sexpr'
+	compile name: 'jasmin'
+	compile name: 'commons-io-2.4'
+	compile name: 'axmlprinter'
+	compile name: 'AXMLPrinter2'
+	compile name: 'slf4j-api-1.7.5'
+	compile name: 'soot-infoflow-android'
+	compile name: 'axml-2.0'
+	compile name: 'asm-debug-all-5.0.3'
+	compile name: 'commons-lang3-3.3.2'
+	compile name: 'log4j-1.2.17'
+	compile name: 'slf4j-log4j12-1.7.10'
+	//compile name: 'apktool'
+	//compile 'com.google.collections:google-collections:1.0'
+
+	// Libs for symbols
+	compile name: 'a3t_stubs'
+	compile name: 'a3t_symbolic'
+}
+
+
+mainClassName = 'acteve.instrumentor.Main'
+ run { 
+    /* Need to split the space-delimited value in the exec.args */
+	if(System.getProperty("exec.args") != null) {
+    	args System.getProperty("exec.args").split()
+	}
+}

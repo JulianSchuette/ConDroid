@@ -1,25 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="models/src"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="stubs/src"/>
-	<classpathentry kind="src" path="symbolic/src"/>
-	<classpathentry kind="lib" path="libs/ant-launcher.jar"/>
-	<classpathentry kind="lib" path="libs/ant.jar"/>
-	<classpathentry kind="lib" path="libs/jep.jar"/>
-	<classpathentry kind="lib" path="libs/jigsaw-sexpr.jar"/>
+	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
-	<classpathentry kind="lib" path="libs/jasmin.jar"/>
-	<classpathentry kind="lib" path="libs/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="libs/axmlprinter.jar"/>
-	<classpathentry kind="lib" path="libs/AXMLPrinter2.jar"/>
-	<classpathentry kind="lib" path="libs/slf4j-api-1.7.5.jar"/>
-	<classpathentry kind="lib" path="libs/soot-infoflow-android.jar" sourcepath="/soot-original"/>
-	<classpathentry kind="lib" path="libs/axml-2.0.jar"/>
-	<classpathentry kind="lib" path="libs/axml-1.0.jar"/>
-	<classpathentry kind="lib" path="libs/asm-debug-all-5.0.3.jar"/>
-	<classpathentry kind="lib" path="libs/commons-lang3-3.3.2.jar"/>
-	<classpathentry kind="lib" path="libs/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.7.10.jar"/>
+	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
