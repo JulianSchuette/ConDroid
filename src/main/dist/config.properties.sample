@@ -1,0 +1,58 @@
+# ---------- Instrumenter options ---------------
+a3t.android.jar = libs/android-14.jar
+a3t.out.jar = instrumented.jar
+a3t.lib.jars = jars/a3t_symbolic.jar:jars/a3t_stubs.jar:jars/a3t_models.jar:libs/core.jar:libs/ext.jar:libs/junit.jar:libs/bouncycastle.jar
+a3t.inputmeths.file = inputs.dat
+a3t.modelmeths.file = models.dat
+a3t.out.dir = out
+a3t.sdk.dir = out
+a3t.rw.kind = id_field_write
+
+a3t.whiteflds.file = 
+a3t.blackflds.file = 
+a3t.whitemeths.file = 
+a3t.instrflds.all = 
+
+# ---------- Explorer options -------------------
+# APK file to scan. If null, cli parameter is used. Default: null
+filename = null
+
+# Use monkey scripts?
+useMonkeyScript = false
+
+# File name of monkey script. Default: null, not considered when useMonkeyScript=false.
+monkey = monkey_script.txt
+
+# Package name of APK file. TODO: Not needed, get it programmatically, remove.
+a3t.pkg = 
+
+# Main activity of APK file. TODO: Not needed, get it programmatically, remove.
+a3t.mainact = 
+
+# Path to Z3 binary
+env.Z3_BIN = /opt/z3/bin/z3
+
+# Maximum number of iterations. Default: 1000
+max.iters = 1000
+
+# Output dir. Default: ./results
+results.dir = ./results/
+
+# TCP port of Qemu. Default: 5554
+port = 5554
+
+# Other stuff
+actargs = 
+userwait = 4
+K =2
+indep=
+readonly=
+condmap.file = ./out/condmap.txt
+writemap.file = ./out/writemap.txt
+fieldsigs.file = ./out/fieldsigs.txt
+env.A3T_DIR=
+blackfields.file = null
+restart=
+prune.last=
+diverge.threshold = 3
+wildemus.threshold = 6
