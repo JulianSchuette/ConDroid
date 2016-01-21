@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="models/src"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="stubs/src"/>
-	<classpathentry kind="src" path="symbolic/src"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/models/java"/>
+	<classpathentry kind="src" path="src/stubs/java"/>
+	<classpathentry kind="src" path="src/symbolic/java"/>
 	<classpathentry kind="lib" path="libs/ant-launcher.jar"/>
 	<classpathentry kind="lib" path="libs/ant.jar"/>
 	<classpathentry kind="lib" path="libs/jep.jar"/>

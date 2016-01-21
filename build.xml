@@ -4,7 +4,8 @@
 	</description>
 
 	<property name="projectName" value="condroid" />
-	<property name="src" location="src" />
+	<property name="src" location="src/main/java" />
+	<property name="src.symbolic" location="src/symbolic/java" />
 	<property name="build" location="build" />
 	<property name="build-symbolic" location="build-symbolic" />
 	<property name='lib.dir' location='libs' />
@@ -50,7 +51,7 @@
 	</target>
 
 	<target name="compile-symbolic" depends="init">
-		<javac srcdir="${src}" destdir="${build-symbolic}">
+		<javac srcdir="${src.symbolic}" destdir="${build-symbolic}">
 			<classpath>
 				<fileset dir="${lib.dir}">
 					<include name="*.jar*" />
