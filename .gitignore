@@ -13,3 +13,6 @@
 /build
 /dist
 /UtilToJimple.apk
+/build-symbolic/
+/decoded/
+/results/
