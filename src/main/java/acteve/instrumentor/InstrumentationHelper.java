@@ -216,8 +216,8 @@ public class InstrumentationHelper {
 		if (Main.DEBUG) {
 			log.info("Decoding " + apkFile.getAbsolutePath());
 		}
-		Process p = Runtime.getRuntime().exec(
-				"java -jar libs/apktool.jar d -s -f " + apkFile.getAbsolutePath() + " decoded");
+		String cmd = "java -jar libs/apktool.jar d -s -f " + apkFile.getAbsolutePath() + " -o decoded";
+		Process p = Runtime.getRuntime().exec(cmd);
 		int processExitCode = p.waitFor();
 		if (processExitCode != 0) {
 			throw new RuntimeException("Something went wrong during unpacking");
@@ -645,31 +645,33 @@ public class InstrumentationHelper {
 		dBuilder = dbFactory.newDocumentBuilder();
 
 		//Read layout ids and names from public xml
-		for (File pf : listOfFiles){
-			Document doc = dBuilder.parse(pf);
-			doc.getDocumentElement().normalize();
-			
-			XPath xpath = XPathFactory.newInstance().newXPath();
-	        XPathExpression expr1 = xpath.compile("//*[@id]");
-	        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
-	        
-	        String name=null;
-	        for (int i=0;i<nodes.getLength();i++) {
-	        	Node node = nodes.item(i);
-	        	Attr attr = (Attr) node.getAttributes().getNamedItem("android:id");
-	        	String layoutName = attr.getValue().replace("@id/", "");
-	        	System.out.println(layoutName);
-	        	if (layoutNamesToIds.keySet().contains(layoutName)) {
-	        		name = node.getNodeName();
-	        		int id = layoutNamesToIds.get(layoutName);
-	        		if (Scene.v().containsClass(name)) {
-	        			SootClass clazz = Scene.v().getSootClass(name);
-	        			layoutIdToClass.put(new Integer(id), clazz);
-	        		}
-	        		layoutNamesToClass.put(layoutName,name);
-	        		name = null;
-	        	}
-	        }
+		if (listOfFiles!=null) {
+			for (File pf : listOfFiles){
+				Document doc = dBuilder.parse(pf);
+				doc.getDocumentElement().normalize();
+				
+				XPath xpath = XPathFactory.newInstance().newXPath();
+		        XPathExpression expr1 = xpath.compile("//*[@id]");
+		        NodeList nodes = (NodeList)expr1.evaluate(doc, XPathConstants.NODESET);
+		        
+		        String name=null;
+		        for (int i=0;i<nodes.getLength();i++) {
+		        	Node node = nodes.item(i);
+		        	Attr attr = (Attr) node.getAttributes().getNamedItem("android:id");
+		        	String layoutName = attr.getValue().replace("@id/", "");
+		        	System.out.println(layoutName);
+		        	if (layoutNamesToIds.keySet().contains(layoutName)) {
+		        		name = node.getNodeName();
+		        		int id = layoutNamesToIds.get(layoutName);
+		        		if (Scene.v().containsClass(name)) {
+		        			SootClass clazz = Scene.v().getSootClass(name);
+		        			layoutIdToClass.put(new Integer(id), clazz);
+		        		}
+		        		layoutNamesToClass.put(layoutName,name);
+		        		name = null;
+		        	}
+		        }
+			}
 		}
 		
 		return layoutIdToClass;
@@ -1399,9 +1401,8 @@ public class InstrumentationHelper {
 		if (decodedDir.exists() && decodedDir.isDirectory()) {
 			FileUtils.deleteDirectory(decodedDir);
 		}
-		
-		Process p = Runtime.getRuntime().exec(
-				"java -jar libs/apktool.jar d -s -f " + apkFile.getAbsolutePath() + " decoded");
+		String cmd = "java -jar libs/apktool.jar d -s -f " + apkFile.getAbsolutePath() + " -o decoded";
+		Process p = Runtime.getRuntime().exec(cmd);
 		int processExitCode = p.waitFor();
 		if (processExitCode != 0) {
 			System.out.println("Something went wrong when unpacking " + apkFile.getAbsolutePath());
@@ -1415,7 +1416,7 @@ public class InstrumentationHelper {
 
 		// Now pack again
 		File newFile = new File(apkFile.getAbsolutePath().replace(".apk", "") + "_modified.apk");
-		p = Runtime.getRuntime().exec("java -jar libs/apktool.jar b decoded/ " + newFile.getAbsolutePath());
+		p = Runtime.getRuntime().exec("java -jar libs/apktool.jar b decoded/ -o " + newFile.getAbsolutePath());
 		processExitCode = p.waitFor();
 		if (processExitCode != 0) {
 			log.error("Something went wrong when packing " + apkFile.getAbsolutePath());
