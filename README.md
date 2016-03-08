@@ -19,3 +19,39 @@ Some details on the extensions have been published in [3].
 <img alt="Coverity Scan Build Status"
 src="https://scan.coverity.com/projects/3500/badge.svg"/></a>
 <a href="#" name="status-images" class="open-popup" data-ember-action="786"><img src="https://travis-ci.org/JulianSchuette/ConDroid.svg" data-bindattr-787="787" title="Build Status Images"></a>
+
+Getting Started
+==========================
+
+#### Prerequisites
+* Android SDK
+* Z3 solver, including the string extensions from this project
+
+#### Clone 
+
+`git clone https://github.com/JulianSchuette/ConDroid.git`
+
+#### Install Z3-str
+
+Unzip Z3 solver with added supported for String operations (equals, concat, etc.) 
+
+```
+unzip Z3-str_20140720.zip /opt/
+mv /opt/Z3-str_20140720 /opt/z3
+```
+
+#### Set up configuration
+
+`mv config.properties.sample config.properties`
+
+#### Set up eclipse
+
+* Import project into eclipse
+
+#### Launch
+
+* Launch an android emulator
+* Launch run configuration from eclipse
+The app under test is given as argument to the program
+
+`java -jar condroid.jar <apk>`
